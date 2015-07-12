@@ -55,3 +55,6 @@ len5/2
 partition(len5)
 partition(len6)
 partition(len7)
+
+0 - 0
+0 + 1 - 0

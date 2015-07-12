@@ -359,8 +359,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 3, 5, 9)"
                 )
         }
-  //ignore
-  test(
+  ignore(
         "90: 'mergeArraySortedParts'" +
           "should properly merge & return ordered sequence"
       ) {
@@ -375,7 +374,8 @@ class InversionsNumberSuit extends FunSuite {
             .partition(unsorted.length)
 
           println(s"unsorted was:${unsorted.mkString( """,""")}")
-          val sorted: Array[Int] =
+          //val sorted: Array[Int] =
+          val swapsTotal: Int =
             inversionsNumber
             .mergeArraySortedParts(
                 /*unchanging*/
@@ -390,12 +390,14 @@ class InversionsNumberSuit extends FunSuite {
                 firstPartStart = 0,
                 /*changing ?*/
                 firstPartEnd = fP - 1,
+                firstPartSize = fP,
                 /*changing*/
                 firstPartLeader = 0,
                 /*changing ?*/
                 secondPartStart = fP,
                 /*changing ?*/
                 secondPartEnd = unsorted.length - 1,
+                secondPartSize = sP,
                 /*changing*/
                 //? redundant / useless ?
                 //secondPartLeader: Int = 0,
@@ -405,9 +407,47 @@ class InversionsNumberSuit extends FunSuite {
 
           println(s"unsorted changes to:${unsorted.mkString( """,""")}")
           println(s"must be:${unsorted.sorted.mkString( """,""")}")
+          println(s"swapsTotal:${swapsTotal}")
           /*too large for integer*/
           assume(
-                  sorted
+                  //sorted
+                    unsorted
+                  .sameElements(unsorted.sorted),
+                  "must be equal"
+                )
+        }
+  /*
+  TODO
+  fix 'emulateMergeSortForArray' to pass test
+  */
+  test(
+        "91: 'emulateMergeSortForArray'" +
+          "should sort"
+      ) {
+          val inversionsNumber = new InversionsNumber
+          val unsorted: Array[Int] =
+            Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            //Array(5, 7, 9, 11, 2, 3, 4)
+
+          println(s"unsorted was:${unsorted.mkString( """,""")}")
+          //val sorted: Array[Int] =
+          val swapsTotal: Int =
+            inversionsNumber
+            .emulateMergeSortForArray(
+                sourceArray = unsorted,
+                sourceArrayLength = unsorted.length,
+                swapCount = 0
+                                  )
+
+          println(s"unsorted changes to:${unsorted.mkString( """,""")}")
+          println(s"must be:${unsorted.sorted.mkString( """,""")}")
+          println(s"swapsTotal:${swapsTotal}")
+          /*too large for integer*/
+          assume(
+                  //sorted
+                    unsorted
                   .sameElements(unsorted.sorted),
                   "must be equal"
                 )
