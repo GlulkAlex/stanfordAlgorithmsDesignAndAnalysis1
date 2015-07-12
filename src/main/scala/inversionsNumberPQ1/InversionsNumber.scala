@@ -116,6 +116,32 @@ class InversionsNumber {
     .toStream
   }
 
+  def partition(len: Int): (Int,Int) = {
+    val fP: Int = firstPart(len)
+
+    (fP, secondPart(fP, len))
+  }
+
+  /*'firstPart' always bigger / greater then 'secondPart'*/
+  def firstPart(len: Int): Int = {
+    if (
+      len <= 0) {
+      0
+    } else /*if (len/2 > 0)*/ {
+      len / 2 + len % 2
+    }
+  }
+
+  def secondPart(fPart: Int, len: Int): Int = {
+    if (fPart <= 0) {
+      0
+    } else if (len - fPart > 0) {
+      len - fPart
+    } else /*if (fPart > 0)*/ {
+      0
+    }
+  }
+
   /*
   * all Divide&Conquere may be correspond to
   * indexes ranges -
@@ -172,10 +198,15 @@ class InversionsNumber {
                              swapCount: Int = 0
                              ): Array[Int] = {
     if (
+      /*nothig to sort*/
       sourceArray.isEmpty ||
+        /*already sorted*/
         sourceArrayLength == 1 ||
-        (firstPartEnd - firstPartStart) < currentPartSize ||
-        (secondPartEnd - secondPartStart) == 0 ||
+        /*have only already sorted first part*/
+        (firstPartEnd - firstPartStart) < currentPartSize - 1 ||
+        /*no second part*/
+        //secondPartSize <= 0
+        //(secondPartEnd - secondPartStart) == 0 ||
         firstPartLeader > firstPartEnd ||
         firstPartLeader == -1
     ) {
@@ -227,17 +258,23 @@ class InversionsNumber {
                           secondPartStart,
                         indexOfGreater = firstPartLeader
                       )
-          /*restore order*/
-          newSwapCount =
-            shiftElemRightUntilOrdered(
-                                        sourceArray: Array[Int],
-                                        elemIndex =
-                                          //secondPartLeader,
-                                          secondPartStart,
-                                        rangeStartIndex = secondPartStart,
-                                        rangeEndIndex = secondPartEnd,
-                                        swapCount = swapCount + 1
-                                      )
+          /*if 'indexOfLesser' / 'secondPartStart' == 'secondPartEnd' then
+          Done */
+          if (secondPartStart == secondPartEnd) {
+            /*Done. in part2 all sorted*/
+          } else {
+            /*restore order*/
+            newSwapCount =
+              shiftElemRightUntilOrdered(
+                                          sourceArray: Array[Int],
+                                          elemIndex =
+                                            //secondPartLeader,
+                                            secondPartStart,
+                                          rangeStartIndex = secondPartStart + 1,
+                                          rangeEndIndex = secondPartEnd,
+                                          swapCount = swapCount + 1
+                                        )
+          }
           /*next*/
           newPart1Leader =
             /*if available*/

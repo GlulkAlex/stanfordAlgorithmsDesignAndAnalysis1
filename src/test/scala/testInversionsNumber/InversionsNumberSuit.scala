@@ -55,7 +55,7 @@ class InversionsNumberSuit extends FunSuite {
                               "must be '100 000'"
                             )
                     }
-  test(
+  ignore(
         "2: 'linesInput' Iterator should have size 100 000 entries"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -67,7 +67,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be '100 000'"
                 )
         }
-  test(
+  ignore(
         "3: 'linesInInputArray' should have size 100 000 entries"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -80,7 +80,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be '100 000'"
                 )
         }
-  test(
+  ignore(
         "4: 'integersInInputArray' should have head > 0"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -94,7 +94,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be > '0'"
                 )
         }
-  test(
+  ignore(
         "5: 'integersInInputArray' should have 'last' == '91901'"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -108,7 +108,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == '91901'"
                 )
         }
-  test(
+  ignore(
         "60: 'merge' should merge on 'empty sequence' & return 'empty sequence'"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -147,7 +147,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List()"
                 )
         }
-  test(
+  ignore(
         "61: 'merge' should merge on 'one element' & return that element"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -179,7 +179,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(2)"
                 )
         }
-  test(
+  ignore(
         "62: 'merge' should merge 'two elements' & return sorted sequence"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -209,7 +209,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 2, 3, 4, 5, 6, 7, 9)"
                 )
         }
-  test(
+  ignore(
         "63: 'merge' should merge 'three elements' & return sorted sequence"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -236,7 +236,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 2, 3, 4, 5, 6, 7, 9)"
                 )
         }
-  test(
+  ignore(
         "64: 'merge' should merge 'four elements' & return sorted sequence"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -263,7 +263,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 2, 3, 4, 5, 6, 7, 9)"
                 )
         }
-  test(
+  ignore(
         "64: 'merge' should merge 'five elements' & return sorted sequence"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -290,7 +290,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 2, 3, 4, 5, 6, 7, 9)"
                 )
         }
-  test(
+  ignore(
         "70: 'mergeSort' should sort"
       ) {
           val inversionsNumber = new InversionsNumber
@@ -319,7 +319,7 @@ class InversionsNumberSuit extends FunSuite {
                   "must be == List(1, 2, 3, 4, 5, 6, 7, 9)"
                 )
         }
-  test(
+  ignore(
         "80: 'shiftElemRightUntilOrdered' should " +
           "place an element in sorted order"
       ) {
@@ -366,7 +366,13 @@ class InversionsNumberSuit extends FunSuite {
       ) {
           val inversionsNumber = new InversionsNumber
           val unsorted: Array[Int] =
-            Array(5, 7, 9, 1, 3)
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            Array(5, 7, 9, 11, 2, 3, 4)
+          val (fP, sP) =
+            inversionsNumber
+            .partition(unsorted.length)
 
           println(s"unsorted was:${unsorted.mkString( """,""")}")
           val sorted: Array[Int] =
@@ -379,15 +385,15 @@ class InversionsNumberSuit extends FunSuite {
                 /*changing ?*/
                 currentPartSize =
                   //newPartSize,
-                  unsorted.length / 2,
+                  fP,
                 /*changing ?*/
                 firstPartStart = 0,
                 /*changing ?*/
-                firstPartEnd = unsorted.length / 2,
+                firstPartEnd = fP - 1,
                 /*changing*/
                 firstPartLeader = 0,
                 /*changing ?*/
-                secondPartStart = unsorted.length / 2 + 1,
+                secondPartStart = fP,
                 /*changing ?*/
                 secondPartEnd = unsorted.length - 1,
                 /*changing*/
