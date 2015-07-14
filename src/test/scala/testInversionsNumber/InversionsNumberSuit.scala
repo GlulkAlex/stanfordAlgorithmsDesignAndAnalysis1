@@ -416,19 +416,116 @@ class InversionsNumberSuit extends FunSuite {
                   "must be equal"
                 )
         }
+  test(
+        "91: 'evalNewFirstPartEnd'" +
+          "should return right array index for array.length '1' parts.size '1'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewFirstPartEnd(
+                            sourceArrayLength = 1,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 1
+                                            ) == 0,
+                        "must be equal to '0'"
+                      )
+              }
+  test(
+        "92: 'evalNewFirstPartEnd'" +
+          "should return right array index for array.length '2' parts.size '1'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewFirstPartEnd(
+                            sourceArrayLength = 2,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 1
+                                            ) == 0,
+                        "must be equal to '0'"
+                      )
+              }
+  test(
+        "93: 'evalNewFirstPartEnd'" +
+          "should return right array index for array.length '2' parts.size '3'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewFirstPartEnd(
+                            sourceArrayLength = 2,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 3
+                                            ) == 1,
+                        "must be equal to '1'"
+                      )
+              }
+  test(
+        "94: 'evalNewSecondPartEnd'" +
+          "should return right array index for array.length '2' parts.size '3'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewSecondPartEnd(
+                            sourceArrayLength = 2,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 3
+                                            ) == 1,
+                        "must be equal to '1'"
+                      )
+              }
+  test(
+        "95: 'evalNewSecondPartEnd'" +
+          "should return right array index for array.length '3' parts.size '2'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewSecondPartEnd(
+                            sourceArrayLength = 3,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 2
+                                            ) == 2,
+                        "must be equal to '2'"
+                      )
+              }
+  test(
+        "96: 'evalNewSecondPartEnd'" +
+          "should return right array index for array.length '6' parts.size '3'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewSecondPartEnd(
+                            sourceArrayLength = 6,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 3
+                                            ) == 5,
+                        "must be equal to '5'"
+                      )
+              }
   /*
   TODO
   fix 'emulateMergeSortForArray' to pass test
   */
+  //ignore
   test(
-        "91: 'emulateMergeSortForArray'" +
+        "99: 'emulateMergeSortForArray'" +
           "should sort"
       ) {
           val inversionsNumber = new InversionsNumber
           val unsorted: Array[Int] =
-            Array(7, 5)
+            //Array(7, 5)
             //Array(5, 7, 1)
-            //Array(5, 7, 1, 2)
+            Array(5, 7, 1, 2)
             //Array(5, 7, 9, 11, 2, 3, 4)
 
           println(s"unsorted was:${unsorted.mkString( """,""")}")

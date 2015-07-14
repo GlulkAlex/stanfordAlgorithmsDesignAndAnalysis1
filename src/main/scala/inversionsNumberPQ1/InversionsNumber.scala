@@ -234,11 +234,13 @@ class InversionsNumber {
                         indexOfLesser = 1,
                         indexOfGreater = 0
                       )
+          /*return value*/
+          swapCount + 1
+        } else {
+          /*return value*/
+          //sourceArray
+          swapCount
         }
-
-        /*return value*/
-        //sourceArray
-        swapCount
       } else /*if (sourceArrayLength > 2)*/ {
         val part1S =
           firstPartStart
@@ -369,6 +371,8 @@ class InversionsNumber {
   }
 
   /*grow every time*/
+  /*0 + 1 => 0 */
+  /*end => start */
   def evalNewFirstPartEnd(
                            sourceArrayLength: Int,
                            currentFirstPartStart: Int,
@@ -381,29 +385,40 @@ class InversionsNumber {
     ) {
       sourceArrayLength - 1 - currentFirstPartStart
     } else {
-      currentFirstPartStart + currentPartSize
+      currentFirstPartStart - 1 + currentPartSize
     }
   }
 
   /*grow every time*/
+  /*?if no room for 2nd part then '2nd part end' - '1st part end' == '0' size
+   ?*/
+  /*for array.length = '2' & parts.size = '3' must be same as 1st part end =
+  '1' */
+  /*for array.length = '3' & parts.size = '2' must be same as 2nd part start
+  = '2' */
   def evalNewSecondPartEnd(
                             sourceArrayLength: Int,
                             currentFirstPartStart: Int,
                             currentPartSize: Int
                             ): Int = {
-    /*may be out of bound / range*/
+    /*? may be out of bound / range ?*/
     if (
-      currentFirstPartStart + currentPartSize >= sourceArrayLength ||
-        currentFirstPartStart + currentPartSize + 1 >= sourceArrayLength
+    /*no room for 2nd part*/
+      currentFirstPartStart + currentPartSize >= sourceArrayLength /*||
+        currentFirstPartStart + currentPartSize + 1 >= sourceArrayLength*/
     ) {
-      currentFirstPartStart
+      evalNewFirstPartEnd(sourceArrayLength, currentFirstPartStart,
+                          currentPartSize)
     } else if (
-             currentFirstPartStart + currentPartSize + 1 < sourceArrayLength &&
+           /*at least one element in 2nd part */
+             currentFirstPartStart + currentPartSize < sourceArrayLength &&
+               /*room for size less then for 1st part*/
                currentFirstPartStart + 2 * currentPartSize >= sourceArrayLength
            ) {
-      sourceArrayLength /*- 1*/ - (currentFirstPartStart + currentPartSize
-        /*+ 1*/)
-    } else {
+      /*last available element index */
+      sourceArrayLength - 1
+    } else /*if (currentFirstPartStart + 2 * currentPartSize >=
+    sourceArrayLength)*/ {
       currentFirstPartStart + 2 * currentPartSize
     }
   }
@@ -416,43 +431,61 @@ class InversionsNumber {
     >inner state of 'sourceArray'
     >'currentPartSize'
     >'firstPartStart'
-  double initial (starting from 1) partSize
+  ? post or pre condition ?
+  ? double initial (starting from 1) partSize
   until 'currentPartSize' < 'sourceArray'.length
     > calculate 'firstPartStart'
-    > until part1 has at least two elements
-      'firstPartStart' < 'sourceArray'.length - 2
+    if 'firstPartStart' > 'sourceArray'.length - 1
+    leader is out of bound, so merge for 'currentPartSize' done
+    then
+      double 'currentPartSize'
+    > until
+      has second part to merge with first
+      so 2nd part.size > 0
+      or 2nd part end > 1st part end
       > 'mergeArraySortedParts'
   * */
   def emulateMergeSortForArray(
                                 /*mutable object*/
                                 sourceArray: Array[Int] = Array.emptyIntArray,
                                 /*unchanging*/
+                                /*'0' for emty*/
                                 sourceArrayLength: Int = 0,
                                 /*changing*/
-                                currentPartSize: Int = 0,
+                                /*to merge must have at least 1 element in
+                                each part*/
+                                currentPartSize: Int = 1,
                                 /*changing*/
-                                firstPartStart: Int = -1,
+                                /*for empty array '0' is out of bound*/
+                                /*`leader` position*/
+                                firstPartStart: Int = 0,
                                 /*changing*/
                                 swapCount: Int = 0
                                 //): Array[Int] = {
                                 ): Int = {
+    /*? post condition or pre ?*/
+    /*? 'PartSize' calculated before or after ?*/
     if (
-      currentPartSize >= sourceArrayLength ||
-        evalNewPartsSize(currentPartSize) >= sourceArrayLength
+    /*all sorted*/
+      currentPartSize >= sourceArrayLength /*||
+        evalNewPartsSize(currentPartSize) >= sourceArrayLength*/
     ) {
       /*return value */
       swapCount
-    } else {
+    } else /*if (currentPartSize < sourceArrayLength)*/ {
+      /*? post condition or pre ?*/
       if (
-        currentPartSize >= sourceArrayLength ||
+        firstPartStart >= sourceArrayLength ||
+          /*initial first step*/
+          currentPartSize == 0 /*||
           evalNewFirstPartStart(
                                  sourceArrayLength,
                                  firstPartStart,
                                  currentPartSize
-                               ) >= sourceArrayLength
+                               ) >= sourceArrayLength*/
       ) {
         /*recursion*/
-        /*with new part size*/
+        /*with new `part size`*/
         emulateMergeSortForArray(
                                   /*mutable object*/
                                   sourceArray,
@@ -467,58 +500,84 @@ class InversionsNumber {
                                   swapCount
                                 )
       } else {
+        /*first calculate merge parameters*/
+        val currentFirstPartEnd =
+          evalNewFirstPartEnd(
+                               sourceArrayLength: Int,
+                               firstPartStart: Int,
+                               currentPartSize: Int
+                             )
+        val currentSecondPartEnd =
+          evalNewSecondPartEnd(
+                                sourceArrayLength: Int,
+                                firstPartStart: Int,
+                                currentPartSize: Int
+                              )
+        /*new first `part start`*/
         val newFirstPartEnd =
           evalNewFirstPartEnd(
                                sourceArrayLength: Int,
                                firstPartStart: Int,
                                currentPartSize: Int
                              )
+        /*? may be out of range, greater / exceed the array length*/
+        /*? use 'secondPartSize' instead as '0' means nothing to sort*/
+        /*? or same as 'newSecondPartEnd == newFirstPartEnd'*/
         val newSecondPartEnd =
           evalNewSecondPartEnd(
                                 sourceArrayLength: Int,
                                 firstPartStart: Int,
                                 currentPartSize: Int
                               )
-        /*new merge*/
+        /*new merge only if 2nd part size > 0*/
         val newSwapCount: Int =
-          mergeArraySortedParts(
-                                 /*unchanging*/
-                                 sourceArray = sourceArray,
-                                 /*unchanging*/
-                                 sourceArrayLength = sourceArrayLength,
-                                 /*changing ?*/
-                                 currentPartSize =
-                                   currentPartSize,
-                                 /*changing ?*/
-                                 firstPartStart = firstPartStart,
-                                 /*changing ?*/
-                                 firstPartEnd = newFirstPartEnd,
-                                 /*'0' or greater*/
-                                 firstPartSize =
-                                   newFirstPartEnd + 1 - firstPartStart,
-                                 /*changing*/
-                                 firstPartLeader = firstPartStart,
-                                 /*changing ?*/
-                                 secondPartStart = newFirstPartEnd + 1,
-                                 /*changing ?*/
-                                 secondPartEnd = newSecondPartEnd,
-                                 /*'0' or greater*/
-                                 secondPartSize =
-                                   newSecondPartEnd - newFirstPartEnd,
-                                 /*changing*/
-                                 //? redundant / useless ?
-                                 //secondPartLeader: Int = 0,
-                                 /*changing*/
-                                 swapCount = swapCount
-                               )
+          if (currentSecondPartEnd > currentFirstPartEnd) {
+            mergeArraySortedParts(
+                                   /*unchanging*/
+                                   sourceArray = sourceArray,
+                                   /*unchanging*/
+                                   sourceArrayLength = sourceArrayLength,
+                                   /*changing ?*/
+                                   currentPartSize =
+                                     currentPartSize,
+                                   /*changing ?*/
+                                   firstPartStart = firstPartStart,
+                                   /*changing ?*/
+                                   firstPartEnd =
+                                     currentFirstPartEnd,
+                                     //newFirstPartEnd,
+                                   /*'0' or greater*/
+                                   firstPartSize =
+                                     currentFirstPartEnd + 1 - firstPartStart,
+                                   /*changing*/
+                                   firstPartLeader = firstPartStart,
+                                   /*may be useless / out of bound / range*/
+                                   secondPartStart = currentFirstPartEnd + 1,
+                                   /*changing ?*/
+                                   secondPartEnd = currentSecondPartEnd,
+                                   /*'0' or greater*/
+                                   secondPartSize =
+                                     currentSecondPartEnd - currentFirstPartEnd,
+                                   /*changing*/
+                                   //? redundant / useless ?
+                                   //secondPartLeader: Int = 0,
+                                   /*changing*/
+                                   swapCount = swapCount
+                                 )
+          } else {
+            swapCount
+          }
         /*recursion*/
         /*with new first part start*/
+        /*? must eventually exceed array upper bound to converge / end loop */
         val newFirstPartStart =
-          evalNewFirstPartEnd(
+          /*out of bound or within indexes range*/
+          currentSecondPartEnd + 1
+          /*evalNewFirstPartEnd(
                                sourceArrayLength: Int,
                                firstPartStart: Int,
                                currentPartSize: Int
-                             )
+                             )*/
 
         emulateMergeSortForArray(
                                   /*mutable object*/
@@ -529,9 +588,14 @@ class InversionsNumber {
                                   currentPartSize =
                                     currentPartSize,
                                   /*changing*/
+                                  /*must be new to converge & break / stop loop*/
                                   firstPartStart =
                                     newFirstPartStart,
-                                  //evalNewFirstPartStart(firstPartStart),
+                                  /*evalNewFirstPartStart(
+                                                         sourceArrayLength: Int,
+                                                         firstPartStart: Int,
+                                                         currentPartSize: Int
+                                                       ),*/
                                   /*changing*/
                                   swapCount = newSwapCount
                                 )
