@@ -565,9 +565,14 @@ class InversionsNumberSuit extends FunSuite {
             //.take(2500)
               //swapsTotal:2233097
             //.take(3000)
+            //.take(5000)
+            //.take(15000)
+            //.take(17000)
+            //.take(20000)
+                //.take(30000)
+            //.take(50000)
+            //.take(75000)
                 //java.lang.StackOverflowError
-            .take(5000)
-                //.take(20000)
 
           println(s"unsorted was:${unsorted.take(10).mkString( """,""")}")
           //val sorted: Array[Int] =

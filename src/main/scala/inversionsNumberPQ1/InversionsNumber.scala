@@ -178,7 +178,8 @@ class InversionsNumber {
   * */
   /*array content sorted as side effect (: Unit) no new collection created*/
   /*basically interesting in 'swapCount'*/
-  def mergeArraySortedParts(
+  @scala.annotation.tailrec
+  final def mergeArraySortedParts(
                              /*unchanging*/
                              sourceArray: Array[Int] = Array.emptyIntArray,
                              /*unchanging*/
@@ -284,7 +285,7 @@ class InversionsNumber {
           } else {
             /*restore order*/
             newSwapCount =
-              try {
+              //try {
                 shiftElemRightUntilOrdered(
                                             sourceArray: Array[Int],
                                             elemIndex =
@@ -295,14 +296,16 @@ class InversionsNumber {
                                             rangeEndIndex = secondPartEnd,
                                             swapCount = swapCount + 1
                                           )
-              }
+              /*}
               catch {
                 case e: StackOverflowError =>
-                  println("StackOverflowError")
+                  //println("StackOverflowError")
+                  println(s"${e.getMessage} in 'newSwapCount' for " +
+                            s"'shiftElemRightUntilOrdered'")
                   newSwapCount
                 case e: Throwable => newSwapCount
                 case e: Exception => newSwapCount
-              }
+              }*/
           }
           /*next*/
           //newPart1Leader =
@@ -319,7 +322,7 @@ class InversionsNumber {
         }
 
         /*recursion*/
-        try {
+        //try {
           mergeArraySortedParts(
                                  /*unchanging*/
                                  sourceArray = sourceArray,
@@ -347,14 +350,14 @@ class InversionsNumber {
                                  /*changing*/
                                  swapCount = newSwapCount
                                )
-        }
+        /*}
         catch {
           case e: StackOverflowError =>
-            println("StackOverflowError")
+            println(s"${e.printStackTrace()} by 'mergeArraySortedParts'")
             newSwapCount
           case e: Throwable => newSwapCount
           case e: Exception => newSwapCount
-        }
+        }*/
       }
     }
     /*default*/
@@ -483,7 +486,17 @@ class InversionsNumber {
       or 2nd part end > 1st part end
       > 'mergeArraySortedParts'
   * */
-  def emulateMergeSortForArray(
+  /*
+  TODO
+  try to
+  implement same functionality using 'loop' syntax
+  & spot the difference with `depth in the stack`
+  or
+  try to implement `tail recursive` - ? fixed stack size ?
+  @scala.annotation.tailrec
+   */
+  @scala.annotation.tailrec
+  final def emulateMergeSortForArray(
                                 /*mutable object*/
                                 sourceArray: Array[Int] = Array.emptyIntArray,
                                 /*unchanging*/
@@ -571,7 +584,7 @@ class InversionsNumber {
         /*new merge only if 2nd part size > 0*/
         val newSwapCount: Long =
           if (currentSecondPartEnd > currentFirstPartEnd) {
-            try {
+            //try {
               mergeArraySortedParts(
                                      /*unchanging*/
                                      sourceArray = sourceArray,
@@ -605,14 +618,15 @@ class InversionsNumber {
                                      /*changing*/
                                      swapCount = swapCount
                                    )
-            }
+            /*}
             catch {
               case e: StackOverflowError =>
-                println("StackOverflowError")
+                println(s"${e.getMessage} in 'newSwapCount' " +
+                          s"by 'mergeArraySortedParts'")
                 swapCount
               case e: Throwable => swapCount
               case e: Exception => swapCount
-            }
+            }*/
           } else {
             swapCount
           }
@@ -628,7 +642,7 @@ class InversionsNumber {
                                currentPartSize: Int
                              )*/
 
-        try {
+       // try {
           emulateMergeSortForArray(
                                     /*mutable object*/
                                     sourceArray,
@@ -651,14 +665,14 @@ class InversionsNumber {
                                     /*changing*/
                                     swapCount = newSwapCount
                                   )
-        }
+        /*}
         catch {
           case e: StackOverflowError =>
             println("StackOverflowError")
             newSwapCount
           case e: Throwable => newSwapCount
           case e: Exception => newSwapCount
-        }
+        }*/
       }
     }
   }
@@ -725,7 +739,8 @@ class InversionsNumber {
   }
 
   /*? return last position of shifted element*/
-  def shiftElemRightUntilOrdered(
+  @scala.annotation.tailrec
+  final def shiftElemRightUntilOrdered(
                                   sourceArray: Array[Int],
                                   elemIndex: Int = 0,
                                   rangeStartIndex: Int = 0,
@@ -788,7 +803,9 @@ class InversionsNumber {
 
   }
 
-  def merge(
+  @scala.annotation.tailrec
+  //@tailrec
+  final def merge(
              mergeLeftSide: Seq[Int] = /*Seq*/ Stream.empty[Int],
              mergeRightSide: Seq[Int] = /*Seq*/ Stream.empty[Int],
              mergeSortResult: SortedSeqProps =
@@ -852,7 +869,8 @@ class InversionsNumber {
   } /*merge work, not sure about 'swapCount' == `number of inversions`*/
 
   /*return 'swapCount'*/
-  def mergeInArray(
+  @scala.annotation.tailrec
+  final def mergeInArray(
                     sourceArray: Array[Int],
                     /*? equal sized or one size may be less than 'rangeSize' ?*/
                     /*as stop criteria*/
@@ -1029,6 +1047,7 @@ class InversionsNumber {
     }
   }
 
+  //@scala.annotation.tailrec
   def mergeSort(
                  unSortedSeq: /*Seq*/ Stream[Int],
                  /*here initial 'unSortedSeq' goes*/
