@@ -1,6 +1,8 @@
 package inversionsNumberPQ1
 
 import scala.Predef
+//import java.lang.stackoverflowerror
+import java.lang.StackOverflowError
 
 //import scala.io.Source
 //import scala.Predef.intArrayOps
@@ -203,9 +205,9 @@ class InversionsNumber {
                              //? redundant / useless ?
                              //secondPartLeader: Int = 0,
                              /*changing*/
-                             swapCount: Int = 0
+                             swapCount: Long = 0L
                              //): Array[Int] = {
-                             ): Int = {
+                             ): Long = {
     if (
     /*nothing to sort*/
       sourceArray.isEmpty ||
@@ -257,7 +259,7 @@ class InversionsNumber {
           firstPartLeader*/
         /*var newPart2Leader =
           secondPartLeader*/
-        var newSwapCount: Int =
+        var newSwapCount: Long =
           swapCount
 
         /*compare 'part1.head' with / vs. 'part2.head'*/
@@ -282,15 +284,25 @@ class InversionsNumber {
           } else {
             /*restore order*/
             newSwapCount =
-              shiftElemRightUntilOrdered(
-                                          sourceArray: Array[Int],
-                                          elemIndex =
-                                            //secondPartLeader,
-                                            secondPartStart,
-                                          rangeStartIndex = secondPartStart + 1,
-                                          rangeEndIndex = secondPartEnd,
-                                          swapCount = swapCount + 1
-                                        )
+              try {
+                shiftElemRightUntilOrdered(
+                                            sourceArray: Array[Int],
+                                            elemIndex =
+                                              //secondPartLeader,
+                                              secondPartStart,
+                                            rangeStartIndex = secondPartStart
+                                              + 1,
+                                            rangeEndIndex = secondPartEnd,
+                                            swapCount = swapCount + 1
+                                          )
+              }
+              catch {
+                case e: StackOverflowError =>
+                  println("StackOverflowError")
+                  newSwapCount
+                case e: Throwable => newSwapCount
+                case e: Exception => newSwapCount
+              }
           }
           /*next*/
           //newPart1Leader =
@@ -307,33 +319,42 @@ class InversionsNumber {
         }
 
         /*recursion*/
-        mergeArraySortedParts(
-                               /*unchanging*/
-                               sourceArray = sourceArray,
-                               /*unchanging*/
-                               sourceArrayLength = sourceArrayLength,
-                               /*changing ?*/
-                               currentPartSize =
-                                 //newPartSize,
-                                 currentPartSize,
-                               /*changing ?*/
-                               firstPartStart = firstPartStart,
-                               /*changing ?*/
-                               firstPartEnd = firstPartEnd,
-                               firstPartSize = firstPartSize,
-                               /*changing*/
-                               firstPartLeader = firstPartLeader + 1,
-                               /*changing ?*/
-                               secondPartStart = secondPartStart,
-                               /*changing ?*/
-                               secondPartEnd = secondPartEnd,
-                               secondPartSize = secondPartSize,
-                               /*changing*/
-                               //? redundant / useless ?
-                               //secondPartLeader: Int = 0,
-                               /*changing*/
-                               swapCount = newSwapCount
-                             )
+        try {
+          mergeArraySortedParts(
+                                 /*unchanging*/
+                                 sourceArray = sourceArray,
+                                 /*unchanging*/
+                                 sourceArrayLength = sourceArrayLength,
+                                 /*changing ?*/
+                                 currentPartSize =
+                                   //newPartSize,
+                                   currentPartSize,
+                                 /*changing ?*/
+                                 firstPartStart = firstPartStart,
+                                 /*changing ?*/
+                                 firstPartEnd = firstPartEnd,
+                                 firstPartSize = firstPartSize,
+                                 /*changing*/
+                                 firstPartLeader = firstPartLeader + 1,
+                                 /*changing ?*/
+                                 secondPartStart = secondPartStart,
+                                 /*changing ?*/
+                                 secondPartEnd = secondPartEnd,
+                                 secondPartSize = secondPartSize,
+                                 /*changing*/
+                                 //? redundant / useless ?
+                                 //secondPartLeader: Int = 0,
+                                 /*changing*/
+                                 swapCount = newSwapCount
+                               )
+        }
+        catch {
+          case e: StackOverflowError =>
+            println("StackOverflowError")
+            newSwapCount
+          case e: Throwable => newSwapCount
+          case e: Exception => newSwapCount
+        }
       }
     }
     /*default*/
@@ -353,6 +374,7 @@ class InversionsNumber {
   }
 
   /*grow every time*/
+  /*? may be out of bound to signal Done sorting for 'currentPartSize'*/
   def evalNewFirstPartStart(
                              sourceArrayLength: Int,
                              currentFirstPartStart: Int,
@@ -363,7 +385,9 @@ class InversionsNumber {
         currentFirstPartStart >= sourceArrayLength
     ) {
       /*start new traversal cycle*/
-      0
+      //? 0
+      //? sourceArrayLength + 1
+      currentFirstPartStart
     } else {
       /*continue current*/
       currentFirstPartStart + 2 * currentPartSize
@@ -380,10 +404,19 @@ class InversionsNumber {
                            ): Int = {
     /*may be out of bound / range*/
     if (
-      currentFirstPartStart + currentPartSize >= sourceArrayLength /*&&
-        currentFirstPartStart < sourceArrayLength*/
+      currentFirstPartStart + currentPartSize >= sourceArrayLength &&
+        /*has room at least for one element in 1st part*/
+        currentFirstPartStart < sourceArrayLength
     ) {
-      sourceArrayLength - 1 - currentFirstPartStart
+      /*last available index in array*/
+      sourceArrayLength - 1
+    }else if (
+      currentFirstPartStart + currentPartSize >= sourceArrayLength &&
+        /*has no room for elements in 1st part*/
+        currentFirstPartStart >= sourceArrayLength
+    ) {
+      /*same as start*/
+      currentFirstPartStart
     } else {
       currentFirstPartStart - 1 + currentPartSize
     }
@@ -398,6 +431,7 @@ class InversionsNumber {
   = '2' */
   def evalNewSecondPartEnd(
                             sourceArrayLength: Int,
+                            /*? may be use 'currentFirstPartEnd' ?*/
                             currentFirstPartStart: Int,
                             currentPartSize: Int
                             ): Int = {
@@ -409,17 +443,21 @@ class InversionsNumber {
     ) {
       evalNewFirstPartEnd(sourceArrayLength, currentFirstPartStart,
                           currentPartSize)
-    } else if (
+    } else /*if (
            /*at least one element in 2nd part */
-             currentFirstPartStart + currentPartSize < sourceArrayLength &&
-               /*room for size less then for 1st part*/
-               currentFirstPartStart + 2 * currentPartSize >= sourceArrayLength
-           ) {
-      /*last available element index */
-      sourceArrayLength - 1
-    } else /*if (currentFirstPartStart + 2 * currentPartSize >=
+             currentFirstPartStart + currentPartSize < sourceArrayLength
+           )*/ {
+      if (
+          /*room for size less then 'currentPartSize'*/
+          currentFirstPartStart + 2 * currentPartSize >= sourceArrayLength
+      ) {
+        /*last available element index */
+        sourceArrayLength - 1
+      } else /*if (currentFirstPartStart + 2 * currentPartSize <
     sourceArrayLength)*/ {
-      currentFirstPartStart + 2 * currentPartSize
+        /*enough or more than 'currentPartSize' room / space / length left*/
+        currentFirstPartStart + 2 * currentPartSize - 1
+      }
     }
   }
 
@@ -460,9 +498,10 @@ class InversionsNumber {
                                 /*`leader` position*/
                                 firstPartStart: Int = 0,
                                 /*changing*/
-                                swapCount: Int = 0
+  /*64 bit signed value. -9223372036854775808 to 9223372036854775807*/
+                                swapCount: Long = 0L
                                 //): Array[Int] = {
-                                ): Int = {
+                                ): Long = {
     /*? post condition or pre ?*/
     /*? 'PartSize' calculated before or after ?*/
     if (
@@ -530,40 +569,50 @@ class InversionsNumber {
                                 currentPartSize: Int
                               )
         /*new merge only if 2nd part size > 0*/
-        val newSwapCount: Int =
+        val newSwapCount: Long =
           if (currentSecondPartEnd > currentFirstPartEnd) {
-            mergeArraySortedParts(
-                                   /*unchanging*/
-                                   sourceArray = sourceArray,
-                                   /*unchanging*/
-                                   sourceArrayLength = sourceArrayLength,
-                                   /*changing ?*/
-                                   currentPartSize =
-                                     currentPartSize,
-                                   /*changing ?*/
-                                   firstPartStart = firstPartStart,
-                                   /*changing ?*/
-                                   firstPartEnd =
-                                     currentFirstPartEnd,
+            try {
+              mergeArraySortedParts(
+                                     /*unchanging*/
+                                     sourceArray = sourceArray,
+                                     /*unchanging*/
+                                     sourceArrayLength = sourceArrayLength,
+                                     /*changing ?*/
+                                     currentPartSize =
+                                       currentPartSize,
+                                     /*changing ?*/
+                                     firstPartStart = firstPartStart,
+                                     /*changing ?*/
+                                     firstPartEnd =
+                                       currentFirstPartEnd,
                                      //newFirstPartEnd,
-                                   /*'0' or greater*/
-                                   firstPartSize =
-                                     currentFirstPartEnd + 1 - firstPartStart,
-                                   /*changing*/
-                                   firstPartLeader = firstPartStart,
-                                   /*may be useless / out of bound / range*/
-                                   secondPartStart = currentFirstPartEnd + 1,
-                                   /*changing ?*/
-                                   secondPartEnd = currentSecondPartEnd,
-                                   /*'0' or greater*/
-                                   secondPartSize =
-                                     currentSecondPartEnd - currentFirstPartEnd,
-                                   /*changing*/
-                                   //? redundant / useless ?
-                                   //secondPartLeader: Int = 0,
-                                   /*changing*/
-                                   swapCount = swapCount
-                                 )
+                                     /*'0' or greater*/
+                                     firstPartSize =
+                                       currentFirstPartEnd + 1 - firstPartStart,
+                                     /*changing*/
+                                     firstPartLeader = firstPartStart,
+                                     /*may be useless / out of bound / range*/
+                                     secondPartStart = currentFirstPartEnd + 1,
+                                     /*changing ?*/
+                                     secondPartEnd = currentSecondPartEnd,
+                                     /*'0' or greater*/
+                                     secondPartSize =
+                                       currentSecondPartEnd -
+                                         currentFirstPartEnd,
+                                     /*changing*/
+                                     //? redundant / useless ?
+                                     //secondPartLeader: Int = 0,
+                                     /*changing*/
+                                     swapCount = swapCount
+                                   )
+            }
+            catch {
+              case e: StackOverflowError =>
+                println("StackOverflowError")
+                swapCount
+              case e: Throwable => swapCount
+              case e: Exception => swapCount
+            }
           } else {
             swapCount
           }
@@ -579,26 +628,37 @@ class InversionsNumber {
                                currentPartSize: Int
                              )*/
 
-        emulateMergeSortForArray(
-                                  /*mutable object*/
-                                  sourceArray,
-                                  /*unchanging*/
-                                  sourceArrayLength,
-                                  /*changing*/
-                                  currentPartSize =
-                                    currentPartSize,
-                                  /*changing*/
-                                  /*must be new to converge & break / stop loop*/
-                                  firstPartStart =
-                                    newFirstPartStart,
-                                  /*evalNewFirstPartStart(
-                                                         sourceArrayLength: Int,
-                                                         firstPartStart: Int,
-                                                         currentPartSize: Int
-                                                       ),*/
-                                  /*changing*/
-                                  swapCount = newSwapCount
-                                )
+        try {
+          emulateMergeSortForArray(
+                                    /*mutable object*/
+                                    sourceArray,
+                                    /*unchanging*/
+                                    sourceArrayLength,
+                                    /*changing*/
+                                    currentPartSize =
+                                      currentPartSize,
+                                    /*changing*/
+                                    /*must be new to converge & break / stop
+                                    loop*/
+                                    firstPartStart =
+                                      newFirstPartStart,
+                                    /*evalNewFirstPartStart(
+                                                           sourceArrayLength:
+                                                            Int,
+                                                           firstPartStart: Int,
+                                                           currentPartSize: Int
+                                                         ),*/
+                                    /*changing*/
+                                    swapCount = newSwapCount
+                                  )
+        }
+        catch {
+          case e: StackOverflowError =>
+            println("StackOverflowError")
+            newSwapCount
+          case e: Throwable => newSwapCount
+          case e: Exception => newSwapCount
+        }
       }
     }
   }
@@ -664,14 +724,14 @@ class InversionsNumber {
     sourceArray(indexOfGreater) = lesserElem
   }
 
-  /*return last position of shifted element*/
+  /*? return last position of shifted element*/
   def shiftElemRightUntilOrdered(
                                   sourceArray: Array[Int],
                                   elemIndex: Int = 0,
                                   rangeStartIndex: Int = 0,
                                   rangeEndIndex: Int = 0,
-                                  swapCount: Int = 0
-                                  ): Int = {
+                                  swapCount: Long = 0L
+                                  ): Long = {
     if (
       elemIndex == rangeEndIndex ||
         sourceArray(elemIndex) <= sourceArray(rangeStartIndex)
@@ -804,8 +864,8 @@ class InversionsNumber {
                     //leftRangeEnd: Int = 0,
                     rightRangeStart: Int = 0,
                     //rightRangeEnd: Int = 0,
-                    swapCount: Int = 0
-                    ): /*(Array[Int],*/ Int /*)*/ = {
+                    swapCount: Long = 0L
+                    ): /*(Array[Int],*/ Long /*)*/ = {
     if (
       rangeSize <= 0 ||
         (
@@ -820,7 +880,7 @@ class InversionsNumber {
       swapCount
     } else {
       /*side effect*/
-      val (newLeftStart, newRightStart, newSwapCount): (Int, Int, Int) =
+      val (newLeftStart, newRightStart, newSwapCount): (Int, Int, Long) =
       /*assume that each side sorted already*/
         if (
         /*at least one element*/
@@ -1011,10 +1071,10 @@ class InversionsNumber {
   def mergeSortArray(
                       /*? content changes, length stay same ?*/
                       unSortedArray: Array[Int],
-                      swapCount: Int = 0,
+                      swapCount: Long = 0L,
                       nextMergeStart: Int = 0
                       //nextMergeSize: Int = 1//nextMergeSize * 2
-                      ): /*(Array[Int],*/ Int /*)*/
+                      ): /*(Array[Int],*/ Long /*)*/
   /*SortedSeqProps*/ = {
     /*? stop criteria ?*/
     if (

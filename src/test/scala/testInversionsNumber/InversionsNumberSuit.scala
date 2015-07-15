@@ -126,7 +126,7 @@ class InversionsNumberSuit extends FunSuite {
           4 4-3 (1, 2, 3, 9, 6, 4, 5, 7)
            */
           println(s"unsorted was:${unsorted.mkString( """,""")}")
-          val swapCount: Int =
+          val swapCount: Long =
             inversionsNumber
             .mergeInArray(
                 sourceArray =
@@ -338,7 +338,7 @@ class InversionsNumberSuit extends FunSuite {
            */
           println(s"unsorted was:${unsorted.mkString( """,""")}")
           //val sortedIndex: Int =
-          val swapCount: Int =
+          val swapCount: Long =
             inversionsNumber
             .shiftElemRightUntilOrdered(
                 sourceArray =
@@ -375,7 +375,7 @@ class InversionsNumberSuit extends FunSuite {
 
           println(s"unsorted was:${unsorted.mkString( """,""")}")
           //val sorted: Array[Int] =
-          val swapsTotal: Int =
+          val swapsTotal: Long =
             inversionsNumber
             .mergeArraySortedParts(
                 /*unchanging*/
@@ -512,11 +512,43 @@ class InversionsNumberSuit extends FunSuite {
                         "must be equal to '5'"
                       )
               }
+  test(
+        "97: 'evalNewSecondPartEnd'" +
+          "should return right array index for array.length '4' parts.size '1'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewSecondPartEnd(
+                            sourceArrayLength = 4,
+                            currentFirstPartStart = 0,
+                            currentPartSize = 1
+                                            ) == 1,
+                        "must be equal to '1'"
+                      )
+              }
+  test(
+        "98: 'evalNewSecondPartEnd'" +
+          "should return right array index for array.length '7' parts.size '1'"
+      ) {
+                val inversionsNumber = new InversionsNumber
+
+                assume(
+                        inversionsNumber
+                        .evalNewSecondPartEnd(
+                            sourceArrayLength = 7,
+                            currentFirstPartStart = 6,
+                            currentPartSize = 1
+                                            ) == 6,
+                        "must be equal to '6'"
+                      )
+              }
   /*
   TODO
   fix 'emulateMergeSortForArray' to pass test
   */
-  //ignore
+  //ignore(
   test(
         "99: 'emulateMergeSortForArray'" +
           "should sort"
@@ -525,12 +557,21 @@ class InversionsNumberSuit extends FunSuite {
           val unsorted: Array[Int] =
             //Array(7, 5)
             //Array(5, 7, 1)
-            Array(5, 7, 1, 2)
+            //Array(5, 7, 1, 2)
             //Array(5, 7, 9, 11, 2, 3, 4)
+            inversionsNumber
+            .integersInInputArray
+            //.take(2000)
+            //.take(2500)
+              //swapsTotal:2233097
+            //.take(3000)
+                //java.lang.StackOverflowError
+            .take(5000)
+                //.take(20000)
 
-          println(s"unsorted was:${unsorted.mkString( """,""")}")
+          println(s"unsorted was:${unsorted.take(10).mkString( """,""")}")
           //val sorted: Array[Int] =
-          val swapsTotal: Int =
+          val swapsTotal: Long =
             inversionsNumber
             .emulateMergeSortForArray(
                 sourceArray = unsorted,
@@ -538,8 +579,8 @@ class InversionsNumberSuit extends FunSuite {
                 swapCount = 0
                                   )
 
-          println(s"unsorted changes to:${unsorted.mkString( """,""")}")
-          println(s"must be:${unsorted.sorted.mkString( """,""")}")
+          println(s"unsorted changes to:${unsorted.take(10).mkString( """,""")}")
+          println(s"must be:${unsorted.sorted.take(10).mkString( """,""")}")
           println(s"swapsTotal:${swapsTotal}")
           /*too large for integer*/
           assume(
