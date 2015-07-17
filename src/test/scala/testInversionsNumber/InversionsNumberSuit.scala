@@ -545,7 +545,7 @@ class InversionsNumberSuit extends FunSuite {
                       )
               }
   /*
-  TODO
+  DONE
   fix 'emulateMergeSortForArray' to pass test
   */
   //ignore(
