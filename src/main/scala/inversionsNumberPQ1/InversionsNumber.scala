@@ -22,7 +22,7 @@ class InversionsNumber {
   in some order,
   with no integer repeated.
 
-  TODO
+  DONE
   Your task is
   to compute
   the `number of inversions`
@@ -487,7 +487,7 @@ class InversionsNumber {
       > 'mergeArraySortedParts'
   * */
   /*
-  TODO
+  DONE
   try to
   implement same functionality using 'loop' syntax
   & spot the difference with `depth in the stack`

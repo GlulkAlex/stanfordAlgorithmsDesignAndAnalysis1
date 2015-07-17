@@ -110,6 +110,34 @@ class PivotingSuit
                     "must be equal"
                   )
           }
+  test(
+          "23: 'QuickSortComparisons' with last element as pivot" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            //val inversionsNumber = new InversionsNumber
+            val unsorted: Array[Int] =
+              getInput()
+              .map(_.toInt)
+              .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            //Array(5, 7, 9, 11, 2, 3, 4)
+
+            val (sorted, comparisons): (Array[Int], Int) =
+              QuickSortComparisons(
+                                    unsorted,
+                                    unsorted.length)
+            println(s"'sorted' is:${sorted.take(10).mkString( """,""")}")
+            println(s"'comparisons' is:${comparisons}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(unsorted.sorted),
+                    "must be equal"
+                  )
+          }
   ignore(
           "31: 'PivotingArrayToEmptyClone'" +
             "should return pivoted Array"
@@ -161,7 +189,7 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  test(
+  ignore(
         "32: 'PivotingArrayInPlace'" +
           "should return pivoted Array"
       ) {
