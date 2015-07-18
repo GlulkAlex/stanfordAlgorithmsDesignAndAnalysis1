@@ -82,7 +82,7 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  ignore(
+  test(
           "22: 'QuickSortComparisons' with first element as pivot" +
             "should return sorted Array & 'comparisonsTotal'"
         ) {
@@ -97,7 +97,9 @@ class PivotingSuit
             //Array(5, 7, 1, 2)
             //Array(5, 7, 9, 11, 2, 3, 4)
             val expectedSorted: Array[Int] =
-              unsorted.take(takeNumber).sorted
+              unsorted
+              //.take(takeNumber)
+              .sorted
             val SortResults(sorted, comparisons): SortResults =
               QuickSortComparisons(
                                     unsorted,
@@ -113,7 +115,7 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  ignore(
+  test(
         "23: 'QuickSortComparisons' with last element as pivot" +
           "should return sorted Array & 'comparisonsTotal'"
       ) {
@@ -162,24 +164,32 @@ class PivotingSuit
           val takeNumber =
             2000
           val unsorted: Array[Int] =
-          /*getInput()
+          getInput()
             .take(takeNumber)
           .map(_.toInt)
-          .toArray*/
+          .toArray
           //Array(7, 5)
           //Array(5, 7, 1)
           //Array(5, 7, 1, 2)
-            Array(5, 7, 9, 11, 2, 3, 4)
+          //  Array(5, 7, 9, 11, 2, 3, 4)
           val expectedSorted: Array[Int] =
-            unsorted.take(takeNumber).sorted
+            unsorted
+            .take(takeNumber)
+            .sorted
           val SortResults(sorted, comparisons): SortResults =
             QuickSortComparisons(
                                   unsorted,
                                   unsorted.length,
                                   pivotRule = MedianPivot
                                 )
-          println(s"\n'sorted' is:${sorted.take(10).mkString( """,""")}")
-          println(s"'expectedSorted' is:${expectedSorted.take(10).mkString( """,""")}")
+          println(s"\n'sorted' is:${
+            sorted
+            .take(10)
+            .mkString( """,""")}")
+          println(s"'expectedSorted' is:${
+            expectedSorted
+            .take(10)
+            .mkString( """,""")}")
           println(s"'comparisons' is:${comparisons}")
           /*too large for integer*/
           assume(
@@ -318,12 +328,14 @@ class PivotingSuit
           println(s"\n'unsorted' is:${
             unsorted.take(10).mkString( """,""")
           }")
-          val pivot: Int =
+          val pivotIndex: Int =
             ChooseMedianOfThreeAsPivot(
                                         sourceSeq = unsorted,
                                         firstSeqIndex = 2,
                                         lastSeqIndex = 5
                                       )
+                val pivot: Int =
+                  unsorted(pivotIndex)
           println(s"expected 'pivot' is:${
             pivot
           }")

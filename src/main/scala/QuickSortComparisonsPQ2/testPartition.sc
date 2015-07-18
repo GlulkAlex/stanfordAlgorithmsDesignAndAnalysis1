@@ -29,3 +29,14 @@ someSeq
 .partition(_ <= -1)
 
 Seq().length
+
+someSeq(4)
+someSeq.slice(4,4+1)
+someSeq.splitAt(4)
+someSeq(0)
+someSeq.slice(0,0+1)
+someSeq.splitAt(0)
+someSeq.length - 1
+someSeq(someSeq.length - 1)
+someSeq.slice(8,8+1)
+someSeq.splitAt(8)

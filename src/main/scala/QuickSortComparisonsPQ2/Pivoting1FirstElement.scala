@@ -258,6 +258,7 @@ object Pivoting1FirstElement {
     sourceSeqLenght
   }
 
+  /*return 'pivotIndex'*/
   def ChooseFirstElementAsPivot(
                                  sourceSeq: Array[Int],
                                  sourceSeqLenght: Int
@@ -268,10 +269,12 @@ object Pivoting1FirstElement {
       -1
     } else {
       /*return value*/
-      sourceSeq.head
+      //sourceSeq.head
+      0
     }
   }
 
+  /*return 'pivotIndex'*/
   def ChooseLastElementAsPivot(
                                 sourceSeq: Array[Int],
                                 sourceSeqLenght: Int
@@ -282,10 +285,12 @@ object Pivoting1FirstElement {
       -1
     } else {
       /*return value*/
-      sourceSeq.last
+      //sourceSeq.last
+      sourceSeqLenght - 1
     }
   }
 
+  /*return 'pivotIndex'*/
   def ChooseMedianOfThreeAsPivot(
                                   sourceSeq: Array[Int],
                                   //sourceSeqLenght: Int,
@@ -319,20 +324,28 @@ object Pivoting1FirstElement {
       if (
         sourceSeq(middleIndex) >= sourceSeq(firstSeqIndex)
       ) {
-        (sourceSeq(firstSeqIndex), sourceSeq(middleIndex))
+        //(sourceSeq(firstSeqIndex), sourceSeq(middleIndex))
+        (firstSeqIndex, middleIndex)
       } else {
-        (sourceSeq(middleIndex), sourceSeq(firstSeqIndex))
+        //(sourceSeq(middleIndex), sourceSeq(firstSeqIndex))
+        (middleIndex, firstSeqIndex)
       }
-    val median: Int =
+    //val median: Int =
+    val medianIndex: Int =
     //List(firstSeqIndex,middleIndex,lastSeqIndex).sorted.apply(1)
       if (
-        firstMiddleMax <= sourceSeq(lastSeqIndex)
+      //firstMiddleMax <= sourceSeq(lastSeqIndex)
+        sourceSeq(firstMiddleMax) <= sourceSeq(lastSeqIndex)
       ) {
         firstMiddleMax
       } else /*if (
         firstMiddleMax > sourceSeq(lastSeqIndex)*/ {
-        if (sourceSeq(lastSeqIndex) >= firstMiddleMin) {
-          sourceSeq(lastSeqIndex)
+        if (
+        //sourceSeq(lastSeqIndex) >= firstMiddleMin
+          sourceSeq(lastSeqIndex) >= sourceSeq(firstMiddleMin)
+        ) {
+          //sourceSeq(lastSeqIndex)
+          lastSeqIndex
         } else {
           firstMiddleMin
         }
@@ -344,7 +357,9 @@ object Pivoting1FirstElement {
       -1
     } else {
       /*return value*/
-      median
+      //median
+      //sourceSeq(medianIndex)
+      medianIndex
     }
   }
 
@@ -408,6 +423,7 @@ object Pivoting1FirstElement {
   case object LastPivot extends PivotRule
 
   case object MedianPivot extends PivotRule
+
   /*after using get java.lang.StackOverflowError*/
   case class SortResults(sortedArray: Array[Int], comparisonsTotal: Int)
 
@@ -427,38 +443,52 @@ object Pivoting1FirstElement {
       //unsortedLenght - 1
       SortResults(unsorted, comparisonsTotal)
     } else {
-      //val pivotIndex: Int =
-      val pivot: Int =
+      val pivotIndex: Int =
+      //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
-          case FirstPivot => {
-            ChooseFirstElementAsPivot(
-                                       sourceSeq = unsorted,
-                                       sourceSeqLenght = unsortedLenght
-                                     )
+          case FirstPivot  => {
+            {
+              ChooseFirstElementAsPivot(
+                                         sourceSeq = unsorted,
+                                         sourceSeqLenght = unsortedLenght
+                                       )
+            }
           }
-          case LastPivot  => {
-            ChooseLastElementAsPivot(
-                                      sourceSeq = unsorted,
-                                      sourceSeqLenght = unsortedLenght
-                                    )
+          case LastPivot   => {
+            {
+              ChooseLastElementAsPivot(
+                                        sourceSeq = unsorted,
+                                        sourceSeqLenght = unsortedLenght
+                                      )
+            }
           }
-          case MedianPivot  => {
-            ChooseMedianOfThreeAsPivot(
-                                      sourceSeq = unsorted,
-                                      firstSeqIndex = 0,
-                                      lastSeqIndex = unsortedLenght - 1
-                                    )
+          case MedianPivot => {
+            {
+              ChooseMedianOfThreeAsPivot(
+                                          sourceSeq = unsorted,
+                                          firstSeqIndex = 0,
+                                          lastSeqIndex = unsortedLenght - 1
+                                        )
+            }
           }
         }
+      val pivot: Int =
+        unsorted(pivotIndex)
       /*
-      TODO
+      DONE
       fix partition logic for each `pivotRule`
       * */
       /*has case for each pivotRule*/
-      val (part1, part2) =
+      val (seqPartBeforePivot, seqPartPivotAndAfter): (Array[Int], Array[Int]) =
         unsorted
-        //.tail
-        .init
+        .splitAt(pivotIndex)
+      val pivotingSequence: Array[Int] =
+        seqPartBeforePivot ++ seqPartPivotAndAfter.tail
+      val (part1, part2) =
+      //unsorted
+      //.tail
+      //.init
+        pivotingSequence
         //.partition(_ <= unsorted(pivotIndex))
         .partition(_ <= pivot)
 
@@ -493,9 +523,9 @@ object Pivoting1FirstElement {
       /*return value*/
       //part1Sorted +: pivot ++ part2Sorted
       SortResults(
-        part1Sorted ++ (pivot +: part2Sorted),
-        part1Comparisons + part2Comparisons
-        )
+                   part1Sorted ++ (pivot +: part2Sorted),
+                   part1Comparisons + part2Comparisons
+                 )
     }
 
   }
