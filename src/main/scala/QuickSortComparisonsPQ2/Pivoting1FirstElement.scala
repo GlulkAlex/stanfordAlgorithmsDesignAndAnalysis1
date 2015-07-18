@@ -186,6 +186,15 @@ object Pivoting1FirstElement {
     pivotedArray
   }
 
+  /*
+  be sure to
+  implement Partition exactly
+  as described in the video lectures
+  (including
+  exchanging the pivot element with
+  the first element
+  just before the main Partition subroutine).
+   */
   /*constant space - no additional extra space needed*/
   /* ? prerequisites - pivot at 'startingIndex' ?*/
   def PivotingArrayInPlace(
@@ -264,9 +273,9 @@ object Pivoting1FirstElement {
   }
 
   def ChooseLastElementAsPivot(
-                                 sourceSeq: Array[Int],
-                                 sourceSeqLenght: Int
-                                 ): Int = {
+                                sourceSeq: Array[Int],
+                                sourceSeqLenght: Int
+                                ): Int = {
     if (sourceSeq.isEmpty) {
       /*return value*/
       /*assume that all values must be positive*/
@@ -278,24 +287,64 @@ object Pivoting1FirstElement {
   }
 
   def ChooseMedianOfThreeAsPivot(
-                                 sourceSeq: Array[Int],
-                                 //sourceSeqLenght: Int,
-                                 firstSeqIndex: Int,
-                                 lastSeqIndex: Int
-                                 ): Int = {
+                                  sourceSeq: Array[Int],
+                                  //sourceSeqLenght: Int,
+                                  firstSeqIndex: Int,
+                                  lastSeqIndex: Int
+                                  ): Int = {
     /*for even '4 5 6 7' 'middleIndex = 2' 'elem = 5'*/
     /*'4/2' or 'length/2'*/
     /*for odd '3 4 5 6 7' 'middleIndex = 2' 'elem = 5'*/
     /*'5/2' or 'length/2'*/
     /*? if firstSeqIndex == lastSeqIndex then == middleIndex ? */
-    val middleIndex = 0
+    //0,(1,[2],3,4),5
+    //(1) + (4-1)/2
+    //0,1,(2,3,[4],5,6),7
+    //(2) + (6-2)/2
+    //([0])
+    //(0) + (0-0)/2
+    //([0],1)
+    //(0) + (1-0)/2
+    //0,1,2,3,([4],5),6,7
+    //(4) + (5-4)/2
+    val middleIndex: Int =
+      if (
+        sourceSeq.isEmpty
+      ) {
+        firstSeqIndex
+      } else {
+        firstSeqIndex + (lastSeqIndex - firstSeqIndex) / 2
+      }
+    val (firstMiddleMin, firstMiddleMax): (Int, Int) =
+      if (
+        sourceSeq(middleIndex) >= sourceSeq(firstSeqIndex)
+      ) {
+        (sourceSeq(firstSeqIndex), sourceSeq(middleIndex))
+      } else {
+        (sourceSeq(middleIndex), sourceSeq(firstSeqIndex))
+      }
+    val median: Int =
+    //List(firstSeqIndex,middleIndex,lastSeqIndex).sorted.apply(1)
+      if (
+        firstMiddleMax <= sourceSeq(lastSeqIndex)
+      ) {
+        firstMiddleMax
+      } else /*if (
+        firstMiddleMax > sourceSeq(lastSeqIndex)*/ {
+        if (sourceSeq(lastSeqIndex) >= firstMiddleMin) {
+          sourceSeq(lastSeqIndex)
+        } else {
+          firstMiddleMin
+        }
+      }
+
     if (sourceSeq.isEmpty) {
       /*return value*/
       /*assume that all values must be positive*/
       -1
     } else {
       /*return value*/
-      sourceSeq.last
+      median
     }
   }
 
@@ -352,27 +401,60 @@ object Pivoting1FirstElement {
 
   }
 
+  trait PivotRule
+
+  case object FirstPivot extends PivotRule
+
+  case object LastPivot extends PivotRule
+
+  case object MedianPivot extends PivotRule
+  /*after using get java.lang.StackOverflowError*/
+  case class SortResults(sortedArray: Array[Int], comparisonsTotal: Int)
+
   /*input has only positive distinct integers*/
+  /* using three different pivot rule*/
   def QuickSortComparisons(
                             unsorted: Array[Int],
                             unsortedLenght: Int,
                             /*accumulator*/
-                            comparisonsTotal: Int = 0
-                            ): (Array[Int], Int) = {
+                            comparisonsTotal: Int = 0,
+                            pivotRule: PivotRule = FirstPivot
+                            ): SortResults = {
     if (unsortedLenght <= 1) {
       /*return value*/
       //unsorted
       //0
       //unsortedLenght - 1
-      (unsorted, comparisonsTotal)
+      SortResults(unsorted, comparisonsTotal)
     } else {
       //val pivotIndex: Int =
       val pivot: Int =
-        //ChooseFirstElementAsPivot(
-        ChooseLastElementAsPivot(
-                                   sourceSeq = unsorted,
-                                   sourceSeqLenght = unsortedLenght
-                                 )
+        pivotRule match {
+          case FirstPivot => {
+            ChooseFirstElementAsPivot(
+                                       sourceSeq = unsorted,
+                                       sourceSeqLenght = unsortedLenght
+                                     )
+          }
+          case LastPivot  => {
+            ChooseLastElementAsPivot(
+                                      sourceSeq = unsorted,
+                                      sourceSeqLenght = unsortedLenght
+                                    )
+          }
+          case MedianPivot  => {
+            ChooseMedianOfThreeAsPivot(
+                                      sourceSeq = unsorted,
+                                      firstSeqIndex = 0,
+                                      lastSeqIndex = unsortedLenght - 1
+                                    )
+          }
+        }
+      /*
+      TODO
+      fix partition logic for each `pivotRule`
+      * */
+      /*has case for each pivotRule*/
       val (part1, part2) =
         unsorted
         //.tail
@@ -383,7 +465,8 @@ object Pivoting1FirstElement {
       /*recursion*/
       //val part1Sorted =
       /*comparisonsTotal = comparisonsTotal + part1.tail.length - 1*/
-      val (part1Sorted, part1Comparisons): (Array[Int], Int) =
+      //val (part1Sorted, part1Comparisons): (Array[Int], Int) =
+      val SortResults(part1Sorted, part1Comparisons): SortResults =
         QuickSortComparisons(
                               /*? 'part1.head == pivot', so exclude 'pivot' ?*/
                               unsorted =
@@ -394,19 +477,22 @@ object Pivoting1FirstElement {
                                 part1.length,
                               comparisonsTotal +
                                 //part1.tail.length - 1
-                                part1.length - 1
+                                part1.length - 1,
+                              pivotRule = pivotRule
                             )
       //val part2Sorted =
       /*comparisonsTotal = comparisonsTotal + part2.length - 1*/
-      val (part2Sorted, part2Comparisons): (Array[Int], Int) =
+      //val (part2Sorted, part2Comparisons): (Array[Int], Int) =
+      val SortResults(part2Sorted, part2Comparisons): SortResults =
         QuickSortComparisons(
                               unsorted = part2,
                               unsortedLenght = part2.length,
-                              comparisonsTotal + part2.length - 1
+                              comparisonsTotal + part2.length - 1,
+                              pivotRule = pivotRule
                             )
       /*return value*/
       //part1Sorted +: pivot ++ part2Sorted
-      (
+      SortResults(
         part1Sorted ++ (pivot +: part2Sorted),
         part1Comparisons + part2Comparisons
         )
