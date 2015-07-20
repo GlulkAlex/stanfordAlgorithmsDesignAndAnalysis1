@@ -717,7 +717,8 @@ object Pivoting1FirstElement {
                       ChooseMedianOfThreeAsPivot(
                                                   sourceSeq = unsorted,
                                                   /*???*/
-                                                  firstSeqIndex = 0,
+                                                  firstSeqIndex =
+                                                    startIndex,
                                                   /*???*/
                                                   lastSeqIndex =
                                                     //unsortedLenght - 1
@@ -754,7 +755,7 @@ object Pivoting1FirstElement {
 
       val SortResults(part1Sorted, part1Comparisons): SortResults =
       if (
-        /*at least two elements*/
+        /*at least two elements before pivot*/
         pivotingResults.pivotIndex - 1 > startIndex
       ) {
         /*recursion*/
@@ -781,8 +782,8 @@ object Pivoting1FirstElement {
 
       val SortResults(part2Sorted, part2Comparisons): SortResults =
       if (
-        /*at least two elements*/
-        pivotingResults.pivotIndex + 1 < startIndex
+        /*at least two elements after pivot*/
+        pivotingResults.pivotIndex + 1 < endIndex
       ) {
         /*all after / greater than pivot*/
         QuickSortWithInPlacePivotingComparisons(

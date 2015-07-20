@@ -406,7 +406,7 @@ class PivotingSuit
                   "must be equal"
                 )
         }
-  test(
+  ignore(
         "34: 'PivotingArrayInPlace'" +
           "with 'MedianPivot'" +
           "should return pivoted Array & " +
@@ -574,25 +574,122 @@ class PivotingSuit
                   "must be equal"
                 )
         }
-  ignore(
+  test(
           "51: 'QuickSortWithInPlacePivotingComparisons' " +
-            "using the \"median-of-three\" pivot rule" +
+            "using the 'FirstPivot' rule" +
             "should return sorted Array & 'comparisonsTotal'"
         ) {
             val takeNumber =
-              10
+              1000
             val unsorted: Array[Int] =
             getInput()
-            .take(takeNumber)
+            //.take(takeNumber)
             .map(_.toInt)
             .toArray
             //Array(7, 5)
             //Array(5, 7, 1)
             //Array(5, 7, 1, 2)
               //Array(5, 7, 9, 11, 2, 3, 4)
+              //Array(5, 7, 9, 11, 2, 3, 4, 1)
             val expectedSorted: Array[Int] =
               unsorted
-              .take(takeNumber)
+              //.take(takeNumber)
+              .sorted
+            println(s"\n'expectedSorted' is:\n${
+              expectedSorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            val SortResults(sorted, comparisons): SortResults =
+              QuickSortWithInPlacePivotingComparisons(
+                                                       unsorted,
+                                                       startIndex = 0,
+                                                       endIndex = unsorted
+                                                                  .length - 1,
+                                                       pivotRule = FirstPivot
+                                                     )
+            println(s"\n'sorted' is:\n${
+              sorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            println(s"'comparisons' is:${comparisons}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(expectedSorted),
+                    "must be equal"
+                  )
+          }
+  test(
+          "52: 'QuickSortWithInPlacePivotingComparisons' " +
+            "using the LastPivot rule" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            val takeNumber =
+              1000
+            val unsorted: Array[Int] =
+            getInput()
+            //.take(takeNumber)
+            .map(_.toInt)
+            .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+              //Array(5, 7, 9, 11, 2, 3, 4)
+              //Array(5, 7, 9, 11, 2, 3, 4, 1)
+            val expectedSorted: Array[Int] =
+              unsorted
+              //.take(takeNumber)
+              .sorted
+            println(s"\n'expectedSorted' is:\n${
+              expectedSorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            val SortResults(sorted, comparisons): SortResults =
+              QuickSortWithInPlacePivotingComparisons(
+                                                       unsorted,
+                                                       startIndex = 0,
+                                                       endIndex = unsorted
+                                                                  .length - 1,
+                                                       pivotRule = LastPivot
+                                                     )
+            println(s"\n'sorted' is:\n${
+              sorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            println(s"'comparisons' is:${comparisons}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(expectedSorted),
+                    "must be equal"
+                  )
+          }
+  test(
+          "53: 'QuickSortWithInPlacePivotingComparisons' " +
+            "using the \"median-of-three\" pivot rule" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            val takeNumber =
+              1000
+            val unsorted: Array[Int] =
+            getInput()
+            //.take(takeNumber)
+            .map(_.toInt)
+            .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+              //Array(5, 7, 9, 11, 2, 3, 4)
+              //Array(5, 7, 9, 11, 2, 3, 4, 1)
+            val expectedSorted: Array[Int] =
+              unsorted
+              //.take(takeNumber)
               .sorted
             println(s"\n'expectedSorted' is:\n${
               expectedSorted
