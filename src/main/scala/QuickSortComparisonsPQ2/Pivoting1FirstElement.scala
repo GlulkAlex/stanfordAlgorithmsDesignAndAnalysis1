@@ -197,13 +197,31 @@ object Pivoting1FirstElement {
    */
   /*constant space - no additional extra space needed*/
   /* ? prerequisites - pivot at 'startingIndex' ?*/
+  /*
+  rearrange 'sourceArray: Array[Int]'
+  at most at three parts:
+  from 'startingIndex' to 'lessTanPivot',
+  pivot,
+  from 'greaterThanPivot' to 'endingIndex'
+  return:
+  'pivotIndex'
+  */
+  case class PivotingResults(
+                              sortedArray: Array[Int],
+                              pivotIndex: Int)
+  /*
+  TODO
+  fails on even length
+  must be fixed
+   */
   def PivotingArrayInPlace(
                             sourceArray: Array[Int],
                             startingIndex: Int,
                             endingIndex: Int,
                             /*mast be within*/
                             pivotIndex: Int
-                            ): Array[Int] = {
+                            //): Array[Int] = {
+                            ): PivotingResults = {
     assume(pivotIndex >= startingIndex && pivotIndex <= endingIndex,
            "'pivotIndex' mast be within range")
 
@@ -217,11 +235,14 @@ object Pivoting1FirstElement {
     /*? must point to the next after it ?*/
     var lessThanPivotEndIndex: Int =
       startingIndex + 1
+    /*at first step they must be equal / the same*/
+    /*? only needed to set a start ?*/
     /*? must point to the next after it ?*/
-    val greaterThanPivotEndIndex: Int =
-      lessThanPivotEndIndex + 1
+    /*val greaterThanPivotEndIndex: Int =
+      lessThanPivotEndIndex*/// + 1
 
-    for (i <- greaterThanPivotEndIndex to endingIndex) {
+    //for (i <- greaterThanPivotEndIndex to endingIndex) {
+    for (i <- lessThanPivotEndIndex to endingIndex) {
       if (sourceArray(i) < pivot) {
         /*? may be check for redundant swaps in first / initial steps?*/
         //if (lessThanPivotEndIndex < i) {}
@@ -240,13 +261,19 @@ object Pivoting1FirstElement {
       }
     }
     /*swap pivot from head to the right place*/
-    swapArrayElements(
-                       sourceArray,
-                       indexOfLesser = startingIndex,
-                       indexOfGreater = lessThanPivotEndIndex - 1
-                     )
+    /*if not the same*/
+    if (lessThanPivotEndIndex - 1 > startingIndex) {
+      swapArrayElements(
+                         sourceArray,
+                         indexOfLesser = startingIndex,
+                         /*?swap with actual last element lesser then pivot value?*/
+                         indexOfGreater =
+                           lessThanPivotEndIndex - 1
+                       )
+    }
     /*return value*/
-    sourceArray
+    //sourceArray
+    PivotingResults(sourceArray, lessThanPivotEndIndex - 1)
   }
 
   /*? assume 'sourceSeq.nonEmpty' ?*/
@@ -261,32 +288,50 @@ object Pivoting1FirstElement {
   /*return 'pivotIndex'*/
   def ChooseFirstElementAsPivot(
                                  sourceSeq: Array[Int],
-                                 sourceSeqLenght: Int
+                                 sourceSeqLenght: Int,
+                                 startIndex: Int = 0,
+                                 endIndex: Int = 0
                                  ): Int = {
-    if (sourceSeq.isEmpty) {
+    if (
+      sourceSeq.isEmpty ||
+        sourceSeqLenght < 1 ||
+        /*? safe if falling through ?*/
+        endIndex - startIndex < 1
+    ) {
       /*return value*/
       /*assume that all values must be positive*/
       -1
     } else {
       /*return value*/
       //sourceSeq.head
-      0
+      //0
+      startIndex
     }
   }
 
   /*return 'pivotIndex'*/
   def ChooseLastElementAsPivot(
                                 sourceSeq: Array[Int],
-                                sourceSeqLenght: Int
+                                sourceSeqLenght: Int,
+                                startIndex: Int = 0,
+                                endIndex: Int = 0
                                 ): Int = {
-    if (sourceSeq.isEmpty) {
+    if (
+      sourceSeq.isEmpty ||
+        sourceSeqLenght < 1 ||
+        /*? safe if stops in first conditions ?*/
+        endIndex - startIndex < 1
+    ) {
       /*return value*/
       /*assume that all values must be positive*/
       -1
     } else {
       /*return value*/
       //sourceSeq.last
-      sourceSeqLenght - 1
+      //sourceSeqLenght - 1
+      //startIndex + sourceSeqLenght - 1
+      //or just
+      endIndex
     }
   }
 
@@ -312,55 +357,71 @@ object Pivoting1FirstElement {
     //(0) + (1-0)/2
     //0,1,2,3,([4],5),6,7
     //(4) + (5-4)/2
-    val middleIndex: Int =
-      if (
-        sourceSeq.isEmpty
-      ) {
-        firstSeqIndex
-      } else {
-        firstSeqIndex + (lastSeqIndex - firstSeqIndex) / 2
-      }
-    val (firstMiddleMin, firstMiddleMax): (Int, Int) =
-      if (
-        sourceSeq(middleIndex) >= sourceSeq(firstSeqIndex)
-      ) {
-        //(sourceSeq(firstSeqIndex), sourceSeq(middleIndex))
-        (firstSeqIndex, middleIndex)
-      } else {
-        //(sourceSeq(middleIndex), sourceSeq(firstSeqIndex))
-        (middleIndex, firstSeqIndex)
-      }
-    //val median: Int =
+    //val middleIndex: Int =
     val medianIndex: Int =
-    //List(firstSeqIndex,middleIndex,lastSeqIndex).sorted.apply(1)
       if (
-      //firstMiddleMax <= sourceSeq(lastSeqIndex)
-        sourceSeq(firstMiddleMax) <= sourceSeq(lastSeqIndex)
+        sourceSeq.isEmpty ||
+          /*one element or less*/
+          lastSeqIndex <= firstSeqIndex
       ) {
-        firstMiddleMax
-      } else /*if (
-        firstMiddleMax > sourceSeq(lastSeqIndex)*/ {
-        if (
-        //sourceSeq(lastSeqIndex) >= firstMiddleMin
-          sourceSeq(lastSeqIndex) >= sourceSeq(firstMiddleMin)
-        ) {
-          //sourceSeq(lastSeqIndex)
-          lastSeqIndex
+        //firstSeqIndex
+        /*return value*/
+        /*assume that all values must be positive*/
+        -1
+      } else if (
+             /*special case:*/
+             /*only two elements*/
+               lastSeqIndex == firstSeqIndex + 1
+             ) {
+        /*return value*/
+        /*must be min of two*/
+        if (sourceSeq(firstSeqIndex) <= sourceSeq(lastSeqIndex)) {
+          firstSeqIndex
         } else {
-          firstMiddleMin
+          lastSeqIndex
+        }
+        //sourceSeq(firstSeqIndex).min(sourceSeq(lastSeqIndex))
+      } else {
+        val middleIndex: Int =
+          firstSeqIndex + (lastSeqIndex - firstSeqIndex) / 2
+
+        /*? may be the same ? */
+        val (firstMiddleMin, firstMiddleMax): (Int, Int) =
+          if (
+            sourceSeq(middleIndex) >= sourceSeq(firstSeqIndex)
+          ) {
+            //(sourceSeq(firstSeqIndex), sourceSeq(middleIndex))
+            (firstSeqIndex, middleIndex)
+          } else {
+            //(sourceSeq(middleIndex), sourceSeq(firstSeqIndex))
+            (middleIndex, firstSeqIndex)
+          }
+        //val median: Int =
+        //val medianIndex: Int =
+        //List(firstSeqIndex,middleIndex,lastSeqIndex).sorted.apply(1)
+        /*return value*/
+        if (
+        //firstMiddleMax <= sourceSeq(lastSeqIndex)
+          sourceSeq(firstMiddleMax) <= sourceSeq(lastSeqIndex)
+        ) {
+          firstMiddleMax
+        } else /*if (
+        firstMiddleMax > sourceSeq(lastSeqIndex)*/ {
+          if (
+          //sourceSeq(lastSeqIndex) >= firstMiddleMin
+            sourceSeq(lastSeqIndex) >= sourceSeq(firstMiddleMin)
+          ) {
+            //sourceSeq(lastSeqIndex)
+            lastSeqIndex
+          } else {
+            firstMiddleMin
+          }
         }
       }
-
-    if (sourceSeq.isEmpty) {
-      /*return value*/
-      /*assume that all values must be positive*/
-      -1
-    } else {
-      /*return value*/
-      //median
-      //sourceSeq(medianIndex)
-      medianIndex
-    }
+    /*return value*/
+    //median
+    //sourceSeq(medianIndex)
+    medianIndex
   }
 
   def ChoosePivot(
@@ -424,8 +485,30 @@ object Pivoting1FirstElement {
 
   case object MedianPivot extends PivotRule
 
-  /*after using get java.lang.StackOverflowError*/
   case class SortResults(sortedArray: Array[Int], comparisonsTotal: Int)
+
+  def pivotParts(
+                  sourceArray: Array[Int],
+                  pivotIndex: Int
+                  ): (Array[Int], Array[Int]) = {
+    val pivot: Int =
+      sourceArray(pivotIndex)
+    /*
+    DONE
+    fix partition logic for each `pivotRule`
+    * */
+    /*has case for each pivotRule*/
+    val (seqPartBeforePivot, seqPartPivotAndAfter): (Array[Int], Array[Int]) =
+      sourceArray
+      .splitAt(pivotIndex)
+    val pivotingSequence: Array[Int] =
+      seqPartBeforePivot ++ seqPartPivotAndAfter.tail
+    /*return value*/
+    //val (part1, part2) =
+    pivotingSequence
+    //.partition(_ <= unsorted(pivotIndex))
+    .partition(_ <= pivot)
+  }
 
   /*input has only positive distinct integers*/
   /* using three different pivot rule*/
@@ -448,27 +531,53 @@ object Pivoting1FirstElement {
         pivotRule match {
           case FirstPivot  => {
             {
-              ChooseFirstElementAsPivot(
-                                         sourceSeq = unsorted,
-                                         sourceSeqLenght = unsortedLenght
-                                       )
+              {
+                {
+                  {
+                    {
+                      ChooseFirstElementAsPivot(
+                                                 sourceSeq = unsorted,
+                                                 sourceSeqLenght =
+                                                   unsortedLenght
+                                               )
+                    }
+                  }
+                }
+              }
             }
           }
           case LastPivot   => {
             {
-              ChooseLastElementAsPivot(
-                                        sourceSeq = unsorted,
-                                        sourceSeqLenght = unsortedLenght
-                                      )
+              {
+                {
+                  {
+                    {
+                      ChooseLastElementAsPivot(
+                                                sourceSeq = unsorted,
+                                                sourceSeqLenght = unsortedLenght
+                                              )
+                    }
+                  }
+                }
+              }
             }
           }
           case MedianPivot => {
             {
-              ChooseMedianOfThreeAsPivot(
-                                          sourceSeq = unsorted,
-                                          firstSeqIndex = 0,
-                                          lastSeqIndex = unsortedLenght - 1
-                                        )
+              {
+                {
+                  {
+                    {
+                      ChooseMedianOfThreeAsPivot(
+                                                  sourceSeq = unsorted,
+                                                  firstSeqIndex = 0,
+                                                  lastSeqIndex = unsortedLenght
+                                                    - 1
+                                                )
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -479,18 +588,23 @@ object Pivoting1FirstElement {
       fix partition logic for each `pivotRule`
       * */
       /*has case for each pivotRule*/
-      val (seqPartBeforePivot, seqPartPivotAndAfter): (Array[Int], Array[Int]) =
+      /*val (seqPartBeforePivot, seqPartPivotAndAfter): (Array[Int],
+      Array[Int]) =
         unsorted
         .splitAt(pivotIndex)
       val pivotingSequence: Array[Int] =
-        seqPartBeforePivot ++ seqPartPivotAndAfter.tail
+        seqPartBeforePivot ++ seqPartPivotAndAfter.tail*/
       val (part1, part2) =
       //unsorted
       //.tail
       //.init
-        pivotingSequence
-        //.partition(_ <= unsorted(pivotIndex))
-        .partition(_ <= pivot)
+      //pivotingSequence
+      //.partition(_ <= unsorted(pivotIndex))
+      //.partition(_ <= pivot)
+        pivotParts(
+                    sourceArray = unsorted,
+                    pivotIndex: Int
+                  )
 
       /*recursion*/
       //val part1Sorted =
@@ -524,6 +638,175 @@ object Pivoting1FirstElement {
       //part1Sorted +: pivot ++ part2Sorted
       SortResults(
                    part1Sorted ++ (pivot +: part2Sorted),
+                   part1Comparisons + part2Comparisons
+                 )
+    }
+
+  }
+
+  /*input has only positive distinct integers*/
+  /* using three different pivot rule*/
+  def QuickSortWithInPlacePivotingComparisons(
+                                               /*mutable collection, length -
+                                                constant, content - not*/
+                                               unsorted: Array[Int],
+                                               //unsortedLenght: Int,
+                                               startIndex: Int,
+                                               endIndex: Int,
+                                               /*accumulator*/
+                                               comparisonsTotal: Int = 0,
+                                               pivotRule: PivotRule = FirstPivot
+                                               ): SortResults = {
+    val unsortedLenght: Int =
+      endIndex + 1 - startIndex
+
+    if (unsortedLenght <= 1) {
+      /*return value*/
+      //unsorted
+      //0
+      //unsortedLenght - 1
+      SortResults(unsorted, comparisonsTotal)
+    } else {
+      val pivotIndex: Int =
+      //val (pivot, pivotIndex): (Int, Int) =
+        pivotRule match {
+          case FirstPivot  => {
+            {
+              {
+                {
+                  {
+                    {
+                      ChooseFirstElementAsPivot(
+                                                 sourceSeq = unsorted,
+                                                 sourceSeqLenght =
+                                                   unsortedLenght,
+                                                 startIndex = startIndex,
+                                                 endIndex = endIndex
+                                               )
+                    }
+                  }
+                }
+              }
+            }
+          }
+          case LastPivot   => {
+            {
+              {
+                {
+                  {
+                    {
+                      ChooseLastElementAsPivot(
+                                                sourceSeq = unsorted,
+                                                sourceSeqLenght =
+                                                  unsortedLenght,
+                                                startIndex = startIndex,
+                                                endIndex = endIndex
+                                              )
+                    }
+                  }
+                }
+              }
+            }
+          }
+          case MedianPivot => {
+            {
+              {
+                {
+                  {
+                    {
+                      ChooseMedianOfThreeAsPivot(
+                                                  sourceSeq = unsorted,
+                                                  /*???*/
+                                                  firstSeqIndex = 0,
+                                                  /*???*/
+                                                  lastSeqIndex =
+                                                    //unsortedLenght - 1
+                                                    endIndex
+                                                )
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+      /*
+      when
+      unsorted.length == 2 or
+      endIndex - startIndex
+      pivoting with ? any rule ? completely sort array
+      */
+      /*after 'PivotingArrayInPlace' pivotIndex may change*/
+      /*& must position pivot value in right ordered place in Array*/
+      val pivotingResults: PivotingResults =
+        PivotingArrayInPlace(
+                              sourceArray = unsorted,
+                              /*???*/
+                              startingIndex = startIndex,
+                              /*???*/
+                              endingIndex =
+                                //unsorted.length - 1,
+                                //unsortedLenght - 1,
+                                endIndex,
+                              pivotIndex = pivotIndex
+                            )
+
+      val SortResults(part1Sorted, part1Comparisons): SortResults =
+      if (
+        /*at least two elements*/
+        pivotingResults.pivotIndex - 1 > startIndex
+      ) {
+        /*recursion*/
+        /*all before / less than pivot*/
+          QuickSortWithInPlacePivotingComparisons(
+                                                   unsorted =
+                                                     unsorted,
+                                                   startIndex =
+                                                     startIndex,
+                                                   endIndex =
+                                                     pivotingResults.pivotIndex
+                                                       - 1,
+                                                   /*very subtle moment*/
+                                                   comparisonsTotal +
+                                                     /*if same then pointless*/
+                                                     pivotingResults.pivotIndex -
+
+                                                     startIndex,
+                                                   pivotRule = pivotRule
+                                                 )
+      } else {
+        SortResults(unsorted, comparisonsTotal)
+      }
+
+      val SortResults(part2Sorted, part2Comparisons): SortResults =
+      if (
+        /*at least two elements*/
+        pivotingResults.pivotIndex + 1 < startIndex
+      ) {
+        /*all after / greater than pivot*/
+        QuickSortWithInPlacePivotingComparisons(
+                                                 unsorted = unsorted,
+                                                 startIndex =
+                                                   pivotingResults.pivotIndex
+                                                     + 1,
+                                                 endIndex =
+                                                   endIndex,
+                                                 /*very subtle moment*/
+                                                 comparisonsTotal +
+                                                   /*if same then pointless*/
+                                                   endIndex -
+                                                   pivotingResults.pivotIndex,
+                                                 pivotRule = pivotRule
+                                               )
+      } else {
+        SortResults(unsorted, comparisonsTotal)
+      }
+
+      /*return value*/
+      SortResults(
+                   /*sorted in place at this moment*/
+                   unsorted,
                    part1Comparisons + part2Comparisons
                  )
     }
