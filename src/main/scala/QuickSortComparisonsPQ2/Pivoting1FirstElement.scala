@@ -50,25 +50,27 @@ object Pivoting1FirstElement {
   The integer in the i-th row of the file
   gives you
   the i-th entry of an input array.
-  TODO
+  DONE
   Your task is to
   compute
   the `total number of comparisons` used to
   sort the given input file by QuickSort.
   As you know,
-  the number of comparisons depends
-  on which elements are chosen as pivots,
+  the `number of comparisons` depends
+  on which elements are chosen as `pivots`,
   so
   we'll ask you to
   explore three different `pivoting rules`.
   You should
   not count comparisons one-by-one.
   Rather,
-  when there is a recursive call on a subarray of length 'm',
+  when
+  there is
+  a recursive call on a subarray of length 'm',
   you should
   simply add 'm−1' to your running `total of comparisons`.
   (This is because
-  the pivot element is
+  the `pivot` element is
   compared to each of the other 'm−1' elements in
   the subarray in this recursive call.)
 
@@ -209,11 +211,7 @@ object Pivoting1FirstElement {
   case class PivotingResults(
                               sortedArray: Array[Int],
                               pivotIndex: Int)
-  /*
-  TODO
-  fails on even length
-  must be fixed
-   */
+
   def PivotingArrayInPlace(
                             sourceArray: Array[Int],
                             startingIndex: Int,
@@ -233,24 +231,27 @@ object Pivoting1FirstElement {
     val pivot: Int = sourceArray(startingIndex)
     /*side effects*/
     /*? must point to the next after it ?*/
-    var lessThanPivotEndIndex: Int =
+    /*next after possible final pivot position / index */
+    //var lessThanPivotEndIndex: Int =
+    var firstGreaterThanPivotIndex: Int =
       startingIndex + 1
     /*at first step they must be equal / the same*/
     /*? only needed to set a start ?*/
     /*? must point to the next after it ?*/
     /*val greaterThanPivotEndIndex: Int =
-      lessThanPivotEndIndex*/// + 1
+      lessThanPivotEndIndex*/
+    // + 1
 
     //for (i <- greaterThanPivotEndIndex to endingIndex) {
-    for (i <- lessThanPivotEndIndex to endingIndex) {
+    for (i <- firstGreaterThanPivotIndex to endingIndex) {
       if (sourceArray(i) < pivot) {
         /*? may be check for redundant swaps in first / initial steps?*/
         //if (lessThanPivotEndIndex < i) {}
         swapArrayElements(
                            sourceArray,
-                           lessThanPivotEndIndex,
+                           firstGreaterThanPivotIndex,
                            /*greaterThanPivotEndIndex*/ i)
-        lessThanPivotEndIndex += 1
+        firstGreaterThanPivotIndex += 1
       } else if (sourceArray(i) > pivot) {
         /*do nothing*/
 
@@ -262,18 +263,24 @@ object Pivoting1FirstElement {
     }
     /*swap pivot from head to the right place*/
     /*if not the same*/
-    if (lessThanPivotEndIndex - 1 > startingIndex) {
+    if (firstGreaterThanPivotIndex - 1 > startingIndex) {
       swapArrayElements(
                          sourceArray,
-                         indexOfLesser = startingIndex,
-                         /*?swap with actual last element lesser then pivot value?*/
+                         indexOfLesser =
+                           firstGreaterThanPivotIndex - 1,
+                         //startingIndex,
+                         /*
+                         ? swap with
+                         actual last element lesser then pivot value ?
+                          */
                          indexOfGreater =
-                           lessThanPivotEndIndex - 1
+                           startingIndex
+                         //firstGreaterThanPivotIndex - 1
                        )
     }
     /*return value*/
     //sourceArray
-    PivotingResults(sourceArray, lessThanPivotEndIndex - 1)
+    PivotingResults(sourceArray, firstGreaterThanPivotIndex - 1)
   }
 
   /*? assume 'sourceSeq.nonEmpty' ?*/
@@ -529,57 +536,31 @@ object Pivoting1FirstElement {
       val pivotIndex: Int =
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
-          case FirstPivot  => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseFirstElementAsPivot(
-                                                 sourceSeq = unsorted,
-                                                 sourceSeqLenght =
-                                                   unsortedLenght
-                                               )
-                    }
-                  }
-                }
-              }
-            }
+          case FirstPivot => {
+            ChooseFirstElementAsPivot(
+                                       sourceSeq = unsorted,
+                                       sourceSeqLenght =
+                                         unsortedLenght
+                                     )
           }
-          case LastPivot   => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseLastElementAsPivot(
-                                                sourceSeq = unsorted,
-                                                sourceSeqLenght = unsortedLenght
-                                              )
-                    }
-                  }
-                }
-              }
-            }
+          case LastPivot  => {
+            ChooseLastElementAsPivot(
+                                      sourceSeq = unsorted,
+                                      sourceSeqLenght =
+                                        unsortedLenght
+                                    )
           }
+
           case MedianPivot => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseMedianOfThreeAsPivot(
-                                                  sourceSeq = unsorted,
-                                                  firstSeqIndex = 0,
-                                                  lastSeqIndex = unsortedLenght
-                                                    - 1
-                                                )
-                    }
-                  }
-                }
-              }
-            }
+            ChooseMedianOfThreeAsPivot(
+                                        sourceSeq = unsorted,
+                                        firstSeqIndex = 0,
+                                        lastSeqIndex =
+                                          unsortedLenght
+                                            - 1
+                                      )
           }
+
         }
       val pivot: Int =
         unsorted(pivotIndex)
@@ -644,6 +625,8 @@ object Pivoting1FirstElement {
 
   }
 
+  var comparisonsTotalCheck: Int = 0
+  var pivotingTotalCheck: Int = 0
   /*input has only positive distinct integers*/
   /* using three different pivot rule*/
   def QuickSortWithInPlacePivotingComparisons(
@@ -671,64 +654,34 @@ object Pivoting1FirstElement {
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
           case FirstPivot  => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseFirstElementAsPivot(
-                                                 sourceSeq = unsorted,
-                                                 sourceSeqLenght =
-                                                   unsortedLenght,
-                                                 startIndex = startIndex,
-                                                 endIndex = endIndex
-                                               )
-                    }
-                  }
-                }
-              }
-            }
+            ChooseFirstElementAsPivot(
+                                       sourceSeq = unsorted,
+                                       sourceSeqLenght =
+                                         unsortedLenght,
+                                       startIndex = startIndex,
+                                       endIndex = endIndex
+                                     )
           }
           case LastPivot   => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseLastElementAsPivot(
-                                                sourceSeq = unsorted,
-                                                sourceSeqLenght =
-                                                  unsortedLenght,
-                                                startIndex = startIndex,
-                                                endIndex = endIndex
-                                              )
-                    }
-                  }
-                }
-              }
-            }
+            ChooseLastElementAsPivot(
+                                      sourceSeq = unsorted,
+                                      sourceSeqLenght =
+                                        unsortedLenght,
+                                      startIndex = startIndex,
+                                      endIndex = endIndex
+                                    )
           }
           case MedianPivot => {
-            {
-              {
-                {
-                  {
-                    {
-                      ChooseMedianOfThreeAsPivot(
-                                                  sourceSeq = unsorted,
-                                                  /*???*/
-                                                  firstSeqIndex =
-                                                    startIndex,
-                                                  /*???*/
-                                                  lastSeqIndex =
-                                                    //unsortedLenght - 1
-                                                    endIndex
-                                                )
-                    }
-                  }
-                }
-              }
-            }
+            ChooseMedianOfThreeAsPivot(
+                                        sourceSeq = unsorted,
+                                        /*???*/
+                                        firstSeqIndex =
+                                          startIndex,
+                                        /*???*/
+                                        lastSeqIndex =
+                                          //unsortedLenght - 1
+                                          endIndex
+                                      )
           }
         }
 
@@ -752,14 +705,32 @@ object Pivoting1FirstElement {
                                 endIndex,
                               pivotIndex = pivotIndex
                             )
-
-      val SortResults(part1Sorted, part1Comparisons): SortResults =
-      if (
+      /*side effect*/
+      pivotingTotalCheck += endIndex - startIndex
+      /*
+      when
+      there is
+      a recursive call on a `subarray` of length 'm',
+      you should
+      simply add 'm−1' to your running `total of comparisons`.
+      (This is because
+      the pivot element is
+      compared to
+      each of the other 'm−1' elements
+      in the subarray in this recursive call.)
+       */
+      val SortResults(/*part1Sorted*/ _, part1Comparisons): SortResults =
+        if (
         /*at least two elements before pivot*/
-        pivotingResults.pivotIndex - 1 > startIndex
-      ) {
-        /*recursion*/
-        /*all before / less than pivot*/
+          pivotingResults.pivotIndex - 1 > startIndex
+        ) {
+          /*side effect*/
+          comparisonsTotalCheck +=
+            pivotingResults
+            .pivotIndex -
+              startIndex
+          /*recursion*/
+          /*all before / less than pivot*/
           QuickSortWithInPlacePivotingComparisons(
                                                    unsorted =
                                                      unsorted,
@@ -771,43 +742,50 @@ object Pivoting1FirstElement {
                                                    /*very subtle moment*/
                                                    comparisonsTotal +
                                                      /*if same then pointless*/
-                                                     pivotingResults.pivotIndex -
-
+                                                     pivotingResults
+                                                     .pivotIndex -
                                                      startIndex,
                                                    pivotRule = pivotRule
                                                  )
-      } else {
-        SortResults(unsorted, comparisonsTotal)
-      }
+        } else {
+          SortResults(unsorted, comparisonsTotal)
+        }
 
-      val SortResults(part2Sorted, part2Comparisons): SortResults =
-      if (
+      val SortResults(/*part2Sorted*/ _, part2Comparisons): SortResults =
+        if (
         /*at least two elements after pivot*/
-        pivotingResults.pivotIndex + 1 < endIndex
-      ) {
-        /*all after / greater than pivot*/
-        QuickSortWithInPlacePivotingComparisons(
-                                                 unsorted = unsorted,
-                                                 startIndex =
-                                                   pivotingResults.pivotIndex
-                                                     + 1,
-                                                 endIndex =
-                                                   endIndex,
-                                                 /*very subtle moment*/
-                                                 comparisonsTotal +
-                                                   /*if same then pointless*/
-                                                   endIndex -
-                                                   pivotingResults.pivotIndex,
-                                                 pivotRule = pivotRule
-                                               )
-      } else {
-        SortResults(unsorted, comparisonsTotal)
-      }
+          pivotingResults.pivotIndex + 1 < endIndex
+        ) {
+          /*side effect*/
+          comparisonsTotalCheck +=
+            endIndex -
+            pivotingResults
+            .pivotIndex
+          /*recursion*/
+          /*all after / greater than pivot*/
+          QuickSortWithInPlacePivotingComparisons(
+                                                   unsorted = unsorted,
+                                                   startIndex =
+                                                     pivotingResults.pivotIndex
+                                                       + 1,
+                                                   endIndex =
+                                                     endIndex,
+                                                   /*very subtle moment*/
+                                                   comparisonsTotal +
+                                                     /*if same then pointless*/
+                                                     endIndex -
+                                                     pivotingResults.pivotIndex,
+                                                   pivotRule = pivotRule
+                                                 )
+        } else {
+          SortResults(unsorted, comparisonsTotal)
+        }
 
       /*return value*/
       SortResults(
                    /*sorted in place at this moment*/
                    unsorted,
+                   /*? is 'comparisonsTotal' calculated twice ?*/
                    part1Comparisons + part2Comparisons
                  )
     }
