@@ -2,6 +2,7 @@ package testMinimumCuts
 
 import org.scalatest.FunSuite
 import minCutRandomContractionPQ3.MinimumCuts._
+import filesIO.FilesIO._
 /**
  * Created by gluk-alex on 7/23/15.
  */
@@ -13,7 +14,7 @@ class MinimumCutsSuit
         ) {
             //val inversionsNumber = new InversionsNumber
             val unsorted: Array[Int] =
-              getInput()
+              readFromFile()
               .map(_.toInt)
               .toArray
             //Array(7, 5)

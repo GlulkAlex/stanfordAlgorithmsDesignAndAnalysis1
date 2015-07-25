@@ -4,34 +4,6 @@ package minCutRandomContractionPQ3
  * Created by gluk-alex on 7/23/15.
  */
 object MinimumCuts {
-  /*if path & name OK this is enough*/
-  def getInput(
-                filename: String =
-                "QuickSort.txt",
-                filePath: String =
-                "/media/gluk-alex/GDI/Java/Scala/sbt/projects/" +
-                  "stanfordAlgorithmsDesignAndAnalysis1/src/test/scala/" +
-                  "testQuickSortComparisons/"
-                ): Iterator[String] = {
-    //"/media/gluk-alex/GDI/Java/Scala/sbt/projects/
-    // stanfordAlgorithmsDesignAndAnalysis1/src/
-    // test/scala/testQuickSortComparisons"
-    /*val filename =
-      "QuickSort.txt"
-    val filePath =
-      "/media/gluk-alex/GDI/Java/Scala/sbt/projects/" +
-    "stanfordAlgorithmsDesignAndAnalysis1/src/test/scala/" +
-    "testQuickSortComparisons/"*/
-    /*val currFile = Source
-      .fromFile(filePath + filename)*/
-    val currFileLines =
-      scala.io.Source
-      .fromFile(filePath + filename)
-      .getLines()
-    /*return value*/
-    currFileLines
-  }
-
   /*
   Programming Question - 3
   Download the text file 'kargerMinCut.txt'.
