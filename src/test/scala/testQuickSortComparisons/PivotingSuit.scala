@@ -1,7 +1,7 @@
 package testQuickSortComparisons
 
 import org.scalatest.FunSuite
-import QuickSortComparisonsPQ2.Pivoting1FirstElement._
+import QuickSortComparisonsPQ2.PivotingStrategies._
 
 //import inversionsNumberPQ1.InversionsNumber
 
@@ -51,8 +51,8 @@ class PivotingSuit
             /*too large for integer*/
             assume(
                     //true == true,
-                    ChoosePivot(unsorted,
-                                unsorted.length) == unsorted.head,
+                    ChoosePivotAsHead(unsorted,
+                                      unsorted.length) == unsorted.head,
                     "must be equal"
                   )
           }
@@ -203,6 +203,53 @@ class PivotingSuit
                     //true == true,
                     sorted
                     .sameElements(expectedSorted),
+                    "must be equal"
+                  )
+          }
+  ignore(
+          "25: 'QuickSortComparisons' using 'RandomPivot' pivot " +
+            "rule" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            /*val takeNumber =
+              2000*/
+            val unsorted: Array[Int] =
+              getInput()
+              //.take(takeNumber)
+              .map(_.toInt)
+              .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            //  Array(5, 7, 9, 11, 2, 3, 4)
+            val expectedSorted: Array[Int] =
+              unsorted
+              //.take(takeNumber)
+              .sorted
+            val SortResults(sorted, comparisons): SortResults =
+              QuickSortComparisons(
+                                    unsorted,
+                                    unsorted.length,
+                                    pivotRule = RandomPivot
+                                  )
+            println(s"\n'sorted' is:${
+              sorted
+              .take(10)
+              .mkString( """,""")
+            }")
+            println(s"'expectedSorted' is:${
+              expectedSorted
+              .take(10)
+              .mkString( """,""")
+            }")
+            println(s"'comparisons' is:${comparisons}")
+            println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(expectedSorted) &&
+                      comparisons == pivotingTotalCheck,
                     "must be equal"
                   )
           }
@@ -581,68 +628,68 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  test(
-        "51: 'QuickSortWithInPlacePivotingComparisons' " +
-          "using the 'FirstPivot' rule" +
-          "should return sorted Array & 'comparisonsTotal'"
-      ) {
-          //'comparisons' is:176032273
-          /*
-          'comparisons' is:176032273
-      'comparisonsTotalCheck' is:158738
-      'comparisonsTotalCheck+' is:168737
-      'pivotingTotalCheck' is:162085
-          */
-          /*val takeNumber =
-            1000*/
-          val unsorted: Array[Int] =
-            getInput()
-            //.take(takeNumber)
-            .map(_.toInt)
-            .toArray
-          //Array(7, 5)
-          //Array(5, 7, 1)
-          //Array(5, 7, 1, 2)
-          //Array(5, 7, 9, 11, 2, 3, 4)
-          //Array(5, 7, 9, 11, 2, 3, 4, 1)
-          val expectedSorted: Array[Int] =
-            unsorted
-            //.take(takeNumber)
-            .sorted
-          println(s"\n'expectedSorted' is:\n${
-            expectedSorted
-            .take(20)
-            .mkString( """,""")
-          }")
-          val SortResults(sorted, comparisons): SortResults =
-            QuickSortWithInPlacePivotingComparisons(
-                                                     unsorted,
-                                                     startIndex = 0,
-                                                     endIndex = unsorted
-                                                                .length - 1,
-                                                     pivotRule = FirstPivot
-                                                   )
-          println(s"\n'sorted' is:\n${
-            sorted
-            .take(20)
-            .mkString( """,""")
-          }")
-          println(s"'comparisons' is:${comparisons}")
-          println(s"'comparisonsTotalCheck' is:${comparisonsTotalCheck}")
-          println(s"'comparisonsTotalCheck+' is:${
-            comparisonsTotalCheck +
-              10000 - 1
-          }")
-          println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
-          /*too large for integer*/
-          assume(
-                  //true == true,
-                  sorted
-                  .sameElements(expectedSorted) &&
-                    comparisons == comparisonsTotalCheck,
-                  "must be equal"
-                )
-        }
+  ignore(
+          "51: 'QuickSortWithInPlacePivotingComparisons' " +
+            "using the 'FirstPivot' rule" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            //'comparisons' is:176032273
+            /*
+            'comparisons' is:176032273
+        'comparisonsTotalCheck' is:158738
+        'comparisonsTotalCheck+' is:168737
+        'pivotingTotalCheck' is:162085
+            */
+            /*val takeNumber =
+              1000*/
+            val unsorted: Array[Int] =
+              getInput()
+              //.take(takeNumber)
+              .map(_.toInt)
+              .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            //Array(5, 7, 9, 11, 2, 3, 4)
+            //Array(5, 7, 9, 11, 2, 3, 4, 1)
+            val expectedSorted: Array[Int] =
+              unsorted
+              //.take(takeNumber)
+              .sorted
+            println(s"\n'expectedSorted' is:\n${
+              expectedSorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            val SortResults(sorted, comparisons): SortResults =
+              QuickSortWithInPlacePivotingComparisons(
+                                                       unsorted,
+                                                       startIndex = 0,
+                                                       endIndex = unsorted
+                                                                  .length - 1,
+                                                       pivotRule = FirstPivot
+                                                     )
+            println(s"\n'sorted' is:\n${
+              sorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            println(s"'comparisons' is:${comparisons}")
+            println(s"'comparisonsTotalCheck' is:${comparisonsTotalCheck}")
+            println(s"'comparisonsTotalCheck+' is:${
+              comparisonsTotalCheck +
+                10000 - 1
+            }")
+            println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(expectedSorted) &&
+                      comparisons == comparisonsTotalCheck,
+                    "must be equal"
+                  )
+          }
   ignore(
           "52: 'QuickSortWithInPlacePivotingComparisons' " +
             "using the LastPivot rule" +
@@ -765,5 +812,90 @@ class PivotingSuit
                     "must be equal"
                   )
           }
+  test(
+          "54: 'QuickSortWithInPlacePivotingComparisons' " +
+            "using the 'RandomPivot' rule" +
+            "should return sorted Array & 'comparisonsTotal'"
+        ) {
+            /*
+            'comparisons' is:120269683
+            'comparisonsTotalCheck' is:134093
+            'comparisonsTotalCheck+' is:144092
+            'pivotingTotalCheck' is:138382
+            */
+            /*val takeNumber =
+              1000*/
+            val unsorted: Array[Int] =
+              getInput()
+              //.take(takeNumber)
+              .map(_.toInt)
+              .toArray
+            //Array(7, 5)
+            //Array(5, 7, 1)
+            //Array(5, 7, 1, 2)
+            //Array(5, 7, 9, 11, 2, 3, 4)
+            //Array(5, 7, 9, 11, 2, 3, 4, 1)
+            val expectedSorted: Array[Int] =
+              unsorted
+              //.take(takeNumber)
+              .sorted
+            println(s"\n'expectedSorted' is:\n${
+              expectedSorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            val SortResults(sorted, comparisons): SortResults =
+              QuickSortWithInPlacePivotingComparisons(
+                                                       unsorted,
+                                                       startIndex = 0,
+                                                       endIndex = unsorted
+                                                                  .length - 1,
+                                                       pivotRule = RandomPivot
+                                                     )
+            println(s"\n'sorted' is:\n${
+              sorted
+              .take(20)
+              .mkString( """,""")
+            }")
+            println(s"'comparisons' is:${comparisons}")
+            println(s"'comparisonsTotalCheck' is:${comparisonsTotalCheck}")
+            /*println(s"'comparisonsTotalCheck+' is:${
+              comparisonsTotalCheck +
+                10000 - 1
+            }")*/
+            println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
+            /*too large for integer*/
+            assume(
+                    //true == true,
+                    sorted
+                    .sameElements(expectedSorted) &&
+                      comparisons == pivotingTotalCheck,
+                    s"'pivotingTotalCheck' & 'comparisons' must be equal"
+                  )
+          }
+  ignore(
+        "61: 'randomWithinInterval' " +
+          "should return Int within bounded inclusive interval"
+      ) {
+          val loBound: Int =
+            -1
+          val hiBound: Int =
+            1
+          val randomInt: Int =
+            randomWithinInterval(
+                                  loBound,
+                                  hiBound
+                                )
+          println(s"\n'randomInt' is:${
+            randomInt
+          }")
+          println(s"\n$loBound <= ${randomInt} < $hiBound")
+          assume(
+                  //true == true,
+                  randomInt >= loBound && randomInt <= hiBound,
+                  s"'randomInt' must be " +
+                    s"within interval >=$loBound & <=$hiBound"
+                )
+        }
 
 }

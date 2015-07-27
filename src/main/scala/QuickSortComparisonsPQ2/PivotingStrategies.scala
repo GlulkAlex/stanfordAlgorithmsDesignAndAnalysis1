@@ -5,7 +5,7 @@ package QuickSortComparisonsPQ2
 /**
  * Created by gluk-alex on 7/17/15.
  */
-object Pivoting1FirstElement {
+object PivotingStrategies {
 
   /*if path & name OK this is enough*/
   def getInput(
@@ -431,9 +431,83 @@ object Pivoting1FirstElement {
     medianIndex
   }
 
-  def ChoosePivot(
+  def ChoosePivotAsHead(
                    sourceSeq: Array[Int],
                    sourceSeqLenght: Int
+                   ): Int = {
+    if (sourceSeq.isEmpty) {
+      /*return value*/
+      /*assume that all values must be positive*/
+      -1
+    } else {
+      /*return value*/
+      sourceSeq.head
+    }
+  }
+
+  /*
+  [Warn] not sure about implementation correctness
+  possibly probability not equal (? Discrete probability distributions ?)
+  for 0-1 definitely fails - not 50 / 50 split
+  */
+  /*both bound inclusive*/
+  /*check for low bound sign*/
+  def randomWithinInterval(
+                        loBound: Int,
+                        hiBound: Int): Int = {
+    /*or meaningless & not work*/
+    assume(loBound<hiBound,s"$loBound must be < $hiBound")
+    /* 0.0 <= randomDouble < 1*/
+    /*0.0 or 0.99 & 3 to 7 => {3|4|5|6|7}*/
+    val randomDouble: Double =
+      scala.math.random
+    val coinFlip: Double =
+      scala.math.random
+    //val intShift: Int = 100000000
+    /*presumably greater then 1*/
+    val intervalLengthInt: Int =
+      hiBound - loBound + 1
+    /*mast be same type*/
+    val threshold: Double = 1.0 / intervalLengthInt
+    /*val sign : Int =
+      if (loBound < 0){
+        if (coinFlip < 0.5) {
+          -1
+        } else {
+          1
+        }
+      } else {
+        1
+      }*/
+    /*val intervalLengthDouble: Double =
+      hiBound - loBound + 1 */
+    /*return value*/
+    if (loBound >= 0) {
+      //loBound +
+        /*? from 0 to 9 only ?*/
+        /*? must be at least as big as double accuracy '16' ?*/
+      /*Int	32 bit signed value. Range -2147483648 to 2147483647*/
+      /*"2147483647".length=10*/
+        //((scala.math.abs(randomDouble) * intervalLengthInt).toInt %
+        /*((scala.math.abs(randomDouble) * intShift).toInt %
+          (hiBound - loBound))*/
+    } else {
+      //loBound + ((randomDouble * intShift).toInt % (hiBound - loBound))
+    }
+    /*? 'floor' or 'truncate' ?*/
+    loBound +
+      /*sign */ (randomDouble / threshold)
+        //.floor
+        /*? out of bound ?*/
+        .toInt
+  }
+
+  /*randomly return 'elemVal' as `pivot`*/
+  def ChoosePivotRanomly(
+                   sourceSeq: Array[Int],
+                   //sourceSeqLength: Int
+                   firstSeqIndex: Int,
+                   lastSeqIndex: Int
                    ): Int = {
     if (sourceSeq.isEmpty) {
       /*return value*/
@@ -456,7 +530,7 @@ object Pivoting1FirstElement {
     } else {
       //val pivotIndex: Int =
       val pivot: Int =
-        ChoosePivot(
+        ChoosePivotAsHead(
                      sourceSeq = unsorted,
                      sourceSeqLenght = unsortedLenght
                    )
@@ -491,6 +565,7 @@ object Pivoting1FirstElement {
   case object LastPivot extends PivotRule
 
   case object MedianPivot extends PivotRule
+  case object RandomPivot extends PivotRule
 
   case class SortResults(sortedArray: Array[Int], comparisonsTotal: Int)
 
@@ -560,10 +635,23 @@ object Pivoting1FirstElement {
                                             - 1
                                       )
           }
-
+          case RandomPivot => {
+            //ChoosePivotRanomly(
+            randomWithinInterval(
+                                  //sourceSeq = unsorted,
+                                  /*???*/
+                                  //firstSeqIndex =
+                                  0,
+                                  /*???*/
+                                  //lastSeqIndex =
+                                  unsortedLenght - 1
+                                )
+          }
         }
       val pivot: Int =
         unsorted(pivotIndex)
+      /*side effect*/
+      pivotingTotalCheck += unsortedLenght - 1
       /*
       DONE
       fix partition logic for each `pivotRule`
@@ -600,9 +688,10 @@ object Pivoting1FirstElement {
                               unsortedLenght =
                                 //part1.tail.length,
                                 part1.length,
-                              comparisonsTotal +
-                                //part1.tail.length - 1
-                                part1.length - 1,
+                              comparisonsTotal /*+
+                                unsortedLenght - 1*/,
+                              //part1.tail.length - 1
+                              //part1.length - 1,
                               pivotRule = pivotRule
                             )
       //val part2Sorted =
@@ -612,7 +701,9 @@ object Pivoting1FirstElement {
         QuickSortComparisons(
                               unsorted = part2,
                               unsortedLenght = part2.length,
-                              comparisonsTotal + part2.length - 1,
+                              //comparisonsTotal +
+                                unsortedLenght - 1,
+                                //part2.length - 1,
                               pivotRule = pivotRule
                             )
       /*return value*/
@@ -620,6 +711,8 @@ object Pivoting1FirstElement {
       SortResults(
                    part1Sorted ++ (pivot +: part2Sorted),
                    part1Comparisons + part2Comparisons
+                   /*comparisonsTotal +
+                   unsortedLenght - 1*/
                  )
     }
 
@@ -683,6 +776,19 @@ object Pivoting1FirstElement {
                                           endIndex
                                       )
           }
+          case RandomPivot => {
+            //ChoosePivotRanomly(
+            randomWithinInterval(
+                                        //sourceSeq = unsorted,
+                                        /*???*/
+                                        //firstSeqIndex =
+                                          startIndex,
+                                        /*???*/
+                                        //lastSeqIndex =
+                                          //unsortedLenght - 1
+                                          endIndex
+                                      )
+          }
         }
 
       /*
@@ -740,11 +846,12 @@ object Pivoting1FirstElement {
                                                      pivotingResults.pivotIndex
                                                        - 1,
                                                    /*very subtle moment*/
-                                                   comparisonsTotal +
+                                                   comparisonsTotal //+
                                                      /*if same then pointless*/
-                                                     pivotingResults
-                                                     .pivotIndex -
-                                                     startIndex,
+                                                     /*pivotingResults
+                                                     .pivotIndex -*/
+                                                     /*endIndex -
+                                                     startIndex*/,
                                                    pivotRule = pivotRule
                                                  )
         } else {
@@ -771,10 +878,10 @@ object Pivoting1FirstElement {
                                                    endIndex =
                                                      endIndex,
                                                    /*very subtle moment*/
-                                                   comparisonsTotal +
+                                                   //comparisonsTotal +
                                                      /*if same then pointless*/
-                                                     endIndex -
-                                                     pivotingResults.pivotIndex,
+                                                     endIndex - startIndex
+                                                     /*pivotingResults.pivotIndex*/,
                                                    pivotRule = pivotRule
                                                  )
         } else {
@@ -787,6 +894,7 @@ object Pivoting1FirstElement {
                    unsorted,
                    /*? is 'comparisonsTotal' calculated twice ?*/
                    part1Comparisons + part2Comparisons
+                   //endIndex - startIndex
                  )
     }
 
