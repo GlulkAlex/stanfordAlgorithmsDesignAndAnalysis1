@@ -97,59 +97,72 @@ class randomGeneratorsSuit
                     "must be equal to '10' line"
                   )
           }
-  test(
-        "13: 'writeJSON_ToFile'" +
-          "should write to text file"
-      ) {
-          val takeNumber: Int = 10
-          val filePath: String =
-            "/media/gluk-alex/" +
-              "GDI/Java/Scala/sbt/projects/" +
-              "stanfordAlgorithmsDesignAndAnalysis1/"
-          val fileName: String = "JSON.txt"
-          val lowerBound: Int = 0
-          val upperBound: Int = 1000
+  ignore(
+          "13: 'writeJSON_ToFile'" +
+            "should write to text file"
+        ) {
+            val takeNumber: Int = 10
+            /*
+            /media/gluk-alex/
+            GDI/
+            Java/Scala/sbt/projects/
+            stanfordAlgorithmsDesignAndAnalysis1/src/
+            test/scala/
+            testClosestPoints/ClosestPointsSuit.scala
+             */
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/testClosestPoints/"
+            val fileName: String = "JSON.txt"
+            val lowerBound: Int = 0
+            val upperBound: Int = 1000
 
-          val fileContent: Array[(Double, Double)] =
-            (for (i <- 1 to takeNumber) yield {
-              val xCoordinate: Double =
-                intervalImproved(
-                                  lo = lowerBound,
-                                  hi = upperBound).generate +
-                  //doubles
-                  doublesTruncated(2)
-                  .generate
-              val yCoordinate: Double =
-                intervalImproved(
-                                  lo = lowerBound,
-                                  hi = upperBound).generate +
-                  //doubles
-                  doublesTruncated(2)
-                  .generate
-              /*return value*/
-              (xCoordinate, yCoordinate)
-            }).toArray
+            val fileContent: Array[(Double, Double)] =
+              (for (i <- 1 to takeNumber) yield {
+                val xCoordinate: Double =
+                  intervalImproved(
+                                    lo = lowerBound,
+                                    hi = upperBound).generate +
+                    //doubles
+                    doublesTruncated(2)
+                    .generate
+                val yCoordinate: Double =
+                  intervalImproved(
+                                    lo = lowerBound,
+                                    hi = upperBound).generate +
+                    //doubles
+                    doublesTruncated(2)
+                    .generate
+                /*return value*/
+                (xCoordinate, yCoordinate)
+              }).toArray
 
-          writeJSON_ToFile(fileContent = fileContent)
+            writeJSON_ToFile(
+                              filePath = filePath,
+                              fileName = fileName,
+                              fileContent = fileContent
+                            )
 
-          val actualFileContent: Array[String] =
-            readFromFile(
-                          fileName = fileName,
-                          filePath = filePath
-                        )
-            //.map(_.toInt)
-            .toArray
+            val actualFileContent: Array[String] =
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+              //.map(_.toInt)
+              .toArray
 
-          println(
-                   s"\nfirst $takeNumber lines from '$fileName' is:\n${
-                     actualFileContent.take(10).mkString( "\n")
-                   }")
-          assume(
-                  //true == true,
-                  fileContent.length + 2 == actualFileContent.length,
-                  s"'length' must be equal"
-                )
-        }
+            println(
+                     s"\nfirst $takeNumber lines from '$fileName' is:\n${
+                       actualFileContent.take(10).mkString("\n")
+                     }")
+            assume(
+                    //true == true,
+                    fileContent.length + 2 == actualFileContent.length,
+                    s"'length' must be equal"
+                  )
+          }
   ignore(
           "21: 'generators'" +
             "should generate double from specified interval"
@@ -176,5 +189,41 @@ class randomGeneratorsSuit
                       s"'$upperBound'"
                   )
           }
+  test(
+        "31: 'randomlyOrderedSequenceFromInterval'" +
+          "should generate randomly ordered sequence from specified interval"
+      ) {
+          val takeNumber: Int = 15
+          val lowerBound: Int = 0
+          val upperBound: Int = 15
+          val randomIntSeq: Seq[Int] =
+            randomlyOrderedSequenceFromInterval(
+                                                 lowerBound,
+                                                 upperBound)
+
+          println(
+                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                     upperBound
+                   }")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .sorted
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+          assume(
+                  //true == true,
+                  randomIntSeq.length == upperBound + 1 - lowerBound,
+                  s"'randomIntSeq.length' must be " +
+                    s"equal to interval size "
+                )
+        }
 
 }

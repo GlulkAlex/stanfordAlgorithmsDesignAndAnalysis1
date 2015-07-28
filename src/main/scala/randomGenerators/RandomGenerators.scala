@@ -161,4 +161,71 @@ object RandomGenerators {
                                         accuracy
     )
   }
+
+  /*both bound inclusive*/
+  def randomIntWithinInterval(
+                            loBound: Int,
+                            hiBound: Int): Int = {
+    /*or meaningless & not work*/
+    assume(loBound<=hiBound,s"$loBound must be <= $hiBound")
+    val randomDouble: Double =
+      scala.math.random
+    /*presumably greater then 1*/
+    val intervalLengthInt: Int =
+      hiBound - loBound + 1
+    /*mast be same type*/
+    val threshold: Double = 1.0 / intervalLengthInt
+    /*return value*/
+    if (loBound == hiBound) {
+      loBound
+    } else {
+    /*? 'floor' or 'truncate' ?*/
+    loBound +
+      (randomDouble / threshold)
+                .toInt
+    }
+  }
+
+
+  /*
+  make a sequence
+  with values from
+  within inclusive interval / diapason
+  but 'hiBound' exclusive
+  */
+  def randomlyOrderedSequenceFromInterval(
+                                           loBound: Int,
+                                           hiBound: Int): Seq[Int] = {
+    /*or meaningless & not work*/
+    assume(loBound<=hiBound,s"$loBound must be <= $hiBound")
+    /*0,1,{2,3,4}*/
+    val seqLength: Int =  hiBound - loBound + 1
+
+    def loop(generatedSeq: Seq[Int]) : Seq[Int] = {
+      if (generatedSeq.length == seqLength) {
+        /*return value*/
+        generatedSeq
+      } else {
+        val newSeqVal: Int =
+          randomIntWithinInterval(
+                                   loBound: Int,
+                                   hiBound: Int)
+        //if (generatedSeq.exists())
+        if (generatedSeq.contains(newSeqVal)) {
+          /*that may take a long time, ? more then 'n' square ?*/
+          loop(generatedSeq: Seq[Int])
+        } else {
+          /*recursion*/
+          /*prepend new head element*/
+          loop(newSeqVal +: generatedSeq)
+        }
+      }
+    }
+    /*initialization*/
+    if (loBound == hiBound) {
+      Seq(loBound)
+    } else {
+      loop(generatedSeq = Seq.empty[Int])
+    }
+  }
 }

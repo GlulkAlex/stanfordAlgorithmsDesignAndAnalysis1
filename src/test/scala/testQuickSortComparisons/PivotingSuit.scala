@@ -161,16 +161,16 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  ignore(
+  test(
           "24: 'QuickSortComparisons' using the \"median-of-three\" pivot " +
             "rule" +
             "should return sorted Array & 'comparisonsTotal'"
         ) {
-            val takeNumber =
-              2000
+            /*val takeNumber =
+              2000*/
             val unsorted: Array[Int] =
               getInput()
-              .take(takeNumber)
+              //.take(takeNumber)
               .map(_.toInt)
               .toArray
             //Array(7, 5)
@@ -179,8 +179,9 @@ class PivotingSuit
             //  Array(5, 7, 9, 11, 2, 3, 4)
             val expectedSorted: Array[Int] =
               unsorted
-              .take(takeNumber)
+              //.take(takeNumber)
               .sorted
+                  pivotingTotalCheck = 0
             val SortResults(sorted, comparisons): SortResults =
               QuickSortComparisons(
                                     unsorted,
@@ -198,12 +199,14 @@ class PivotingSuit
               .mkString( """,""")
             }")
             println(s"'comparisons' is:${comparisons}")
+                  println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
             /*too large for integer*/
             assume(
                     //true == true,
                     sorted
-                    .sameElements(expectedSorted),
-                    "must be equal"
+                    .sameElements(expectedSorted) &&
+                      comparisons == pivotingTotalCheck,
+                    s"'pivotingTotalCheck' & 'comparisons' must be equal"
                   )
           }
   ignore(
@@ -250,7 +253,7 @@ class PivotingSuit
                     sorted
                     .sameElements(expectedSorted) &&
                       comparisons == pivotingTotalCheck,
-                    "must be equal"
+                    s"'pivotingTotalCheck' & 'comparisons' must be equal"
                   )
           }
   ignore(
@@ -844,6 +847,7 @@ class PivotingSuit
               .take(20)
               .mkString( """,""")
             }")
+                  pivotingTotalCheck = 0
             val SortResults(sorted, comparisons): SortResults =
               QuickSortWithInPlacePivotingComparisons(
                                                        unsorted,

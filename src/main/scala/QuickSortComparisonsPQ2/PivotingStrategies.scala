@@ -283,6 +283,39 @@ object PivotingStrategies {
     PivotingResults(sourceArray, firstGreaterThanPivotIndex - 1)
   }
 
+  /*return i-th smallest element from sequence*/
+  def orderStatistic( sourceSeq: Seq[Int],
+                      smallestOrder: Int): Int = {
+    assume(
+            smallestOrder >= 0 &&
+              smallestOrder < sourceSeq.length,
+    s"'smallestOrder' must be within 'sourceSeq' indices"
+          )
+    /*Randomized Selection*/
+    val loBound: Int = 0
+    val hiBound: Int = sourceSeq.length - 1
+    val pivotIndex: Int =
+      randomWithinInterval(
+                            loBound: Int,
+                            hiBound: Int)
+    val pivot: Int =
+      sourceSeq(pivotIndex)
+    /*return value*/
+    if (pivotIndex == smallestOrder) {
+      pivotIndex
+    }else if (pivotIndex > smallestOrder) {
+      /*reduce to the left part*/
+      /*recursion*/
+      orderStatistic( sourceSeq.take(pivotIndex),
+                      smallestOrder)
+    }else /*if (pivotIndex < smallestOrder)*/ {
+      /*reduce to the right part*/
+      /*recursion*/
+      orderStatistic( sourceSeq.drop(pivotIndex),
+                      smallestOrder)
+    }
+  }
+
   /*? assume 'sourceSeq.nonEmpty' ?*/
   def ChoosePivotIndex(
                         sourceSeq: Array[Int],
@@ -846,12 +879,13 @@ object PivotingStrategies {
                                                      pivotingResults.pivotIndex
                                                        - 1,
                                                    /*very subtle moment*/
-                                                   comparisonsTotal //+
+                                                   //comparisonsTotal +
                                                      /*if same then pointless*/
-                                                     /*pivotingResults
-                                                     .pivotIndex -*/
-                                                     /*endIndex -
-                                                     startIndex*/,
+                                                     pivotingResults
+                                                     .pivotIndex -
+                                                     endIndex +
+                                                     endIndex -
+                                                     startIndex,
                                                    pivotRule = pivotRule
                                                  )
         } else {
@@ -880,8 +914,8 @@ object PivotingStrategies {
                                                    /*very subtle moment*/
                                                    //comparisonsTotal +
                                                      /*if same then pointless*/
-                                                     endIndex - startIndex
-                                                     /*pivotingResults.pivotIndex*/,
+                                                     endIndex - //startIndex
+                                                     pivotingResults.pivotIndex,
                                                    pivotRule = pivotRule
                                                  )
         } else {
@@ -893,7 +927,8 @@ object PivotingStrategies {
                    /*sorted in place at this moment*/
                    unsorted,
                    /*? is 'comparisonsTotal' calculated twice ?*/
-                   part1Comparisons + part2Comparisons
+                   comparisonsTotal +
+                   part1Comparisons + part2Comparisons //+
                    //endIndex - startIndex
                  )
     }

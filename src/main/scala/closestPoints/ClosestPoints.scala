@@ -1,6 +1,7 @@
 package closestPoints
 
 //import scala.util.parsing.json
+
 import scala.math._
 
 /**
@@ -105,5 +106,22 @@ object ClosestPoints {
                                         Double.PositiveInfinity),
                         distance = 0.0
                       )
+  }
+
+  def pointsDistanciesCombinator(pointsSeq: Vector[ArbitraryPoint]):
+  Vector[PairOfPointsResult] = {
+    for {
+      p1 <- pointsSeq
+      p2 <- pointsSeq if p1 != p2
+    } yield PairOfPointsResult(
+                                ArbitraryPoint(
+                                                p1.x,
+                                                p1.y),
+                                ArbitraryPoint(
+                                                p2.x,
+                                                p2.y),
+                                distance =
+                                  evalDistance(p1, p2)
+                              )
   }
 }
