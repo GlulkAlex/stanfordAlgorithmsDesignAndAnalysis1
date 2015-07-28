@@ -191,7 +191,7 @@ object RandomGenerators {
   make a sequence
   with values from
   within inclusive interval / diapason
-  but 'hiBound' exclusive
+  both 'loBound' & 'hiBound' inclusive
   */
   def randomlyOrderedSequenceFromInterval(
                                            loBound: Int,

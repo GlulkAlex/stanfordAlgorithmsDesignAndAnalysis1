@@ -286,16 +286,18 @@ object PivotingStrategies {
   /*return i-th smallest element from sequence*/
   def orderStatistic( sourceSeq: Seq[Int],
                       smallestOrder: Int): Int = {
-    assume(
+    /*as method is recursive 'assume' fails in later iterations*/
+    /*assume(
             smallestOrder >= 0 &&
               smallestOrder < sourceSeq.length,
-    s"'smallestOrder' must be within 'sourceSeq' indices"
-          )
+    s"'smallestOrder'$smallestOrder must be " +
+      s"within '0' & 'sourceSeq.length'${sourceSeq.length} or indices"
+          )*/
     /*Randomized Selection*/
     val loBound: Int = 0
     val hiBound: Int = sourceSeq.length - 1
     val pivotIndex: Int =
-      randomWithinInterval(
+      randomIntWithinInterval(
                             loBound: Int,
                             hiBound: Int)
     val pivot: Int =
@@ -478,61 +480,28 @@ object PivotingStrategies {
     }
   }
 
-  /*
-  [Warn] not sure about implementation correctness
-  possibly probability not equal (? Discrete probability distributions ?)
-  for 0-1 definitely fails - not 50 / 50 split
-  */
   /*both bound inclusive*/
-  /*check for low bound sign*/
-  def randomWithinInterval(
-                        loBound: Int,
-                        hiBound: Int): Int = {
+  def randomIntWithinInterval(
+                               loBound: Int,
+                               hiBound: Int): Int = {
     /*or meaningless & not work*/
-    assume(loBound<hiBound,s"$loBound must be < $hiBound")
-    /* 0.0 <= randomDouble < 1*/
-    /*0.0 or 0.99 & 3 to 7 => {3|4|5|6|7}*/
+    assume(loBound<=hiBound,s"$loBound must be <= $hiBound")
     val randomDouble: Double =
       scala.math.random
-    val coinFlip: Double =
-      scala.math.random
-    //val intShift: Int = 100000000
     /*presumably greater then 1*/
     val intervalLengthInt: Int =
       hiBound - loBound + 1
     /*mast be same type*/
     val threshold: Double = 1.0 / intervalLengthInt
-    /*val sign : Int =
-      if (loBound < 0){
-        if (coinFlip < 0.5) {
-          -1
-        } else {
-          1
-        }
-      } else {
-        1
-      }*/
-    /*val intervalLengthDouble: Double =
-      hiBound - loBound + 1 */
     /*return value*/
-    if (loBound >= 0) {
-      //loBound +
-        /*? from 0 to 9 only ?*/
-        /*? must be at least as big as double accuracy '16' ?*/
-      /*Int	32 bit signed value. Range -2147483648 to 2147483647*/
-      /*"2147483647".length=10*/
-        //((scala.math.abs(randomDouble) * intervalLengthInt).toInt %
-        /*((scala.math.abs(randomDouble) * intShift).toInt %
-          (hiBound - loBound))*/
+    if (loBound == hiBound) {
+      loBound
     } else {
-      //loBound + ((randomDouble * intShift).toInt % (hiBound - loBound))
-    }
-    /*? 'floor' or 'truncate' ?*/
-    loBound +
-      /*sign */ (randomDouble / threshold)
-        //.floor
-        /*? out of bound ?*/
+      /*? 'floor' or 'truncate' ?*/
+      loBound +
+        (randomDouble / threshold)
         .toInt
+    }
   }
 
   /*randomly return 'elemVal' as `pivot`*/
@@ -670,7 +639,7 @@ object PivotingStrategies {
           }
           case RandomPivot => {
             //ChoosePivotRanomly(
-            randomWithinInterval(
+            randomIntWithinInterval(
                                   //sourceSeq = unsorted,
                                   /*???*/
                                   //firstSeqIndex =
@@ -811,7 +780,7 @@ object PivotingStrategies {
           }
           case RandomPivot => {
             //ChoosePivotRanomly(
-            randomWithinInterval(
+            randomIntWithinInterval(
                                         //sourceSeq = unsorted,
                                         /*???*/
                                         //firstSeqIndex =

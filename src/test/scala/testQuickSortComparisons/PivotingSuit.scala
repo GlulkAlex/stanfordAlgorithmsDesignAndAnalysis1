@@ -2,6 +2,7 @@ package testQuickSortComparisons
 
 import org.scalatest.FunSuite
 import QuickSortComparisonsPQ2.PivotingStrategies._
+import randomGenerators.RandomGenerators._
 
 //import inversionsNumberPQ1.InversionsNumber
 
@@ -161,7 +162,7 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  test(
+  ignore(
           "24: 'QuickSortComparisons' using the \"median-of-three\" pivot " +
             "rule" +
             "should return sorted Array & 'comparisonsTotal'"
@@ -181,7 +182,7 @@ class PivotingSuit
               unsorted
               //.take(takeNumber)
               .sorted
-                  pivotingTotalCheck = 0
+            pivotingTotalCheck = 0
             val SortResults(sorted, comparisons): SortResults =
               QuickSortComparisons(
                                     unsorted,
@@ -199,7 +200,7 @@ class PivotingSuit
               .mkString( """,""")
             }")
             println(s"'comparisons' is:${comparisons}")
-                  println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
+            println(s"'pivotingTotalCheck' is:${pivotingTotalCheck}")
             /*too large for integer*/
             assume(
                     //true == true,
@@ -815,7 +816,7 @@ class PivotingSuit
                     "must be equal"
                   )
           }
-  test(
+  ignore(
           "54: 'QuickSortWithInPlacePivotingComparisons' " +
             "using the 'RandomPivot' rule" +
             "should return sorted Array & 'comparisonsTotal'"
@@ -847,7 +848,7 @@ class PivotingSuit
               .take(20)
               .mkString( """,""")
             }")
-                  pivotingTotalCheck = 0
+            pivotingTotalCheck = 0
             val SortResults(sorted, comparisons): SortResults =
               QuickSortWithInPlacePivotingComparisons(
                                                        unsorted,
@@ -878,27 +879,80 @@ class PivotingSuit
                   )
           }
   ignore(
-        "61: 'randomWithinInterval' " +
-          "should return Int within bounded inclusive interval"
+          "61: 'randomWithinInterval' " +
+            "should return Int within bounded inclusive interval"
+        ) {
+            val loBound: Int =
+              -1
+            val hiBound: Int =
+              1
+            val randomInt: Int =
+              randomGenerators.RandomGenerators.
+              randomIntWithinInterval(
+                  loBound,
+                  hiBound
+                                     )
+            println(s"\n'randomInt' is:${
+              randomInt
+            }")
+            println(s"\n$loBound <= ${randomInt} < $hiBound")
+            assume(
+                    //true == true,
+                    randomInt >= loBound && randomInt <= hiBound,
+                    s"'randomInt' must be " +
+                      s"within interval >=$loBound & <=$hiBound"
+                  )
+          }
+  test(
+        "71: 'orderStatistic'" +
+          "should return right smallest element from sequence"
       ) {
-          val loBound: Int =
-            -1
-          val hiBound: Int =
-            1
-          val randomInt: Int =
-            randomWithinInterval(
-                                  loBound,
-                                  hiBound
-                                )
-          println(s"\n'randomInt' is:${
-            randomInt
-          }")
-          println(s"\n$loBound <= ${randomInt} < $hiBound")
+          val takeNumber: Int = 25
+          val lowerBound: Int = 0
+          val upperBound: Int = 15
+          val expectedVal: Int = 15
+          /*size must be exactly 'upperBound + 1 - lowerBound'*/
+          val randomIntSeq: Seq[Int] =
+            randomlyOrderedSequenceFromInterval(
+                                                 lowerBound,
+                                                 upperBound)
+          println(
+                   s"\n'randomIntSeq.length' is:'\n${
+                     randomIntSeq
+                     .length
+                   }'")
+
+          println(
+                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                     upperBound
+                   }")
+          println(
+                   s"\n'expectedVal' is: $expectedVal")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .sorted
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+
+          val smallestElem: Int =
+            orderStatistic(randomIntSeq, 15)
+
+          println(
+                   s"\n'smallestElem' is: $smallestElem")
+
           assume(
                   //true == true,
-                  randomInt >= loBound && randomInt <= hiBound,
-                  s"'randomInt' must be " +
-                    s"within interval >=$loBound & <=$hiBound"
+                  smallestElem == expectedVal,
+                  s"'smallestElem' must be " +
+                    s"equal to '$expectedVal'"
                 )
         }
 
