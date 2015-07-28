@@ -11,17 +11,40 @@ val strJSON ="""{"coordinates":[
   {"x":"235.79", "y":"295.24"}
   ]}"""
 
+/*extractors*/
+val xExtractor =
+  """.+(\d+\.\d{2}).+""".r
+val yExtractor =
+  """y.:.(\d+\.\d{2})""".r
+val xyExtractor =
+  """\D+(\d+\.\d{2})\D+(\d+\.\d{2}).+""".r
+val digitsExtractor =
+  """.+(\d+\.\d{2}).+""".r
+
+def extractX(expr: String): String =
+  expr match {
+  case (xyExtractor(x,y)) =>
+    s"'x' = $x, 'y' = $y"
+  case (xExtractor(x)) =>
+    s"'x' = $x"
+  case (yExtractor(y)) =>
+    s"'y' = $y"
+  case (digitsExtractor(d)) =>
+    s"'d' = $d"
+  case _ => "no digits Nor 'x' nor 'y' found"
+}
+
+extractX(expr = """{"x":"6.18", "y":"969.61"},""")
+extractX(expr = """{"x":"235.79", "y":"295.24"}""")
+extractX(expr = """{"coordinates":[""")
 /*filter criteria*/
 val partfunc1: PartialFunction[String, String] = {
   case x if x.exists(_ =='x') => x
   // no case for Silver(),
   // because we're only interested in Gold()
 }
-
 strJSON.lines.collect(partfunc1).mkString("\n")
-
 val coord = """([x|y])\D+(\d+\.\d{2})""".r
-
 val x =
   """{"x":"349.26", "y":"241.13"}""" match {
     case coord(x, y) => x

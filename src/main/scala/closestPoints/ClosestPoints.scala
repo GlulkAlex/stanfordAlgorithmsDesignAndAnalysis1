@@ -3,6 +3,7 @@ package closestPoints
 //import scala.util.parsing.json
 
 import scala.math._
+import scala.util.matching.Regex
 
 /**
  * Created by gluk-alex on 7/25/15.
@@ -23,6 +24,42 @@ object ClosestPoints {
                                  y2: Double,*/
                                  distance: Double
                                  )
+
+  /*extractors regEx groups*/
+  val xyExtractor: Regex =
+    """\D+(\d+\.\d{2})\D+(\d+\.\d{2}).+""".r
+
+  def extractCoordinatesFromSingleLine(expr: String): Option[ArbitraryPoint] =
+    expr match {
+      case (xyExtractor(x,y)) =>
+        Some(ArbitraryPoint(x.toDouble, y.toDouble))
+      case _ => None
+    }
+
+  def makePointsFromFileSource(source: Iterator[String]): Vector[ArbitraryPoint] = {
+    def loop(extractedPoints: Vector[ArbitraryPoint]): Vector[ArbitraryPoint] = {
+      if (source.hasNext) {
+        val stringFromSource: String =
+          source.next()
+        val extractedPoint: Option[ArbitraryPoint] =
+          extractCoordinatesFromSingleLine(expr=stringFromSource)
+        /*recursion*/
+        if (extractedPoint.isEmpty) {
+          /*same as before*/
+          loop(extractedPoints)
+        } else {
+          /*new point added*/
+          loop(extractedPoint.get +: extractedPoints)
+        }
+      } else {
+        /*return value*/
+        extractedPoints
+      }
+    }
+    /*initialization*/
+    /*return value*/
+    loop(Vector.empty)
+  }
 
   def evalDistance(
                     point1: ArbitraryPoint,
@@ -108,7 +145,8 @@ object ClosestPoints {
                       )
   }
 
-  def pointsDistanciesCombinator(pointsSeq: Vector[ArbitraryPoint]):
+  /*calculate twice when switch start & end point in pair*/
+  def pointsDistancesCombinator(pointsSeq: Vector[ArbitraryPoint]):
   Vector[PairOfPointsResult] = {
     for {
       p1 <- pointsSeq
@@ -124,4 +162,5 @@ object ClosestPoints {
                                   evalDistance(p1, p2)
                               )
   }
+  /*Distances*/
 }
