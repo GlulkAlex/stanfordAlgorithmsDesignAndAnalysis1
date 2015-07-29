@@ -82,7 +82,7 @@ class ClosestPointsSuit
                   "'pointsDistances' must be non empty"
                 )
         }
-  test(
+  ignore(
         "3: 'pointsDistancesCombinator'" +
           "should contain minimum points distances"
       ) {
@@ -125,6 +125,61 @@ class ClosestPointsSuit
           assume(
                   //true == true,
                   minDistance >= 0.0,
+                  "'pointsDistances' must be non empty"
+                )
+        }
+  test(
+        "4: 'pointsDistancesCombinator' & 'pointsDistancesCombinatorImproved'" +
+          "should contain same minimum points distances"
+      ) {
+          val takeNumber: Int = 15
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/testClosestPoints/"
+          val fileName: String = "JSON.txt"
+          val actualFileContent: Iterator[String] =
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+          val pointsVector: Vector[ArbitraryPoint] =
+            makePointsFromFileSource(source = actualFileContent)
+          val pointsDistances: Vector[PairOfPointsResult] =
+            pointsDistancesCombinator(pointsVector)
+          val minDistance: Double =
+            pointsDistances
+            .minBy((x)=>x.distance).distance
+          val pointsDistancesImproved: Vector[PairOfPointsResult] =
+            pointsDistancesCombinatorImproved(pointsVector)
+          val minDistanceImproved: Double =
+            pointsDistancesImproved
+            .minBy((x)=>x.distance).distance
+
+          println(
+                   s"\nfirst $takeNumber lines from '$fileName' is:\n${
+                     actualFileContent.take(10).mkString("\n")
+                   }")
+          println(
+                   s"\nfirst $takeNumber distances from 'pointsDistances' is:\n${
+                     pointsDistances.take(10).mkString("\n")
+                   }")
+          println(
+                   s"\n'minDistance' from 'pointsDistances' is:\n${
+                     minDistance
+                   }")
+          println(
+                   s"\n'minDistance' from 'pointsDistancesImproved' is:\n${
+                     minDistanceImproved
+                   }")
+          /*println(
+                   s"\nfirst $takeNumber points from '$fileName' is:\n${
+                     pointsVector.take(10).mkString("\n")
+                   }")*/
+          assume(
+                  //true == true,
+                  minDistance == minDistanceImproved,
                   "'pointsDistances' must be non empty"
                 )
         }
