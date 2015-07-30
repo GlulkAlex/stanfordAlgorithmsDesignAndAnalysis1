@@ -34,7 +34,7 @@ object MinimumCuts {
   the vertex with label '6' is adjacent to
   (i.e., shares an `edge` with)
   the vertices with `labels` '155,56,52,120,......,etc'
-  TODO
+  DONE
   Your task is
   to code up and run
   the `randomized contraction algorithm`
@@ -257,6 +257,7 @@ object MinimumCuts {
             /*reversed 'replaceEdge'*/
             (edge.startNode == endNode && edge.endNode == startNode) ||
             /*just to be sure*/
+            /*as test showed those conditions matters */
             (edge.startNode == startNode && edge.endNode == startNode) ||
             (edge.startNode == endNode && edge.endNode == endNode)
             )
@@ -297,31 +298,39 @@ object MinimumCuts {
   }
 
   def minimumCutTrails(
-                        adjacencyList: Iterator[String] /*,
-                        smallestCut: Int = Double.PositiveInfinity*/
+                        adjacencyList: Iterator[String] ,
+                        //smallestCut: Int = Double.PositiveInfinity
                         //.toInt
+                        trailsUpperBound: Int = 0
                         ) = {
+    assume(adjacencyList.nonEmpty,s"'adjacencyList' shouid be `nonEmpty`")
     /*val graphComponents: Vector[VvsE] =
       extractGraphVandE(adjacencyList: Vector[String])*/
     val (graphEdges, graphNodes): (Vector[Edge], Vector[Int]) =
       extractEdges(adjacencyList)
     val trails: Int =
-      trailsNumber(
-                    nVertices =
-                      /*fails as iterator empty at this moment*/
-                      //adjacencyList.length
-                      graphNodes.length
-                  )
+      if (trailsUpperBound > 0) {
+        trailsUpperBound
+      } else {
+        trailsNumber(
+                      nVertices =
+                        /*fails as iterator empty at this moment*/
+                        //adjacencyList.length
+                        graphNodes.length
+                    )
+      }
 
     /*return 'smallestCut'*/
     def loop(
               trailsLeft: Int,
               smallestCut: Int
               ): Int = {
-      if (trailsLeft == 0) {
+      //if (trailsLeft == 0) {
+      if (trailsLeft <= 0) {
         /*return value*/
         smallestCut
-      } else {
+      } else /*if (trailsLeft > 0)*/{
+        /*may changes over time or stay the same depending on graph*/
         val currentCut: Int =
           randomizedEdgeContraction(
                                      nodesRemains =
@@ -332,11 +341,14 @@ object MinimumCuts {
         /*recursion*/
         loop(
               trailsLeft - 1,
+        /*must reduce with every iteration,
+        at least in the first turn,
+        not stay the same*/
               smallestCut =
                 if (smallestCut > currentCut) {
                   currentCut
                 } else {
-                  currentCut
+                  smallestCut
                 }
             )
       }

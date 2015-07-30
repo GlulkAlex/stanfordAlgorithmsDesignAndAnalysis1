@@ -1,3 +1,10 @@
+val smallestCut: Int =
+  Double.PositiveInfinity
+  .toInt
+smallestCut > 0
+smallestCut > -1
+smallestCut > 2147483647
+smallestCut > 1
 -1-1
 -1-1 < -1
 -1-1 < -2
@@ -39,7 +46,6 @@ def secondPart(fPart: Int, len: Int): Int = {
     0
   }
 }
-
 len0/2
 partition(len0)
 len1/2
@@ -55,7 +61,6 @@ len5/2
 partition(len5)
 partition(len6)
 partition(len7)
-
 0 - 0
 0 + 1 - 0
 3>2

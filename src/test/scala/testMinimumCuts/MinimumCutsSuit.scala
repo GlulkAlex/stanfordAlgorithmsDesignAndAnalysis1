@@ -183,8 +183,9 @@ class MinimumCutsSuit
                           fileName = fileName,
                           filePath = filePath
                         )
-          val (edges, nodes) =
-            extractEdges(actualFileContent)
+          /*make Iterators empty*/
+          /*val (edges, nodes) =
+            extractEdges(actualFileContent)*/
           val mockNodes: Vector[Int] =
             (1 to 8).toVector
           val mockEdges: Vector[Edge] =
@@ -214,15 +215,19 @@ class MinimumCutsSuit
               List(6, 3, 4, 5, 7).mkString("", tab, "\n") +
               List(7, 1, 2, 6, 8).mkString("", tab, "\n") +
               List(8, 1, 2, 7).mkString("", tab, "")
+          /*'211932' takes too much time*/
           val trailsTotal: Int =
             trailsNumber(nVertices =
                            //8
-            nodes.length
+                           200
+                         //nodes.length
                         )
+          /*?'17'?*/
           val minCut: Int =
             minimumCutTrails(
                               //mockAdjacencyList.lines
-                                actualFileContent
+                              actualFileContent,
+                              trailsUpperBound = 1000
                             )
           val expectedValueMin: Int = 2
           //val expectedValueMax: Int = 3
