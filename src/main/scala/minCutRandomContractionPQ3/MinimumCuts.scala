@@ -217,8 +217,8 @@ object MinimumCuts {
   */
   def randomizedEdgeContraction(
                                  //graphToCut: Vector[VvsE]
-                               nodesRemains: Int,
-                               remainingEdges: Vector[Edge]
+                                 nodesRemains: Int,
+                                 remainingEdges: Vector[Edge]
                                  ): Int = {
     assume(nodesRemains >= 2, s"graph must have at least two nodes")
     assume(remainingEdges.nonEmpty, s"graph must have at least one edge")
@@ -242,7 +242,8 @@ object MinimumCuts {
         for {
           edge <- remainingEdges
           /*must remove cycles to merged nodes*/
-          if edge.startNode != startNode && edge.endNode != endNode
+          //if edge.startNode != startNode && edge.endNode != endNode
+          if edge != replaceEdge
         } yield Edge(
                       startNode =
                         if (edge.startNode == endNode) {
@@ -259,9 +260,10 @@ object MinimumCuts {
                     )
       /*recursion*/
       randomizedEdgeContraction(
-      /*reduction to converge to base case*/
-                                 nodesRemains-1,
-                                 remainingEdges=newRemainingEdges
+                                 /*reduction to converge to base case*/
+                                 /*'endNode' gone*/
+                                 nodesRemains - 1,
+                                 remainingEdges = newRemainingEdges
                                )
     }
     /*
@@ -280,14 +282,14 @@ object MinimumCuts {
                         ) = {
     /*val graphComponents: Vector[VvsE] =
       extractGraphVandE(adjacencyList: Vector[String])*/
-    val (graphEdges, graphNodes): (Vector[Edge],Vector[Int]) =
+    val (graphEdges, graphNodes): (Vector[Edge], Vector[Int]) =
       extractEdges(adjacencyList)
     val trails: Int =
       trailsNumber(
                     nVertices =
                       /*fails as iterator empty at this moment*/
                       //adjacencyList.length
-                        graphNodes.length
+                      graphNodes.length
                   )
 
     /*return 'smallestCut'*/
