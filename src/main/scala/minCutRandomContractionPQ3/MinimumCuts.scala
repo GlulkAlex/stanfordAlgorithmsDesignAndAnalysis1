@@ -237,23 +237,44 @@ object MinimumCuts {
         remainingEdges(replaceEdgeIndex)
       val startNode: Int = replaceEdge.startNode
       val endNode: Int = replaceEdge.endNode
+      /*
+      In graph theory,
+      an `edge contraction` is
+      an operation
+      which `removes` an `edge` from a `graph`
+      while
+      simultaneously
+      `merging`
+      the two `vertices` that it previously joined.
+       */
       /*node replacement after / as fusion*/
       val newRemainingEdges: Vector[Edge] =
         for {
           edge <- remainingEdges
           /*must remove cycles to merged nodes*/
           //if edge.startNode != startNode && edge.endNode != endNode
-          if edge != replaceEdge
+          if !(edge == replaceEdge ||
+            /*reversed 'replaceEdge'*/
+            (edge.startNode == endNode && edge.endNode == startNode) ||
+            /*just to be sure*/
+            (edge.startNode == startNode && edge.endNode == startNode) ||
+            (edge.startNode == endNode && edge.endNode == endNode)
+            )
         } yield Edge(
                       startNode =
                         if (edge.startNode == endNode) {
                           startNode
+                        /*}else if (edge.startNode == startNode) {
+                          startNode*/
                         } else {
                           edge.startNode
                         },
                       endNode =
                         if (edge.endNode == endNode) {
                           startNode
+                          /*}else if (edge.startNode == startNode) {
+                          //? that case must be filtered out by 'for' `guard` ?
+                          startNode*/
                         } else {
                           edge.endNode
                         }

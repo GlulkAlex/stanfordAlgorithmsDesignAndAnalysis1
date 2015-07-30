@@ -110,8 +110,16 @@ class MinimumCutsSuit
             val (edges, nodes) =
               extractEdges(actualFileContent)
             val mockNodes: Vector[Int] =
+              (1 to 3).toVector
+            val mockNodes2: Vector[Int] =
               (1 to 8).toVector
             val mockEdges: Vector[Edge] =
+              Vector(
+                      Edge(1, 2),
+                      Edge(1, 3),
+                      Edge(2, 3)
+                    )
+            val mockEdges2: Vector[Edge] =
               Vector(
                       Edge(1, 2),
                       Edge(1, 8),
@@ -155,7 +163,7 @@ class MinimumCutsSuit
                   )
           }
   test(
-        "3: 'minimumCutTrails'" +
+        "4: 'minimumCutTrails'" +
           "should return number of " +
           "min cuts"
       ) {
@@ -207,9 +215,15 @@ class MinimumCutsSuit
               List(7, 1, 2, 6, 8).mkString("", tab, "\n") +
               List(8, 1, 2, 7).mkString("", tab, "")
           val trailsTotal: Int =
-            trailsNumber(nVertices = 8)
+            trailsNumber(nVertices =
+                           //8
+            nodes.length
+                        )
           val minCut: Int =
-            minimumCutTrails(mockAdjacencyList.lines)
+            minimumCutTrails(
+                              //mockAdjacencyList.lines
+                                actualFileContent
+                            )
           val expectedValueMin: Int = 2
           //val expectedValueMax: Int = 3
 
