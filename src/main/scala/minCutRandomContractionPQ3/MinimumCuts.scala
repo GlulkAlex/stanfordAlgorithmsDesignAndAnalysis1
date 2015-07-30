@@ -1,6 +1,7 @@
 package minCutRandomContractionPQ3
 
 import scala.math.log
+import randomGenerators.RandomGenerators.randomIntWithinInterval
 
 /**
  * Created by gluk-alex on 7/23/15.
@@ -155,11 +156,13 @@ object MinimumCuts {
   def extractEdges(
                     adjacencyList: Iterator[String],
                     edges: Vector[Edge] =
-                    Vector.empty[Edge]
-                    ): Vector[Edge] = {
+                    Vector.empty[Edge],
+                    nodes: Vector[Int] =
+                    Vector.empty[Int]
+                    ): (Vector[Edge], Vector[Int]) = {
     if (adjacencyList.isEmpty) {
       /*return value*/
-      edges
+      (edges, nodes)
     } else /*if (adjacencyList.hasNext)*/ {
       val stringSplit: Array[Int] =
         adjacencyList
@@ -190,7 +193,8 @@ object MinimumCuts {
                     /*reduced already by '.next()'*/
                     adjacencyList,
                     /*? order does not matter because of random node merge ?*/
-                    edges.union(newEdges)
+                    edges.union(newEdges),
+                    currentStartNode +: nodes
                   )
     }
   }
@@ -211,7 +215,55 @@ object MinimumCuts {
   return value
   size / length of the final 'edges'
   */
-  def randomizedEdgeContraction(graphToCut: Vector[VvsE]): Int = {
+  def randomizedEdgeContraction(
+                                 //graphToCut: Vector[VvsE]
+                               nodesRemains: Int,
+                               remainingEdges: Vector[Edge]
+                                 ): Int = {
+    assume(nodesRemains >= 2, s"graph must have at least two nodes")
+    assume(remainingEdges.nonEmpty, s"graph must have at least one edge")
+
+    if (nodesRemains == 2) {
+      /*return value*/
+      remainingEdges.length
+    } else {
+      val loBound: Int =
+        0
+      val hiBound: Int =
+        remainingEdges.length - 1
+      val replaceEdgeIndex: Int =
+        randomIntWithinInterval(loBound, hiBound)
+      val replaceEdge: Edge =
+        remainingEdges(replaceEdgeIndex)
+      val startNode: Int = replaceEdge.startNode
+      val endNode: Int = replaceEdge.endNode
+      /*node replacement after / as fusion*/
+      val newRemainingEdges: Vector[Edge] =
+        for {
+          edge <- remainingEdges
+          /*must remove cycles to merged nodes*/
+          if edge.startNode != startNode && edge.endNode != endNode
+        } yield Edge(
+                      startNode =
+                        if (edge.startNode == endNode) {
+                          startNode
+                        } else {
+                          edge.startNode
+                        },
+                      endNode =
+                        if (edge.endNode == endNode) {
+                          startNode
+                        } else {
+                          edge.endNode
+                        }
+                    )
+      /*recursion*/
+      randomizedEdgeContraction(
+      /*reduction to converge to base case*/
+                                 nodesRemains-1,
+                                 remainingEdges=newRemainingEdges
+                               )
+    }
     /*
     randomly select from:
     > all remaining `edges`
@@ -219,19 +271,25 @@ object MinimumCuts {
     or
     > choose non merged `node` & `fuse` her `edges` ?
      */
-    /*return value*/
-    0
   }
 
   def minimumCutTrails(
-                        adjacencyList: Vector[String] /*,
+                        adjacencyList: Iterator[String] /*,
                         smallestCut: Int = Double.PositiveInfinity*/
                         //.toInt
                         ) = {
+    /*val graphComponents: Vector[VvsE] =
+      extractGraphVandE(adjacencyList: Vector[String])*/
+    val (graphEdges, graphNodes): (Vector[Edge],Vector[Int]) =
+      extractEdges(adjacencyList)
     val trails: Int =
-      trailsNumber(nVertices = adjacencyList.length)
-    val graphComponents: Vector[VvsE] =
-      extractGraphVandE(adjacencyList: Vector[String])
+      trailsNumber(
+                    nVertices =
+                      /*fails as iterator empty at this moment*/
+                      //adjacencyList.length
+                        graphNodes.length
+                  )
+
     /*return 'smallestCut'*/
     def loop(
               trailsLeft: Int,
@@ -242,7 +300,12 @@ object MinimumCuts {
         smallestCut
       } else {
         val currentCut: Int =
-          randomizedEdgeContraction(graphComponents)
+          randomizedEdgeContraction(
+                                     nodesRemains =
+                                       graphNodes.length,
+                                     remainingEdges =
+                                       graphEdges
+                                   )
         /*recursion*/
         loop(
               trailsLeft - 1,

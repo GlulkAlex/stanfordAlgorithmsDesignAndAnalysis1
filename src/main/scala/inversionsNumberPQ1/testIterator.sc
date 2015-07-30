@@ -32,6 +32,9 @@ val multiStrArray =
     .map(_.toInt)
 .toArray
 
+multiStrIter
+multiStrIter.length
+multiStrIter
 Seq(1,2,3) ++ Seq(4,5,6)
 Seq(7, 5, 9, 4, 1, 3, 6, 2).sorted
 Seq(3).take(1)
