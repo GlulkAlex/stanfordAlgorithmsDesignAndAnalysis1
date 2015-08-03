@@ -424,14 +424,9 @@ object PivotingStrategies {
   }
 
   /*return `median-of-medians` value ? & index ?*/
-  def pivotDeterministicSelection(
-                              sourceArray: Array[Int],
-                              orderStatisticIndex: Int,
-                              startIndex: Int,
-                              endIndex: Int,
-                                 /*accum*/
-                              medians: List[Int] = List.empty[Int]
-                              ): /*Map[Int,*/ Int/*]*/ = {
+  def medianOfMedians(
+                              sourceArray: Array[Int]
+                              ): Int = {
     /*
     {1,2,3,4,5,6,7,8,9}
     someSeq
@@ -443,9 +438,78 @@ object PivotingStrategies {
     {1,2,(3),4,5}{6,(7),8,9}
     median(3,7)=3
      */
-    /*return value*/
-    //Map.empty[Int, Int]
-    0
+    if (sourceArray.length > 5) {
+      val slidingByFive: /*Array*/ Iterator[Array[Int]] =
+        sourceArray
+        .sliding(5, 5)
+
+      val mediansArray =
+        for (elem <- slidingByFive) yield
+        medianOfFive(elem)
+
+      /*recursion*/
+      medianOfMedians(
+                       mediansArray.toArray
+                     )
+    } else {
+      /*return value*/
+      medianOfFive(sourceArray)
+    }
+  }
+  /*return `median-of-medians` value ? & index ?*/
+  def pivotDeterministicSelection(
+                              sourceArray: Array[Int],
+                              orderStatisticIndex: Int/*,
+                              startIndex: Int,
+                              endIndex: Int*///,
+                                 /*accum*/
+                              //medians: List[Int] = List.empty[Int]
+                              ): /*Map[Int,*/ Int/*]*/ = {
+    if (sourceArray.length == 1) {
+      /*return value*/
+      sourceArray
+      .head
+    } else {
+      assume(
+              sourceArray.nonEmpty,
+              s"'sourceArray' must be " +
+                s"'nonEmpty'"
+            )
+      val pivot: Int =
+        medianOfMedians(sourceArray)
+      val (lessThanPivot, pivotAndAllGreater) =
+        sourceArray
+        .partition(_ <= pivot)
+      //val pivotedArray = lessThanPivot +: pivotAndAllGreater
+      val newPivotIndex =
+        lessThanPivot.length// + 1
+
+
+      if (newPivotIndex == orderStatisticIndex) {
+        /*return value*/
+        /*`lucky` case*/
+        pivot
+      } else if (newPivotIndex > orderStatisticIndex) {
+        /*reduce to the left part*/
+        /*recursion*/
+        pivotDeterministicSelection(
+                                     lessThanPivot,
+                                       //.take(newPivotIndex),
+                                       orderStatisticIndex/*,
+                                       startIndex = startIndex,
+                                       endIndex = newPivotIndex - 1*/
+                                     )
+      } else /*if (pivotIndex < smallestOrder)*/ {
+        /*reduce to the right part*/
+        /*recursion*/
+        pivotDeterministicSelection(
+                                     pivotAndAllGreater.tail,
+                                     orderStatisticIndex - newPivotIndex/*,
+                                       startIndex = newPivotIndex + 1,
+                                       endIndex = endIndex*/
+                                     )
+      }
+    }
   }
 
   /*when deterministic use `median-of-medians` for optimal / best pivot*/
@@ -822,32 +886,19 @@ object PivotingStrategies {
       val pivotIndex: Int =
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
-          case FirstPivot => {
-            {
-              {
+          case FirstPivot =>
                 ChooseFirstElementAsPivot(
                                            sourceSeq = unsorted,
                                            sourceSeqLenght =
                                              unsortedLenght
                                          )
-              }
-            }
-          }
-          case LastPivot  => {
-            {
-              {
+          case LastPivot  =>
                 ChooseLastElementAsPivot(
                                           sourceSeq = unsorted,
                                           sourceSeqLenght =
                                             unsortedLenght
                                         )
-              }
-            }
-          }
-
-          case MedianPivot => {
-            {
-              {
+          case MedianPivot =>
                 ChooseMedianOfThreeAsPivot(
                                             sourceSeq = unsorted,
                                             firstSeqIndex = 0,
@@ -855,12 +906,7 @@ object PivotingStrategies {
                                               unsortedLenght
                                                 - 1
                                           )
-              }
-            }
-          }
-          case RandomPivot => {
-            {
-              {
+          case RandomPivot =>
                 //ChoosePivotRanomly(
                 randomIntWithinInterval(
                                          //sourceSeq = unsorted,
@@ -871,9 +917,6 @@ object PivotingStrategies {
                                          //lastSeqIndex =
                                          unsortedLenght - 1
                                        )
-              }
-            }
-          }
         }
       val pivot: Int =
         unsorted(pivotIndex)
@@ -974,9 +1017,7 @@ object PivotingStrategies {
       val pivotIndex: Int =
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
-          case FirstPivot  => {
-            {
-              {
+          case FirstPivot  =>
                 ChooseFirstElementAsPivot(
                                            sourceSeq = unsorted,
                                            sourceSeqLenght =
@@ -984,12 +1025,7 @@ object PivotingStrategies {
                                            startIndex = startIndex,
                                            endIndex = endIndex
                                          )
-              }
-            }
-          }
-          case LastPivot   => {
-            {
-              {
+          case LastPivot   =>
                 ChooseLastElementAsPivot(
                                           sourceSeq = unsorted,
                                           sourceSeqLenght =
@@ -997,12 +1033,7 @@ object PivotingStrategies {
                                           startIndex = startIndex,
                                           endIndex = endIndex
                                         )
-              }
-            }
-          }
-          case MedianPivot => {
-            {
-              {
+          case MedianPivot =>
                 ChooseMedianOfThreeAsPivot(
                                             sourceSeq = unsorted,
                                             /*???*/
@@ -1013,12 +1044,7 @@ object PivotingStrategies {
                                               //unsortedLenght - 1
                                               endIndex
                                           )
-              }
-            }
-          }
-          case RandomPivot => {
-            {
-              {
+          case RandomPivot =>
                 //ChoosePivotRanomly(
                 randomIntWithinInterval(
                                          //sourceSeq = unsorted,
@@ -1030,9 +1056,7 @@ object PivotingStrategies {
                                          //unsortedLenght - 1
                                          endIndex
                                        )
-              }
-            }
-          }
+
         }
 
       /*

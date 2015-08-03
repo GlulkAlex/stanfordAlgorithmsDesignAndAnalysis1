@@ -964,6 +964,64 @@ class PivotingSuit
                 )
         }
   test(
+        "72: 'pivotDeterministicSelection / orderStatisticDeterministicSelection'" +
+          "should return right smallest element from sequence"
+      ) {
+          val takeNumber: Int = 25
+          val lowerBound: Int = 0
+          val upperBound: Int = 9
+          val smallestOrder: Int = 5
+          val expectedVal: Int =
+            smallestOrder - 1
+          //15
+          /*size must be exactly 'upperBound + 1 - lowerBound'*/
+          val randomIntSeq: Seq[Int] =
+            randomlyOrderedSequenceFromInterval(
+                                                 lowerBound,
+                                                 upperBound)
+          println(
+                   s"\n'randomIntSeq.length' is:'\n${
+                     randomIntSeq
+                     .length
+                   }'")
+
+          println(
+                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                     upperBound
+                   }")
+          println(
+                   s"\n'expectedVal' is: $expectedVal")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .sorted
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+
+          val smallestElem: Int =
+            pivotDeterministicSelection(
+                            randomIntSeq.toArray,
+                            smallestOrder
+                          )
+
+          println(
+                   s"\n$smallestOrder-th 'smallestElem' is: $smallestElem")
+
+          assume(
+                  //true == true,
+                  smallestElem == expectedVal,
+                  s"\n$smallestOrder-th 'smallestElem' must be " +
+                    s"equal to '$expectedVal'"
+                )
+        }
+  ignore(
         "81: 'medianOfFive'" +
           "should return right median element from sequence"
       ) {
@@ -1006,6 +1064,61 @@ class PivotingSuit
 
           val medianElem: Int =
             medianOfFive(
+                            randomIntSeq.toArray
+                          )
+
+          println(
+                   s"\n'medianElem' is: $medianElem")
+
+          assume(
+                  //true == true,
+                  medianElem == expectedVal,
+                  s"\n'medianElem' must be " +
+                    s"equal to '$expectedVal'"
+                )
+        }
+  test(
+        "82: 'medianOfMedians'" +
+          "should return right median element from sequence"
+      ) {
+          val takeNumber: Int = 25
+          val lowerBound: Int = 0
+          val upperBound: Int = 9
+          val expectedVal: Int =
+            4
+          /*size must be exactly 'upperBound + 1 - lowerBound'*/
+          val randomIntSeq: Seq[Int] =
+            randomlyOrderedSequenceFromInterval(
+                                                 lowerBound,
+                                                 upperBound)
+          println(
+                   s"\n'randomIntSeq.length' is:'\n${
+                     randomIntSeq
+                     .length
+                   }'")
+
+          println(
+                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                     upperBound
+                   }")
+          println(
+                   s"\n'expectedVal' is: $expectedVal")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+          println(
+                   s"\n'randomIntSeq' is:'\n${
+                     randomIntSeq
+                     .sorted
+                     .take(takeNumber)
+                     .mkString("{", "|", "}")
+                   }'")
+
+          val medianElem: Int =
+            medianOfMedians(
                             randomIntSeq.toArray
                           )
 
