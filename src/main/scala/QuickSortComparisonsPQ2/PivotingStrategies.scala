@@ -283,9 +283,14 @@ object PivotingStrategies {
     PivotingResults(sourceArray, firstGreaterThanPivotIndex - 1)
   }
 
-  /*return i-th smallest element from sequence*/
-  def orderStatistic( sourceSeq: Seq[Int],
-                      smallestOrder: Int): Int = {
+  /*use `Randomized Selection` for optimal / best pivot*/
+  /*return i-th smallest element from distinct sequence*/
+  def orderStatisticRandomSelection(
+                      sourceSeq: /*Seq*/ Array[Int],
+                      smallestOrder: Int,
+                      startIndex: Int,
+                      endIndex: Int
+                      ): Int = {
     /*as method is recursive 'assume' fails in later iterations*/
     /*assume(
             smallestOrder >= 0 &&
@@ -293,28 +298,231 @@ object PivotingStrategies {
     s"'smallestOrder'$smallestOrder must be " +
       s"within '0' & 'sourceSeq.length'${sourceSeq.length} or indices"
           )*/
-    /*Randomized Selection*/
-    val loBound: Int = 0
-    val hiBound: Int = sourceSeq.length - 1
-    val pivotIndex: Int =
-      randomIntWithinInterval(
-                            loBound: Int,
-                            hiBound: Int)
-    val pivot: Int =
-      sourceSeq(pivotIndex)
+    if (sourceSeq.length == 1) {
+      /*return value*/
+      sourceSeq
+      .head
+    } else {
+      assume(
+              sourceSeq.nonEmpty,
+              s"'sourceSeq' must be " +
+                s"'nonEmpty'"
+            )
+      /*Randomized Selection*/
+      val loBound: Int =
+      //0
+        startIndex
+      val hiBound: Int =
+      //sourceSeq.length - 1
+        endIndex
+      val pivotIndex: Int =
+        randomIntWithinInterval(
+                                 loBound: Int,
+                                 hiBound: Int)
+      /*val pivot: Int =
+        sourceSeq(pivotIndex)*/
+      assume(
+              pivotIndex >= startIndex &&
+              pivotIndex <= endIndex ,
+              s"'pivotIndex'$pivotIndex must be " +
+                s"within 'startIndex'$startIndex & 'endIndex'$endIndex"
+            )
+      val PivotingResults(
+      pivotedArray,
+      newPivotIndex) =
+        PivotingArrayInPlace(
+                              sourceArray =
+                                sourceSeq.toArray,
+                              startingIndex = loBound,
+                              endingIndex = hiBound,
+                              pivotIndex = pivotIndex
+                            )
+
+      if (newPivotIndex == smallestOrder) {
+        /*return value*/
+        /*`lucky` case*/
+        //pivotIndex
+        //sourceSeq(newPivotIndex)
+        pivotedArray(newPivotIndex)
+      } else if (newPivotIndex > smallestOrder) {
+        /*reduce to the left part*/
+        /*recursion*/
+        orderStatisticRandomSelection(
+                        pivotedArray,
+                        //.take(newPivotIndex),
+                        smallestOrder,
+                        startIndex = startIndex,
+                        endIndex = newPivotIndex - 1
+                      )
+      } else /*if (pivotIndex < smallestOrder)*/ {
+        /*reduce to the right part*/
+        /*recursion*/
+        orderStatisticRandomSelection(
+                        pivotedArray,
+                        //.drop(newPivotIndex + 1),
+                        smallestOrder - newPivotIndex,
+                        startIndex = newPivotIndex + 1,
+                        endIndex = endIndex
+                      )
+      }
+    }
+  }
+
+  /*return value*/
+  def medianOfFive(
+                  upToFiveElem: Array[Int]
+                    ): Int = {
+    assume(upToFiveElem.nonEmpty,
+           s"'upToFiveElem' must be 'nonEmpty'")
     /*return value*/
-    if (pivotIndex == smallestOrder) {
-      pivotIndex
-    }else if (pivotIndex > smallestOrder) {
-      /*reduce to the left part*/
-      /*recursion*/
-      orderStatistic( sourceSeq.take(pivotIndex),
-                      smallestOrder)
-    }else /*if (pivotIndex < smallestOrder)*/ {
-      /*reduce to the right part*/
-      /*recursion*/
-      orderStatistic( sourceSeq.drop(pivotIndex),
-                      smallestOrder)
+    if (upToFiveElem.length == 1) {
+      /*return value*/
+      upToFiveElem.head
+    } else if (upToFiveElem.length == 2){
+      if (upToFiveElem.head > upToFiveElem.tail.head) {
+        upToFiveElem.tail.head
+      } else {
+        upToFiveElem.head
+      }
+    } else if (upToFiveElem.length == 3){
+      val head = upToFiveElem.head
+      val median = upToFiveElem.tail.head
+      val last = upToFiveElem.last
+
+      if (head > median) {
+        if (head > last) {
+          if (last > median) {
+            last
+          } else /*if (last <= median)*/{
+            median
+          }
+        } else /*if (head <= last)*/{
+          head
+        }
+      } else /*if (head <= median)*/{
+        if (median > last) {
+          if (last > head) {
+            last
+          } else /*if (last <= median)*/{
+            head
+          }
+        } else /*if (median <= last)*/{
+          last
+        }
+      }
+    /*} else if (upToFiveElem.length == 4){
+      -1*/
+    } else /*if (upToFiveElem.length == 5)*/{
+      /*general case*/
+      val arrayLength: Int =
+        upToFiveElem.length
+
+      upToFiveElem
+      .sorted
+      .apply(arrayLength / 2 -1 + arrayLength % 2)
+    }
+  }
+
+  /*return `median-of-medians` value ? & index ?*/
+  def pivotDeterministicSelection(
+                              sourceArray: Array[Int],
+                              orderStatisticIndex: Int,
+                              startIndex: Int,
+                              endIndex: Int,
+                                 /*accum*/
+                              medians: List[Int] = List.empty[Int]
+                              ): /*Map[Int,*/ Int/*]*/ = {
+    /*
+    {1,2,3,4,5,6,7,8,9}
+    someSeq
+    .sliding(5, 5)
+    .toList
+    {1,2,3,4,5}{6,7,8,9}
+    if size - even pick tail of 1-st half
+    if size - odd pick head of 2-nd half
+    {1,2,(3),4,5}{6,(7),8,9}
+    median(3,7)=3
+     */
+    /*return value*/
+    //Map.empty[Int, Int]
+    0
+  }
+
+  /*when deterministic use `median-of-medians` for optimal / best pivot*/
+  /*return i-th smallest element from distinct sequence*/
+  def orderStatisticDeterministicSelection(
+                      sourceSeq: /*Seq*/ Array[Int],
+                      smallestOrder: Int,
+                      startIndex: Int,
+                      endIndex: Int
+                      ): Int = {
+    if (sourceSeq.length == 1) {
+      /*return value*/
+      sourceSeq
+      .head
+    } else {
+      assume(
+              sourceSeq.nonEmpty,
+              s"'sourceSeq' must be " +
+                s"'nonEmpty'"
+            )
+      /*Randomized Selection*/
+      val loBound: Int =
+      //0
+        startIndex
+      val hiBound: Int =
+      //sourceSeq.length - 1
+        endIndex
+      val pivotIndex: Int =
+        randomIntWithinInterval(
+                                 loBound: Int,
+                                 hiBound: Int)
+      /*val pivot: Int =
+        sourceSeq(pivotIndex)*/
+      assume(
+              pivotIndex >= startIndex &&
+              pivotIndex <= endIndex ,
+              s"'pivotIndex'$pivotIndex must be " +
+                s"within 'startIndex'$startIndex & 'endIndex'$endIndex"
+            )
+      val PivotingResults(
+      pivotedArray,
+      newPivotIndex) =
+        PivotingArrayInPlace(
+                              sourceArray =
+                                sourceSeq.toArray,
+                              startingIndex = loBound,
+                              endingIndex = hiBound,
+                              pivotIndex = pivotIndex
+                            )
+
+      if (newPivotIndex == smallestOrder) {
+        /*return value*/
+        /*`lucky` case*/
+        //pivotIndex
+        //sourceSeq(newPivotIndex)
+        pivotedArray(newPivotIndex)
+      } else if (newPivotIndex > smallestOrder) {
+        /*reduce to the left part*/
+        /*recursion*/
+        orderStatisticRandomSelection(
+                        pivotedArray,
+                        //.take(newPivotIndex),
+                        smallestOrder,
+                        startIndex = startIndex,
+                        endIndex = newPivotIndex - 1
+                      )
+      } else /*if (pivotIndex < smallestOrder)*/ {
+        /*reduce to the right part*/
+        /*recursion*/
+        orderStatisticRandomSelection(
+                        pivotedArray,
+                        //.drop(newPivotIndex + 1),
+                        smallestOrder - newPivotIndex,
+                        startIndex = newPivotIndex + 1,
+                        endIndex = endIndex
+                      )
+      }
     }
   }
 
@@ -467,9 +675,9 @@ object PivotingStrategies {
   }
 
   def ChoosePivotAsHead(
-                   sourceSeq: Array[Int],
-                   sourceSeqLenght: Int
-                   ): Int = {
+                         sourceSeq: Array[Int],
+                         sourceSeqLenght: Int
+                         ): Int = {
     if (sourceSeq.isEmpty) {
       /*return value*/
       /*assume that all values must be positive*/
@@ -485,7 +693,7 @@ object PivotingStrategies {
                                loBound: Int,
                                hiBound: Int): Int = {
     /*or meaningless & not work*/
-    assume(loBound<=hiBound,s"$loBound must be <= $hiBound")
+    assume(loBound <= hiBound, s"$loBound must be <= $hiBound")
     val randomDouble: Double =
       scala.math.random
     /*presumably greater then 1*/
@@ -506,11 +714,11 @@ object PivotingStrategies {
 
   /*randomly return 'elemVal' as `pivot`*/
   def ChoosePivotRanomly(
-                   sourceSeq: Array[Int],
-                   //sourceSeqLength: Int
-                   firstSeqIndex: Int,
-                   lastSeqIndex: Int
-                   ): Int = {
+                          sourceSeq: Array[Int],
+                          //sourceSeqLength: Int
+                          firstSeqIndex: Int,
+                          lastSeqIndex: Int
+                          ): Int = {
     if (sourceSeq.isEmpty) {
       /*return value*/
       /*assume that all values must be positive*/
@@ -533,9 +741,9 @@ object PivotingStrategies {
       //val pivotIndex: Int =
       val pivot: Int =
         ChoosePivotAsHead(
-                     sourceSeq = unsorted,
-                     sourceSeqLenght = unsortedLenght
-                   )
+                           sourceSeq = unsorted,
+                           sourceSeqLenght = unsortedLenght
+                         )
       val (part1, part2) =
         unsorted
         //.partition(_ <= unsorted(pivotIndex))
@@ -567,6 +775,7 @@ object PivotingStrategies {
   case object LastPivot extends PivotRule
 
   case object MedianPivot extends PivotRule
+
   case object RandomPivot extends PivotRule
 
   case class SortResults(sortedArray: Array[Int], comparisonsTotal: Int)
@@ -614,40 +823,56 @@ object PivotingStrategies {
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
           case FirstPivot => {
-            ChooseFirstElementAsPivot(
-                                       sourceSeq = unsorted,
-                                       sourceSeqLenght =
-                                         unsortedLenght
-                                     )
+            {
+              {
+                ChooseFirstElementAsPivot(
+                                           sourceSeq = unsorted,
+                                           sourceSeqLenght =
+                                             unsortedLenght
+                                         )
+              }
+            }
           }
           case LastPivot  => {
-            ChooseLastElementAsPivot(
-                                      sourceSeq = unsorted,
-                                      sourceSeqLenght =
-                                        unsortedLenght
-                                    )
+            {
+              {
+                ChooseLastElementAsPivot(
+                                          sourceSeq = unsorted,
+                                          sourceSeqLenght =
+                                            unsortedLenght
+                                        )
+              }
+            }
           }
 
           case MedianPivot => {
-            ChooseMedianOfThreeAsPivot(
-                                        sourceSeq = unsorted,
-                                        firstSeqIndex = 0,
-                                        lastSeqIndex =
-                                          unsortedLenght
-                                            - 1
-                                      )
+            {
+              {
+                ChooseMedianOfThreeAsPivot(
+                                            sourceSeq = unsorted,
+                                            firstSeqIndex = 0,
+                                            lastSeqIndex =
+                                              unsortedLenght
+                                                - 1
+                                          )
+              }
+            }
           }
           case RandomPivot => {
-            //ChoosePivotRanomly(
-            randomIntWithinInterval(
-                                  //sourceSeq = unsorted,
-                                  /*???*/
-                                  //firstSeqIndex =
-                                  0,
-                                  /*???*/
-                                  //lastSeqIndex =
-                                  unsortedLenght - 1
-                                )
+            {
+              {
+                //ChoosePivotRanomly(
+                randomIntWithinInterval(
+                                         //sourceSeq = unsorted,
+                                         /*???*/
+                                         //firstSeqIndex =
+                                         0,
+                                         /*???*/
+                                         //lastSeqIndex =
+                                         unsortedLenght - 1
+                                       )
+              }
+            }
           }
         }
       val pivot: Int =
@@ -691,7 +916,7 @@ object PivotingStrategies {
                                 //part1.tail.length,
                                 part1.length,
                               comparisonsTotal /*+
-                                unsortedLenght - 1*/,
+                                unsortedLenght - 1*/ ,
                               //part1.tail.length - 1
                               //part1.length - 1,
                               pivotRule = pivotRule
@@ -704,8 +929,8 @@ object PivotingStrategies {
                               unsorted = part2,
                               unsortedLenght = part2.length,
                               //comparisonsTotal +
-                                unsortedLenght - 1,
-                                //part2.length - 1,
+                              unsortedLenght - 1,
+                              //part2.length - 1,
                               pivotRule = pivotRule
                             )
       /*return value*/
@@ -722,6 +947,7 @@ object PivotingStrategies {
 
   var comparisonsTotalCheck: Int = 0
   var pivotingTotalCheck: Int = 0
+
   /*input has only positive distinct integers*/
   /* using three different pivot rule*/
   def QuickSortWithInPlacePivotingComparisons(
@@ -749,47 +975,63 @@ object PivotingStrategies {
       //val (pivot, pivotIndex): (Int, Int) =
         pivotRule match {
           case FirstPivot  => {
-            ChooseFirstElementAsPivot(
-                                       sourceSeq = unsorted,
-                                       sourceSeqLenght =
-                                         unsortedLenght,
-                                       startIndex = startIndex,
-                                       endIndex = endIndex
-                                     )
+            {
+              {
+                ChooseFirstElementAsPivot(
+                                           sourceSeq = unsorted,
+                                           sourceSeqLenght =
+                                             unsortedLenght,
+                                           startIndex = startIndex,
+                                           endIndex = endIndex
+                                         )
+              }
+            }
           }
           case LastPivot   => {
-            ChooseLastElementAsPivot(
-                                      sourceSeq = unsorted,
-                                      sourceSeqLenght =
-                                        unsortedLenght,
-                                      startIndex = startIndex,
-                                      endIndex = endIndex
-                                    )
+            {
+              {
+                ChooseLastElementAsPivot(
+                                          sourceSeq = unsorted,
+                                          sourceSeqLenght =
+                                            unsortedLenght,
+                                          startIndex = startIndex,
+                                          endIndex = endIndex
+                                        )
+              }
+            }
           }
           case MedianPivot => {
-            ChooseMedianOfThreeAsPivot(
-                                        sourceSeq = unsorted,
-                                        /*???*/
-                                        firstSeqIndex =
-                                          startIndex,
-                                        /*???*/
-                                        lastSeqIndex =
-                                          //unsortedLenght - 1
-                                          endIndex
-                                      )
+            {
+              {
+                ChooseMedianOfThreeAsPivot(
+                                            sourceSeq = unsorted,
+                                            /*???*/
+                                            firstSeqIndex =
+                                              startIndex,
+                                            /*???*/
+                                            lastSeqIndex =
+                                              //unsortedLenght - 1
+                                              endIndex
+                                          )
+              }
+            }
           }
           case RandomPivot => {
-            //ChoosePivotRanomly(
-            randomIntWithinInterval(
-                                        //sourceSeq = unsorted,
-                                        /*???*/
-                                        //firstSeqIndex =
-                                          startIndex,
-                                        /*???*/
-                                        //lastSeqIndex =
-                                          //unsortedLenght - 1
-                                          endIndex
-                                      )
+            {
+              {
+                //ChoosePivotRanomly(
+                randomIntWithinInterval(
+                                         //sourceSeq = unsorted,
+                                         /*???*/
+                                         //firstSeqIndex =
+                                         startIndex,
+                                         /*???*/
+                                         //lastSeqIndex =
+                                         //unsortedLenght - 1
+                                         endIndex
+                                       )
+              }
+            }
           }
         }
 
@@ -849,9 +1091,9 @@ object PivotingStrategies {
                                                        - 1,
                                                    /*very subtle moment*/
                                                    //comparisonsTotal +
-                                                     /*if same then pointless*/
-                                                     pivotingResults
-                                                     .pivotIndex -
+                                                   /*if same then pointless*/
+                                                   pivotingResults
+                                                   .pivotIndex -
                                                      endIndex +
                                                      endIndex -
                                                      startIndex,
@@ -869,8 +1111,8 @@ object PivotingStrategies {
           /*side effect*/
           comparisonsTotalCheck +=
             endIndex -
-            pivotingResults
-            .pivotIndex
+              pivotingResults
+              .pivotIndex
           /*recursion*/
           /*all after / greater than pivot*/
           QuickSortWithInPlacePivotingComparisons(
@@ -882,8 +1124,8 @@ object PivotingStrategies {
                                                      endIndex,
                                                    /*very subtle moment*/
                                                    //comparisonsTotal +
-                                                     /*if same then pointless*/
-                                                     endIndex - //startIndex
+                                                   /*if same then pointless*/
+                                                   endIndex - //startIndex
                                                      pivotingResults.pivotIndex,
                                                    pivotRule = pivotRule
                                                  )
@@ -897,7 +1139,7 @@ object PivotingStrategies {
                    unsorted,
                    /*? is 'comparisonsTotal' calculated twice ?*/
                    comparisonsTotal +
-                   part1Comparisons + part2Comparisons //+
+                     part1Comparisons + part2Comparisons //+
                    //endIndex - startIndex
                  )
     }

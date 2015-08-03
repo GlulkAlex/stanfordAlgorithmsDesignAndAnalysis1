@@ -3,6 +3,20 @@ val someSeq: Seq[Int] =
   3, 1, 5, 2, 7, 6, 9, 8, 4
      )
 /*0, 1,(2, 3,[4],5, 6),7, 8*/
+5/2
+someSeq
+.sliding(5)
+.toList
+someSeq
+.sliding(5, 5)
+.toList
+someSeq(2)
+someSeq
+.take(2)
+someSeq
+.drop(2)
+someSeq
+.drop(2 + 1)
 someSeq
 .partition(_ >= someSeq.head)
 someSeq
@@ -17,8 +31,6 @@ someSeq
 someSeq
   .init
 .partition(_ <= someSeq.last)
-
-
 someSeq
 .partition(_ < someSeq.head)
 someSeq
@@ -27,9 +39,7 @@ someSeq
 .partition(_ > -1)
 someSeq
 .partition(_ <= -1)
-
 Seq().length
-
 someSeq(4)
 someSeq.slice(4,4+1)
 someSeq.splitAt(4)

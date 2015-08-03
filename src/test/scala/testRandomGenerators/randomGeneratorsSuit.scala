@@ -194,8 +194,8 @@ class randomGeneratorsSuit
           "should generate randomly ordered sequence from specified interval"
       ) {
           val takeNumber: Int = 15
-          val lowerBound: Int = 0
-          val upperBound: Int = 15
+          val lowerBound: Int = 1
+          val upperBound: Int = 5
           val randomIntSeq: Seq[Int] =
             randomlyOrderedSequenceFromInterval(
                                                  lowerBound,
