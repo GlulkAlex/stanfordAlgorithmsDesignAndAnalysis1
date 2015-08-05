@@ -1,12 +1,14 @@
 package stronglyConnectedComponentsPQ4
 
 import scala.math.log
+import scala.collection.immutable.Queue
 import randomGenerators.RandomGenerators.randomIntWithinInterval
 
 /**
  * Created by gluk-alex on 7/30/15.
  */
 object stronglyConnectedComponents {
+
   /*
   Programming Question-4
   >The due date for this homework is Sun 9 Aug 2015 11:59 PM PDT.
@@ -77,4 +79,121 @@ object stronglyConnectedComponents {
   that
   you exchange tips for doing this on the discussion forums.
    */
+
+  /*directed edge*/
+  case class Arc(
+                  tail: Int,
+                  head: Int) {
+    override def toString = s">>$tail-->$head}"
+  }
+
+  /*extract 'nodes' & 'arcs' from 'FileContent' strings*/
+  /*? assume, all arcs are distinct & unique ?*/
+  /*test reveals existence of cyclic self pointed arcs*/
+  @scala.annotation.tailrec
+  def extractArcs(
+                   fileContentIter: Iterator[String],
+                   arcs: Vector[Arc] =
+                   Vector.empty[Arc] //,
+                   /*'nodes' is just a range from '1' to '875714'*/
+                   /*nodes: Vector[Int] =
+                   Vector.empty[Int]*/
+                   ): Vector[Arc] = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      arcs
+    } else /*if (adjacencyList.hasNext)*/ {
+      //val stringSplit: Array[Int] =
+      val Array(tail, head) =
+        fileContentIter
+        .next()
+        //CHARACTER TABULATION
+        //.split('\u0009')
+        .split(" ")
+        .map(_.toInt)
+      /*val currentTailNode: Int =
+        stringSplit
+        .head
+      val currentHeadNode: Int =
+        stringSplit
+        .tail
+        .head*/
+      /*inner loop*/
+      //val newArcs: Vector[Arc] =
+      /*recursion*/
+      extractArcs(
+                   /*reduced already by '.next()'*/
+                   fileContentIter,
+                   /*? order does not matter because of random node merge ?*/
+                   //Arc(currentTailNode, currentHeadNode) +: arcs
+                   Arc(tail, head) +: arcs
+                 )
+    }
+  }
+
+  //Breadth-First Search
+  /*return connected component ?as nodes?*/
+  @scala.annotation.tailrec
+  def BFS(
+           /*not changing, but
+           it is possible to reduce it by removing arcs with explored tails*/
+           graph: Vector[Arc],
+           /*?as last explored?*/
+           startingNode: Int,
+           /*initiated with 'startingNode' as 'tail'*/
+           /*contains arcs with
+           explored 'tail' &
+           unexplored 'head'*/
+           nextArcToCheckQueue: Queue[Arc] = Queue.empty[Arc],
+           /*initiated with 'startingNode'*/
+           exploredNodes: Vector[Int] = Vector.empty[Int]
+           ): Vector[ /*Arc*/ Int] = {
+    /*A Queue is
+    just like a stack
+    except that
+    it is `first-in-first-out` rather than
+    `last-in-first-out`.*/
+    //val empty = scala.collection.immutable.Queue[Int]()
+    //val has1 = empty.enqueue(1)
+    //val has123 = has1.enqueue(List(2, 3))
+    //val (element, has23) = has123.dequeue
+    if (nextArcToCheckQueue.isEmpty) {
+      /*return value*/
+      exploredNodes
+    } else {
+      val currentlyExplored: Vector[Int] =
+        if (exploredNodes.contains(startingNode)) {
+          exploredNodes
+        } else {
+          startingNode +: exploredNodes
+        }
+      val allArcsFromLastExplored: /*List*/ Seq[Arc] =
+        graph
+        //.collect(pf match {case x if x.})
+        .filter(a =>
+                  a.tail == startingNode &&
+                    !exploredNodes.contains(a.head))
+      val (Arc(_, nextNode), dequeuedQueue): (Arc, Queue[Arc]) =
+        nextArcToCheckQueue
+        /*to converge and avoid endless recursion computation*/
+        .dequeue
+      val newQueue =
+        if (allArcsFromLastExplored.isEmpty) {
+          dequeuedQueue
+        } else {
+          dequeuedQueue
+          .enqueue(allArcsFromLastExplored.toList)
+        }
+      /*recursion*/
+      BFS(
+           graph: Vector[Arc],
+           startingNode = nextNode,
+           /*eventually must reduce to empty*/
+           newQueue,
+           /*?may be must be before picking next arc from queue?*/
+           currentlyExplored
+         )
+    }
+    //Vector.empty[Int/*Arc*/]
+  }
 }

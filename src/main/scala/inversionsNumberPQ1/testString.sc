@@ -11,3 +11,12 @@ mockAdjacencyList.lines
 
 mockIter.next()
 mockIter.next()
+
+val arcStr: String = "875714 542453"
+
+val Array(tail, head) =
+arcStr
+.split(" ")
+.map(_.toInt)
+tail
+head

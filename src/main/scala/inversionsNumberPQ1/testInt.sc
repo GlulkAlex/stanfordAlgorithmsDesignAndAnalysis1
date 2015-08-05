@@ -1,6 +1,7 @@
 val smallestCut: Int =
   Double.PositiveInfinity
   .toInt
+val bigNumber: Int = 5105043
 (3 + 1) / 2
 (4 + 1) / 2
 (5 + 1) / 2
@@ -22,12 +23,10 @@ val len4 = 4
 val len5 = 5
 val len6 = 6
 val len7 = 7
-
 def partition(len: Int): (Int,Int) = {
   val fP: Int = firstPart(len)
   (fP, secondPart(fP, len))
 }
-
 def firstPart(len: Int): Int = {
   if (
     len <= 0) {
@@ -41,7 +40,6 @@ def firstPart(len: Int): Int = {
     len/2 + len%2
   }
 }
-
 def secondPart(fPart: Int, len: Int): Int = {
   if (fPart <= 0) {
     0
