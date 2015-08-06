@@ -80,12 +80,31 @@ object stronglyConnectedComponents {
   you exchange tips for doing this on the discussion forums.
    */
 
+  /*node's 'rank' or 'layer'*/
+  case class RankedNode(node: Int, rank: Int)
+
+  case class Edge(
+                   startNode: Int,
+                   endNode: Int)
+
   /*directed edge*/
   case class Arc(
                   tail: Int,
                   head: Int) {
     override def toString = s">>$tail-->$head}"
   }
+
+  case class UnDirectedGraph(
+                              nodes: Vector[Int],
+                              edges: Vector[Edge])
+
+  case class DirectedGraph(
+                            nodes: Vector[Int],
+                            arcs: Vector[Arc])
+
+  case class DirectedRankedGraph(
+                                  nodes: Vector[RankedNode],
+                                  arcs: Vector[Arc])
 
   /*extract 'nodes' & 'arcs' from 'FileContent' strings*/
   /*? assume, all arcs are distinct & unique ?*/
@@ -131,6 +150,81 @@ object stronglyConnectedComponents {
     }
   }
 
+  /*extract 'nodes' & 'arcs' from 'FileContent' strings*/
+  /*? assume, all arcs are distinct & unique ?*/
+  /*test reveals existence of cyclic self pointed arcs*/
+  @scala.annotation.tailrec
+  def extractArcsAndNodes(
+                           fileContentIter: Iterator[String],
+                           /*'nodes' is just a range from '1' to '875714'*/
+                           nodes: Vector[Int] =
+                           Vector.empty[Int],
+                           arcs: Vector[Arc] =
+                           Vector.empty[Arc] //,
+                           //): (Vector[Int], Vector[Arc]) = {
+                           ): DirectedGraph = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      //(nodes, arcs)
+      DirectedGraph(nodes, arcs)
+    } else /*if (adjacencyList.hasNext)*/ {
+      val Array(tail, head) =
+        fileContentIter
+        .next()
+        //CHARACTER TABULATION
+        //.split('\u0009')
+        .split(" ")
+        .map(_.toInt)
+      val newArcs: Vector[Arc] =
+      /*skip self loop*/
+        if (tail == head) {
+          arcs
+        } else {
+          Arc(tail, head) +: arcs
+        }
+      /*very expensive & highly time consuming computation*/
+      val hasTail: Boolean =
+        nodes.contains(tail)
+      val hasHead: Boolean =
+        nodes.contains(head)
+      val newNodes: Vector[Int] =
+      /*skip self loop*/
+        if (hasTail && hasHead) {
+          nodes
+        } else if (hasTail && !hasHead) {
+          head +: nodes
+        } else if (!hasTail && hasHead) {
+          tail +: nodes
+        } else /*if (!hasTail && !hasHead)*/ {
+          tail +: head +: nodes
+        }
+      /*recursion*/
+      extractArcsAndNodes(
+                           /*reduced already by '.next()'*/
+                           fileContentIter,
+                           newNodes,
+                           newArcs
+                         )
+    }
+  }
+
+  /*extract 'nodes' from 'arcs'*/
+  //@scala.annotation.tailrec
+  def extractNodesFromArcs(
+                            /*nodes: Vector[Int] =
+                            Vector.empty[Int],*/
+                            arcs: Vector[Arc]
+                            ): Vector[Int] = {
+    val tails: Vector[Int] =
+      for {arc <- arcs} yield arc.tail
+    val heads: Vector[Int] =
+      for {arc <- arcs} yield arc.head
+    val nodes: Vector[Int] =
+      tails.union(heads).distinct
+    /*return value*/
+    nodes
+  }
+
   //Breadth-First Search
   /*return connected component ?as nodes?*/
   @scala.annotation.tailrec
@@ -159,10 +253,23 @@ object stronglyConnectedComponents {
     //val (element, has23) = has123.dequeue
     if (nextArcToCheckQueue.isEmpty) {
       /*return value*/
-      exploredNodes
+      /*at least has starting node*/
+      if (
+        exploredNodes
+        .nonEmpty
+      //.contains(startingNode)
+      ) {
+        exploredNodes
+      } else {
+        startingNode +: exploredNodes
+      }
     } else {
       val currentlyExplored: Vector[Int] =
-        if (exploredNodes.contains(startingNode)) {
+        if (
+        //exploredNodes.isEmpty ||
+          exploredNodes
+          .contains(startingNode)
+        ) {
           exploredNodes
         } else {
           startingNode +: exploredNodes
@@ -196,4 +303,131 @@ object stronglyConnectedComponents {
     }
     //Vector.empty[Int/*Arc*/]
   }
+
+  //Breadth-First Search
+  /*return connected component as nodes ranked by layers*/
+  @scala.annotation.tailrec
+  def layersBFS(
+                 /*not changing, but
+                 it is possible to reduce it by removing arcs with explored
+                 tails*/
+                 graph: Vector[Arc],
+                 /*?as last explored?*/
+                 startingNode: RankedNode,
+                 /*initiated with 'startingNode' as 'tail'*/
+                 /*contains arcs with
+                 explored 'tail' &
+                 unexplored 'head'*/
+                 nextArcToCheckQueue: Queue[Arc] = Queue.empty[Arc],
+                 /*initiated with 'startingNode'*/
+                 exploredNodes: Vector[Int] = Vector.empty[Int],
+                 rankedNodes: Vector[RankedNode] = Vector.empty[RankedNode]
+                 ): Vector[RankedNode] = {
+    /*A Queue is
+    just like a stack
+    except that
+    it is `first-in-first-out` rather than
+    `last-in-first-out`.*/
+    //val empty = scala.collection.immutable.Queue[Int]()
+    //val has1 = empty.enqueue(1)
+    //val has123 = has1.enqueue(List(2, 3))
+    //val (element, has23) = has123.dequeue
+    if (nextArcToCheckQueue.isEmpty) {
+      /*return value*/
+      /*at least has starting node*/
+      if (
+        exploredNodes
+        .nonEmpty
+      //.contains(startingNode)
+      ) {
+        //exploredNodes
+        rankedNodes
+      } else {
+        //startingNode +: exploredNodes
+        //RankedNode(startingNode,0) +: rankedNodes
+        startingNode +: rankedNodes
+      }
+    } else {
+      val (currentlyExplored, currentlyRanked): (
+        Vector[Int], Vector[RankedNode]) =
+        if (
+        //exploredNodes.isEmpty ||
+        //exploredNodes
+          rankedNodes
+          .contains(startingNode)
+        ) {
+          (exploredNodes, rankedNodes)
+        } else /*if (exploredNodes.isEmpty)*/ {
+          (startingNode.node +: exploredNodes,
+            //RankedNode(startingNode,0) +: rankedNodes
+            startingNode +: rankedNodes
+            )
+        }
+      /*layer / rank of 'head' must be 'tail'.rank + 1*/
+      val allArcsFromLastExplored: /*List*/ Seq[Arc] =
+        graph
+        //.collect(pf match {case x if x.})
+        .filter(a =>
+                  a.tail == startingNode.node &&
+                    !exploredNodes.contains(a.head))
+      /*when 'nextNode' is picked it became 'explored'*/
+      val (Arc(_, nextNode), dequeuedQueue): (Arc, Queue[Arc]) =
+        nextArcToCheckQueue
+        /*to converge and avoid endless recursion computation*/
+        .dequeue
+      val newQueue =
+        if (allArcsFromLastExplored.isEmpty) {
+          dequeuedQueue
+        } else {
+          dequeuedQueue
+          .enqueue(allArcsFromLastExplored.toList)
+        }
+      /*recursion*/
+      layersBFS(
+                 graph: Vector[Arc],
+                 startingNode =
+                   RankedNode(nextNode, startingNode.rank + 1),
+                 /*eventually must reduce to empty*/
+                 newQueue,
+                 /*?may be must be before picking next arc from queue?*/
+                 currentlyExplored
+               )
+    }
+    //Vector.empty[Int/*Arc*/]
+  }
+
+  //Breadth-First Search
+  /*return all connected components in graph as sequences of nodes*/
+  @scala.annotation.tailrec
+  def connectedComponentsBFS(
+                              /*not changing, but
+                              it is possible to reduce it by removing arcs
+                              with explored tails*/
+                              graphNodes: Vector[Int],
+                              graphArcs: Vector[Arc],
+                              graphComponents: Vector[Vector[Int]] = Vector
+                                                                     .empty[Vector[Int]]
+                              ): Vector[Vector[Int]] = {
+    if (
+      graphArcs.isEmpty ||
+        graphNodes.isEmpty
+    ) {
+      /*return value*/
+      /*? at least has starting node ?*/
+      graphComponents
+    } else {
+      /*
+      for each remaining non explored node in graph
+      run BFS
+      add result to 'graphComponents' accumulator
+       */
+      /*recursion*/
+      connectedComponentsBFS(
+                              graphNodes,
+                              graphArcs,
+                              graphComponents
+                            )
+    }
+  }
+
 }
