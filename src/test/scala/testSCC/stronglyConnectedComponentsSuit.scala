@@ -295,16 +295,14 @@ class stronglyConnectedComponentsSuit
                   )
           val nodes: Vector[Int] =
             extractNodesFromArcs(mockUpTree1)
+    /*TODO
+    debug needed
+    * */
           /*tier*/
           val nodesLevels: Vector[RankedNode] =
             layersBFS(
                        graph = mockUpGraph,
-                       startingNode = 6,
-                       scala.collection.immutable.Queue[Arc]()
-                       //.enqueue(Arc(4,5))
-                       ,
-                       //Vector(1)
-                       Vector.empty[Int]
+                       startingNode = 6
                      )
           val maxLevelNode: RankedNode =
             nodesLevels

@@ -313,68 +313,109 @@ object stronglyConnectedComponents {
                  tails*/
                  graph: Vector[Arc],
                  /*?as last explored?*/
-                 startingNode: RankedNode,
+                 //startingNode: RankedNode,
+                 /*?for initialization only?*/
+                 startingNode: Int,
                  /*initiated with 'startingNode' as 'tail'*/
                  /*contains arcs with
                  explored 'tail' &
                  unexplored 'head'*/
                  nextArcToCheckQueue: Queue[Arc] = Queue.empty[Arc],
                  /*initiated with 'startingNode'*/
-                 exploredNodes: Vector[Int] = Vector.empty[Int],
+                 //exploredNodes: Vector[Int] = Vector.empty[Int],
+                 /*`ranked` means `explored`*/
                  rankedNodes: Vector[RankedNode] = Vector.empty[RankedNode]
                  ): Vector[RankedNode] = {
-    /*A Queue is
-    just like a stack
-    except that
-    it is `first-in-first-out` rather than
-    `last-in-first-out`.*/
-    //val empty = scala.collection.immutable.Queue[Int]()
-    //val has1 = empty.enqueue(1)
-    //val has123 = has1.enqueue(List(2, 3))
-    //val (element, has23) = has123.dequeue
-    if (nextArcToCheckQueue.isEmpty) {
+    /*
+    take current 'node' =
+      if `exploredNodes'.isEmpty
+      then
+      'startingNode' as level '0'
+      else
+        if 'nextNodeToCheckQueue'.nonEmpty
+        then
+        .dequeue
+        (pick first)
+        else
+        end of connected component
+        return `exploredNodes'
+    mark it as `explored`
+    (add to `explored` 'nodes')
+    find all 'edges' that contain current 'node' as
+    `start` or `end`
+    check filtered 'edges' for 'explored' second 'node'
+    add 'edges' with
+    one 'node' current `explored` & second `unexplored` 'node'
+    to the 'Queue'
+    or
+    all `unexplored` 'nodes' form 'edges' with current 'node'
+    add to 'nextNodeToCheckQueue'
+    then
+    >>recursion<<
+    * */
+
+    if (
+      rankedNodes.nonEmpty &&
+      nextArcToCheckQueue.isEmpty) {
       /*return value*/
       /*at least has starting node*/
-      if (
-        exploredNodes
-        .nonEmpty
-      //.contains(startingNode)
-      ) {
-        //exploredNodes
-        rankedNodes
-      } else {
-        //startingNode +: exploredNodes
-        //RankedNode(startingNode,0) +: rankedNodes
-        startingNode +: rankedNodes
-      }
-    } else {
-      val (currentlyExplored, currentlyRanked): (
-        Vector[Int], Vector[RankedNode]) =
-        if (
-        //exploredNodes.isEmpty ||
-        //exploredNodes
-          rankedNodes
-          .contains(startingNode)
-        ) {
-          (exploredNodes, rankedNodes)
-        } else /*if (exploredNodes.isEmpty)*/ {
-          (startingNode.node +: exploredNodes,
-            //RankedNode(startingNode,0) +: rankedNodes
-            startingNode +: rankedNodes
-            )
+      rankedNodes
+    } else /*if (nextArcToCheckQueue.nonEmpty)*/{
+      //val currentArc: Arc =
+      //val (Arc(_, nextNode), dequeuedQueue): (Arc, Queue[Arc]) =
+      val (currentArc, dequeuedQueue): (Arc, Queue[Arc]) =
+        if (nextArcToCheckQueue.isEmpty) {
+          /*?self pointed arc? at first step ?*/
+          (Arc(startingNode, startingNode), Queue.empty[Arc])
+        } else {
+          nextArcToCheckQueue
+          /*to converge and avoid endless recursion computation*/
+          .dequeue
         }
+      val (currentTail, currentHead): (Int, Int)/*Arc*/ =
+        if (
+        //graph.nonEmpty &&
+          rankedNodes.isEmpty &&
+            nextArcToCheckQueue.isEmpty
+        ) {
+          /*first step*/
+          (startingNode, startingNode)
+        } else /*if (nextArcToCheckQueue.nonEmpty)*/{
+          /*must be defined*/
+          (currentArc.tail, currentArc.head)
+        }
+      /*add to ranked / explored*/
+      val currentlyRanked: Vector[RankedNode] =
+      if (
+        rankedNodes.isEmpty ||
+          currentArc.tail == currentArc.head
+      ) {
+        /*?side effect?*/
+        RankedNode(currentArc.tail, 0) +: rankedNodes
+      } else {
+        /*find 'tail'.rank*/
+        //val tailRank: Int =
+        val rankedTail: RankedNode =
+          rankedNodes
+        .find(_.node == currentArc.tail)
+        .getOrElse(RankedNode(currentArc.tail, 0))
+        /*return value*/
+        RankedNode(currentArc.tail, rankedTail.rank + 1) +: rankedNodes
+      }
       /*layer / rank of 'head' must be 'tail'.rank + 1*/
-      val allArcsFromLastExplored: /*List*/ Seq[Arc] =
-        graph
+      /*!may be time consuming because of nested loop!*/
+      val allArcsFromLastExplored: /*List*/Vector[Arc] =
+        //graph
         //.collect(pf match {case x if x.})
-        .filter(a =>
-                  a.tail == startingNode.node &&
-                    !exploredNodes.contains(a.head))
-      /*when 'nextNode' is picked it became 'explored'*/
-      val (Arc(_, nextNode), dequeuedQueue): (Arc, Queue[Arc]) =
-        nextArcToCheckQueue
-        /*to converge and avoid endless recursion computation*/
-        .dequeue
+        /*.filter(a =>
+                  a.tail == currentArc.tail &&
+                    !rankedNodes
+                     .contains(a.head)
+               )*/
+        for {
+          arc<-graph if arc.tail == currentArc.tail
+          node<-rankedNodes if (arc.head != node.node)
+        } yield arc
       val newQueue =
         if (allArcsFromLastExplored.isEmpty) {
           dequeuedQueue
@@ -385,15 +426,13 @@ object stronglyConnectedComponents {
       /*recursion*/
       layersBFS(
                  graph: Vector[Arc],
-                 startingNode =
-                   RankedNode(nextNode, startingNode.rank + 1),
+                 /*same & not changing*/
+                 startingNode,
                  /*eventually must reduce to empty*/
                  newQueue,
-                 /*?may be must be before picking next arc from queue?*/
-                 currentlyExplored
+                 rankedNodes
                )
     }
-    //Vector.empty[Int/*Arc*/]
   }
 
   //Breadth-First Search
