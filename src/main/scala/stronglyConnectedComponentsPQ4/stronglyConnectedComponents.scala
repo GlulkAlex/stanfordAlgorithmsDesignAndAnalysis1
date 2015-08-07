@@ -161,27 +161,28 @@ object stronglyConnectedComponents {
                            /*or
                            keep tracking max node value
                            assuming that nodes are consecutive
-                           5819251(number of edges doubled?) did not equal 875714
+                           5819251(number of edges doubled?) did not equal
+                           875714
                            * */
                            /*nodes: Vector[Int] =
                            Vector.empty[Int]*/
-                             nodes: Seq[Int] =
-                           Seq.empty[Int],
+                           /*nodes: Seq[Int] =
+                         Seq.empty[Int],*/
                            arcs: Vector[Arc] =
                            Vector.empty[Arc],
-                           lastTail: Option[Int] = None/*,
-                           minNode: Int = Double.PositiveInfinity,
-                             maxNode: Int = Double.NegativeInfinity*/
+                           //lastTail: Option[Int] = None,
+                           minNode: Int = Double.PositiveInfinity.toInt,
+                           maxNode: Int = Double.NegativeInfinity.toInt
                            //): (Vector[Int], Vector[Arc]) = {
                            ): DirectedGraph = {
     if (fileContentIter.isEmpty) {
       /*return value*/
       //(nodes, arcs)
       //DirectedGraph(nodes, arcs)
-      //DirectedGraph(minNode to maxNode, arcs)
-      DirectedGraph(
+      DirectedGraph(minNode to maxNode, arcs)
+      /*DirectedGraph(
                      nodes.distinct,
-                     arcs)
+                     arcs)*/
     } else /*if (adjacencyList.hasNext)*/ {
       val Array(tail, head) =
         fileContentIter
@@ -213,46 +214,46 @@ object stronglyConnectedComponents {
       At this point,
       the JVM will throw an OOM (OutOfMemoryError).
        */
-      val newNodes: Seq[Int] =
+      //val newNodes: Seq[Int] =
       /*skip self loop*/
-        /*if (hasTail && hasHead) {
-          nodes
-        } else if (hasTail && !hasHead) {
-          head +: nodes
-        } else if (!hasTail && hasHead) {
-          tail +: nodes
-        } else /*if (!hasTail && !hasHead)*/ {
-          tail +: head +: nodes
-        }*/
+      /*if (hasTail && hasHead) {
+        nodes
+      } else if (hasTail && !hasHead) {
+        head +: nodes
+      } else if (!hasTail && hasHead) {
+        tail +: nodes
+      } else /*if (!hasTail && !hasHead)*/ {
+        tail +: head +: nodes
+      }*/
       /*assume that input sorted by 'tails'
       * so they are consecutive / in ascending order*/
       //val addTail: Vector[Int] =
+      /*if (
+      //lastTail.isEmpty ||
+      //Some(tail) == lastTail
+        lastTail.contains(tail)
+      ) {
+        //nodes
         if (
-        //lastTail.isEmpty ||
-        //Some(tail) == lastTail
-          lastTail.contains(tail)
+          tail == head ||
+            lastTail.contains(head)
         ) {
-          //nodes
-          if (
-            tail == head ||
-              lastTail.contains(head)
-          ) {
-            nodes
-          } else {
-            head +: nodes
-          }
+          nodes
         } else {
-          /*how mach time consume new collection creation ?*/
-          //tail +: nodes
-          if (
-            tail == head ||
-              lastTail.contains(head)
-          ) {
-            tail +: nodes
-          } else {
-            head +: tail +: nodes
-          }
+          head +: nodes
         }
+      } else {
+        /*how mach time consume new collection creation ?*/
+        //tail +: nodes
+        if (
+          tail == head ||
+            lastTail.contains(head)
+        ) {
+          tail +: nodes
+        } else {
+          head +: tail +: nodes
+        }
+      }*/
       /*val addHead: Vector[Int] =
         if (
           tail == head ||
@@ -262,14 +263,32 @@ object stronglyConnectedComponents {
         } else {
           head +: addTail
         }*/
+      val newMin: Int =
+        if (minNode > tail && tail <= head) {
+          tail
+        } else if (minNode > tail && tail > head) {
+          head
+        } else /*if(minNode < tail || minNodel < head)*/ {
+          minNode
+        }
+      val newMax: Int =
+        if (maxNode < tail && tail >= head) {
+          tail
+        } else if (maxNode < tail && tail < head) {
+          head
+        } else /*if(maxNode > tail || maxNode > head)*/ {
+          maxNode
+        }
       /*recursion*/
       extractArcsAndNodes(
                            /*reduced already by '.next()'*/
                            fileContentIter,
-                           newNodes,
+                           //newNodes,
                            //addHead,
                            newArcs,
-                           Some(tail)
+                           //Some(tail)
+                           newMin,
+                           newMax
                          )
     }
   }
@@ -438,7 +457,7 @@ object stronglyConnectedComponents {
           /*to converge and avoid endless recursion computation*/
           .dequeue
         }
-      val (currentTail, currentHead): (Int, Int) /*Arc*/ =
+      /*val (currentTail, currentHead): (Int, Int) /*Arc*/ =
         if (
         //graph.nonEmpty &&
           rankedNodes.isEmpty &&
@@ -449,39 +468,70 @@ object stronglyConnectedComponents {
         } else /*if (nextArcToCheckQueue.nonEmpty)*/ {
           /*must be defined*/
           (currentArc.tail, currentArc.head)
-        }
-      /*add to ranked / explored*/
+        }*/
+      /*add selected 'node' to ranked / as explored*/
+      /*!only if 'node' is yet `unExplored`!*/
       val currentlyRanked: Vector[RankedNode] =
         if (
-          rankedNodes.isEmpty ||
-            currentArc.tail == currentArc.head
+          rankedNodes.isEmpty /*||
+            currentArc.tail == currentArc.head*/
         ) {
+          /*for first node - only arc.tail*/
           /*?side effect?*/
-          RankedNode(currentArc.tail, 0) +: rankedNodes
-        } else {
-          /*find 'tail'.rank*/
-          //val tailRank: Int =
-          val rankedTail: RankedNode =
+          //RankedNode(currentArc.tail, 0) +: rankedNodes
+          RankedNode(currentArc.head, 0) +: rankedNodes
+        } else  if (
+            rankedNodes.nonEmpty &&
+              currentArc.tail == currentArc.head
+          ) {
+            /*self loops skip*/
+            /*unchanged*/
             rankedNodes
-            .find(_.node == currentArc.tail)
-            .getOrElse(RankedNode(currentArc.tail, 0))
-          /*return value*/
-          RankedNode(currentArc.tail, rankedTail.rank + 1) +: rankedNodes
+        } else /*if (
+            rankedNodes.nonEmpty &&
+              currentArc.tail != currentArc.head
+          )*/{
+          if (rankedNodes.exists(_.node == currentArc.head)) {
+            /*unchanged*/
+            rankedNodes
+          } else {
+            /*find 'tail'.rank*/
+            //val tailRank: Int =
+            val rankedTail: RankedNode =
+              rankedNodes
+              //.find(_.node == currentArc.head)
+              /*`parent` 'node'*/
+              .find(_.node == currentArc.tail)
+              /*must never occur*/
+              .getOrElse(RankedNode(currentArc.tail, 0))
+            /*return value*/
+            RankedNode(currentArc.head, rankedTail.rank + 1) +: rankedNodes
+          }
         }
       /*layer / rank of 'head' must be 'tail'.rank + 1*/
       /*!may be time consuming because of nested loop!*/
       val allArcsFromLastExplored: /*List*/ Vector[Arc] =
-      //graph
-      //.collect(pf match {case x if x.})
+      graph
+      .collect(
+      {case a if (
+        /*start with explored 'node'*/
+        a.tail == currentArc.head &&
+          //!rankedNodes.unzip._1.contains(a.head)
+          /*where 'arc's 'head' yet unexplored*/
+          !rankedNodes.exists(_.node == a.head)
+        ) => a}
+              )
       /*.filter(a =>
                 a.tail == currentArc.tail &&
                   !rankedNodes
                    .contains(a.head)
              )*/
-        for {
-          arc <- graph if arc.tail == currentArc.tail
-          node <- rankedNodes if arc.head != node.node
-        } yield arc
+        /*(for {
+          arc <- graph if arc.tail == currentArc.head
+          /*contains at least one node*/
+          node <- currentlyRanked if arc.head != node.node
+        } yield arc)
+        .distinct*/
       val newQueue =
         if (allArcsFromLastExplored.isEmpty) {
           dequeuedQueue
@@ -496,7 +546,7 @@ object stronglyConnectedComponents {
                  startingNode,
                  /*eventually must reduce to empty*/
                  newQueue,
-                 rankedNodes
+                 rankedNodes = currentlyRanked
                )
     }
   }
