@@ -475,100 +475,246 @@ class stronglyConnectedComponentsSuit
                       s"'expectedSize'"
                   )
           }
+  ignore(
+          "14: 'BFS_SCC_NodesAmountImproved'" +
+            "should return exact amount of nodes in connected component"
+        ) {
+            val takeNumber: Int = 14
+            val nodesLimit: Int = 13
+            //val expectedNodesInSCC: Int = 3
+            val expectedSize: Int =
+            //6
+              13
+            val mockUpOneNode: Vector[Arc] =
+              Vector(
+                      Arc(1, 1)
+                    )
+            val mockUpTwoNodes: Vector[Arc] =
+              Vector(
+                      Arc(1, 2)
+                    )
+            val mockUpThreeNodes1: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3)
+                    )
+            val mockUpThreeNodes2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3)
+                    )
+            val mockUpGraph: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3),
+                      Arc(2, 5),
+                      Arc(3, 5),
+                      Arc(3, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(5, 6)
+                    )
+            val mockUpTree1: Vector[Arc] =
+              Vector(
+                      Arc(6, 4),
+                      Arc(6, 12),
+                      Arc(4, 5),
+                      Arc(4, 2),
+                      Arc(2, 3),
+                      Arc(2, 1),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val mockUpTree2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3),
+                      Arc(2, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(6, 12),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val graphNodes: Array[IsExploredNode] =
+              (1 to nodesLimit)
+              .map(IsExploredNode(_, false))
+              .toArray
+            //val nodesInSCC: Int =
+            val nodesInSCC: Int =
+              BFS_SCC_NodesAmountImproved(
+                                           graph = mockUpTree2,
+                                           startingNode = 1,
+                                           graphNodes = graphNodes
+                                         )
+
+            println(
+                     s"\n'nodesInSCC` is:${nodesInSCC}")
+            assume(
+                    //true == true,
+                    nodesInSCC == expectedSize,
+                    s"\nnumber of 'nodesInSCC' must be equal to " +
+                      s"'expectedSize'"
+                  )
+          }
+  ignore(
+          "21: 'findAllSCCwithBFS'" +
+            "should return all connected components in graph"
+        ) {
+            val takeNumber: Int = 14
+            //val expectedNodesInSCC: Int = 3
+            val expectedSize: Int =
+            //6
+              3
+            val mockUpOneNode: Vector[Arc] =
+              Vector(
+                      Arc(1, 1)
+                    )
+            val mockUpTwoNodes: Vector[Arc] =
+              Vector(
+                      Arc(1, 2)
+                    )
+            val mockUpThreeNodes1: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3)
+                    )
+            val mockUpThreeNodes2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3)
+                    )
+            val mockUpGraph: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3),
+                      Arc(2, 5),
+                      Arc(3, 5),
+                      Arc(3, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(5, 6)
+                    )
+            val mockUpGraphWith3SCC: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(3, 5),
+                      Arc(3, 4),
+                      Arc(4, 5),
+                      Arc(6, 6)
+                    )
+            val mockUpTree1: Vector[Arc] =
+              Vector(
+                      Arc(6, 4),
+                      Arc(6, 12),
+                      Arc(4, 5),
+                      Arc(4, 2),
+                      Arc(2, 3),
+                      Arc(2, 1),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val mockUpTree2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3),
+                      Arc(2, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(6, 12),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val nodes: Vector[Int] =
+              extractNodesFromArcs(mockUpGraphWith3SCC)
+            //val nodesInSCC: Int =
+            val exploredSCCs: Seq[Int] =
+              findAllSCCwithBFS(
+                                 graph = mockUpGraphWith3SCC,
+                                 unExploredGraphNodes = nodes
+                               )
+
+            println(
+                     s"\n'exploredSCCs.length` is:${exploredSCCs.length}" +
+                       s"\n'nodes` in each SCC:\n${exploredSCCs.mkString("\n")}"
+                   )
+            assume(
+                    //true == true,
+                    exploredSCCs.length == expectedSize,
+                    s"\nnumber of 'exploredSCCs' must be equal to " +
+                      s"'expectedSize'"
+                  )
+          }
   test(
-        "14: 'findAllSCCwithBFS'" +
-          "should return all connected components in graph"
+        "22: 'findAllSCCwithBFSImproved'" +
+          "should return " +
+          "the `sizes` of " +
+          "the '5' largest `SCCs` in the given `graph`"
+        //"all connected components in graph from big input"
       ) {
-          val takeNumber: Int = 14
+          val takeNumber: Int = 5
+          val nodesLimit: Int = 875714
           //val expectedNodesInSCC: Int = 3
-          val expectedSize: Int =
+          //val expectedSize: Int =
           //6
-            3
-          val mockUpOneNode: Vector[Arc] =
-            Vector(
-                    Arc(1, 1)
-                  )
-          val mockUpTwoNodes: Vector[Arc] =
-            Vector(
-                    Arc(1, 2)
-                  )
-          val mockUpThreeNodes1: Vector[Arc] =
-            Vector(
-                    Arc(1, 2),
-                    Arc(1, 3)
-                  )
-          val mockUpThreeNodes2: Vector[Arc] =
-            Vector(
-                    Arc(1, 2),
-                    Arc(2, 3)
-                  )
-          val mockUpGraph: Vector[Arc] =
-            Vector(
-                    Arc(1, 2),
-                    Arc(1, 3),
-                    Arc(2, 5),
-                    Arc(3, 5),
-                    Arc(3, 4),
-                    Arc(4, 5),
-                    Arc(4, 6),
-                    Arc(5, 6)
-                  )
-          val mockUpGraphWith3SCC: Vector[Arc] =
-            Vector(
-                    Arc(1, 2),
-                    Arc(3, 5),
-                    Arc(3, 4),
-                    Arc(4, 5),
-                    Arc(6, 6)
-                  )
-          val mockUpTree1: Vector[Arc] =
-            Vector(
-                    Arc(6, 4),
-                    Arc(6, 12),
-                    Arc(4, 5),
-                    Arc(4, 2),
-                    Arc(2, 3),
-                    Arc(2, 1),
-                    Arc(12, 10),
-                    Arc(12, 13),
-                    Arc(10, 11),
-                    Arc(10, 8),
-                    Arc(8, 7),
-                    Arc(8, 9)
-                  )
-          val mockUpTree2: Vector[Arc] =
-            Vector(
-                    Arc(1, 2),
-                    Arc(2, 3),
-                    Arc(2, 4),
-                    Arc(4, 5),
-                    Arc(4, 6),
-                    Arc(6, 12),
-                    Arc(12, 10),
-                    Arc(12, 13),
-                    Arc(10, 11),
-                    Arc(10, 8),
-                    Arc(8, 7),
-                    Arc(8, 9)
-                  )
-          val nodes: Vector[Int] =
-            extractNodesFromArcs(mockUpGraphWith3SCC)
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"
+          //SCC.txt
+          val fileName: String = "SCC.txt"
+          val actualFileContent: Iterator[String] =
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+          val arcs: Vector[Arc] =
+            extractArcs(actualFileContent)
+          val graphNodes: Array[IsExploredNode] =
+            (1 to nodesLimit)
+            .map(IsExploredNode(_, false))
+            .toArray
           //val nodesInSCC: Int =
+          /*too slow on big input*/
           val exploredSCCs: Seq[Int] =
-            findAllSCCwithBFS(
-                               graph = mockUpGraphWith3SCC,
-                               unExploredGraphNodes = nodes
-                             )
+            findAllSCCwithBFSImproved(
+                                       graph = arcs,
+                                       graphNodes = graphNodes,
+                                       nodesLimit = nodesLimit
+                                     )
 
           println(
                    s"\n'exploredSCCs.length` is:${exploredSCCs.length}" +
-                     s"\n'nodes` in each SCC:\n${exploredSCCs.mkString("\n")}"
+                     s"\n'nodes` in first $takeNumber SCC:" +
+                     s"\n${
+                       exploredSCCs
+                       .sorted(Ordering[Int].reverse)
+                       .take(takeNumber)
+                       .mkString("\n")
+                     }"
                  )
           assume(
                   //true == true,
-                  exploredSCCs.length == expectedSize,
-                  s"\nnumber of 'exploredSCCs' must be equal to " +
-                    s"'expectedSize'"
+                  exploredSCCs.nonEmpty,
+                  s"\nnumber of 'exploredSCCs' must be 'nonEmpty'"
                 )
         }
 
