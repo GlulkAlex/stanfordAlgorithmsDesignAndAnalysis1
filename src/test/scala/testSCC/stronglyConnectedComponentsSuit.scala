@@ -262,16 +262,228 @@ class stronglyConnectedComponentsSuit
                       "'expectedSize'"
                   )
           }
+  ignore(
+          "12: 'layersBFS'" +
+            "should return connected component as ranked nodes"
+        ) {
+            val takeNumber: Int = 14
+            val expectedMaxLevel: Int = 3
+            val expectedTotalLevels: Int = 4
+            val expectedSize: Int =
+              6
+            //13
+            val mockUpOneNode: Vector[Arc] =
+              Vector(
+                      Arc(1, 1)
+                    )
+            val mockUpTwoNodes: Vector[Arc] =
+              Vector(
+                      Arc(1, 2)
+                    )
+            val mockUpThreeNodes1: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3)
+                    )
+            val mockUpThreeNodes2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3)
+                    )
+            val mockUpGraph: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3),
+                      Arc(2, 5),
+                      Arc(3, 5),
+                      Arc(3, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(5, 6)
+                    )
+            val mockUpTree1: Vector[Arc] =
+              Vector(
+                      Arc(6, 4),
+                      Arc(6, 12),
+                      Arc(4, 5),
+                      Arc(4, 2),
+                      Arc(2, 3),
+                      Arc(2, 1),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val mockUpTree2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3),
+                      Arc(2, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(6, 12),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val nodes: Vector[Int] =
+              extractNodesFromArcs(mockUpTree2)
+            /*DONE
+            debug needed
+            * */
+            /*tier*/
+            val nodesLevels: Vector[RankedNode] =
+              layersBFS(
+                         graph = mockUpTree2,
+                         startingNode = 1
+                       )
+            val maxLevelNode: RankedNode =
+              nodesLevels
+              //.max(Ordering[RankedNode].on((n):RankedNode => n.r)
+              //.max(Ordering.by[RankedNode, Int](_.rank))
+              //.max(Ordering.by[RankedNode, Int]((f: RankedNode) =>f.rank))
+              //.max(Ordering.by((f: RankedNode) =>f.rank))
+              //.max(Ordering.by(_.rank)
+              .maxBy(_.rank)
+            //.sortBy(_.rank)(Ordering[Int])
+            /*.sortBy(_.rank)
+            .headOption
+            .getOrElse(RankedNode(-1,-1))*/
+            /*must be only distinct 'nodes'*/
+            val rankedUnziped: (Vector[Int], Vector[Int]) =
+              nodesLevels
+              .unzip(r => (r.node, r.rank))
+            val rankedNodes =
+              rankedUnziped._1
+            val levelsNumbers =
+              rankedUnziped._2
+            val nodesLevelsLength = nodesLevels.length
+            val nodesRanks = levelsNumbers.distinct //.length
+
+            println(
+                     s"\n'maxLevelNode` is:${maxLevelNode.rank}" +
+                       s"\namount of 'nodes` in CC is:${nodesLevels.length} " +
+                       s"\nfirst $takeNumber`nodes` from 'connectedComponent'" +
+                       s" " +
+                       s"are:\n${
+                         nodesLevels.mkString("\n")
+                       }")
+            assume(
+                    //true == true,
+                    /*can not exceed total number of 'nodes'*/
+                    nodesLevelsLength <= nodes.length &&
+                      /*must be only distinct 'nodes'*/
+                      nodesLevelsLength == rankedNodes.distinct.length &&
+                      nodesRanks.length == expectedTotalLevels &&
+                      maxLevelNode.rank == expectedMaxLevel,
+                    s"\n'nodesLevels.length' must be less or equal to " +
+                      s"'nodes.length':${nodes.length}" +
+                      //s"'expectedSize'" +
+                      s"\n'nodesLevels' must contain only distinct 'nodes'" +
+                      s"\n'nodesRanks.length' must be equal to " +
+                      s"'expectedTotalLevels'" +
+                      s"\n and 'maxLevelNode.rank' must be equal to " +
+                      s"'expectedMaxLevel'"
+                  )
+          }
+  ignore(
+          "13: 'BFS_SCC_NodesAmount'" +
+            "should return exact amount of nodes in connected component"
+        ) {
+            val takeNumber: Int = 14
+            //val expectedNodesInSCC: Int = 3
+            val expectedSize: Int =
+            //6
+              13
+            val mockUpOneNode: Vector[Arc] =
+              Vector(
+                      Arc(1, 1)
+                    )
+            val mockUpTwoNodes: Vector[Arc] =
+              Vector(
+                      Arc(1, 2)
+                    )
+            val mockUpThreeNodes1: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3)
+                    )
+            val mockUpThreeNodes2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3)
+                    )
+            val mockUpGraph: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(1, 3),
+                      Arc(2, 5),
+                      Arc(3, 5),
+                      Arc(3, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(5, 6)
+                    )
+            val mockUpTree1: Vector[Arc] =
+              Vector(
+                      Arc(6, 4),
+                      Arc(6, 12),
+                      Arc(4, 5),
+                      Arc(4, 2),
+                      Arc(2, 3),
+                      Arc(2, 1),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            val mockUpTree2: Vector[Arc] =
+              Vector(
+                      Arc(1, 2),
+                      Arc(2, 3),
+                      Arc(2, 4),
+                      Arc(4, 5),
+                      Arc(4, 6),
+                      Arc(6, 12),
+                      Arc(12, 10),
+                      Arc(12, 13),
+                      Arc(10, 11),
+                      Arc(10, 8),
+                      Arc(8, 7),
+                      Arc(8, 9)
+                    )
+            //val nodesInSCC: Int =
+            val ComponentResult(nodesInSCC, _): ComponentResult =
+              BFS_SCC_NodesAmount(
+                                   graph = mockUpTree2,
+                                   startingNode = 1
+                                 )
+
+            println(
+                     s"\n'nodesInSCC` is:${nodesInSCC}")
+            assume(
+                    //true == true,
+                    nodesInSCC == expectedSize,
+                    s"\nnumber of 'nodesInSCC' must be equal to " +
+                      s"'expectedSize'"
+                  )
+          }
   test(
-        "12: 'layersBFS'" +
-          "should return connected component as ranked nodes"
+        "14: 'findAllSCCwithBFS'" +
+          "should return all connected components in graph"
       ) {
           val takeNumber: Int = 14
-          val expectedMaxLevel: Int = 3
-          val expectedTotalLevels: Int = 4
+          //val expectedNodesInSCC: Int = 3
           val expectedSize: Int =
-            6
-          //13
+          //6
+            3
           val mockUpOneNode: Vector[Arc] =
             Vector(
                     Arc(1, 1)
@@ -300,6 +512,14 @@ class stronglyConnectedComponentsSuit
                     Arc(4, 5),
                     Arc(4, 6),
                     Arc(5, 6)
+                  )
+          val mockUpGraphWith3SCC: Vector[Arc] =
+            Vector(
+                    Arc(1, 2),
+                    Arc(3, 5),
+                    Arc(3, 4),
+                    Arc(4, 5),
+                    Arc(6, 6)
                   )
           val mockUpTree1: Vector[Arc] =
             Vector(
@@ -332,62 +552,23 @@ class stronglyConnectedComponentsSuit
                     Arc(8, 9)
                   )
           val nodes: Vector[Int] =
-            extractNodesFromArcs(mockUpTree2)
-          /*DONE
-          debug needed
-          * */
-          /*tier*/
-          val nodesLevels: Vector[RankedNode] =
-            layersBFS(
-                       graph = mockUpTree2,
-                       startingNode = 1
-                     )
-          val maxLevelNode: RankedNode =
-            nodesLevels
-            //.max(Ordering[RankedNode].on((n):RankedNode => n.r)
-            //.max(Ordering.by[RankedNode, Int](_.rank))
-            //.max(Ordering.by[RankedNode, Int]((f: RankedNode) =>f.rank))
-            //.max(Ordering.by((f: RankedNode) =>f.rank))
-            //.max(Ordering.by(_.rank)
-            .maxBy(_.rank)
-          //.sortBy(_.rank)(Ordering[Int])
-          /*.sortBy(_.rank)
-          .headOption
-          .getOrElse(RankedNode(-1,-1))*/
-          /*must be only distinct 'nodes'*/
-          val rankedUnziped: (Vector[Int], Vector[Int]) =
-            nodesLevels
-            .unzip(r => (r.node, r.rank))
-          val rankedNodes =
-            rankedUnziped._1
-          val levelsNumbers =
-            rankedUnziped._2
-          val nodesLevelsLength = nodesLevels.length
-          val nodesRanks = levelsNumbers.distinct//.length
+            extractNodesFromArcs(mockUpGraphWith3SCC)
+          //val nodesInSCC: Int =
+          val exploredSCCs: Seq[Int] =
+            findAllSCCwithBFS(
+                               graph = mockUpGraphWith3SCC,
+                               unExploredGraphNodes = nodes
+                             )
 
           println(
-                   s"\n'maxLevelNode` is:${maxLevelNode.rank}" +
-                     s"\namount of 'nodes` in CC is:${nodesLevels.length} " +
-                     s"\nfirst $takeNumber`nodes` from 'connectedComponent' " +
-                     s"are:\n${
-                       nodesLevels.mkString("\n")
-                     }")
+                   s"\n'exploredSCCs.length` is:${exploredSCCs.length}" +
+                     s"\n'nodes` in each SCC:\n${exploredSCCs.mkString("\n")}"
+                 )
           assume(
                   //true == true,
-                  /*can not exceed total number of 'nodes'*/
-                  nodesLevelsLength <= nodes.length &&
-                    /*must be only distinct 'nodes'*/
-                    nodesLevelsLength == rankedNodes.distinct.length &&
-                    nodesRanks.length == expectedTotalLevels &&
-                    maxLevelNode.rank == expectedMaxLevel,
-                  s"\n'nodesLevels.length' must be less or equal to " +
-                    s"'nodes.length':${nodes.length}" +
-                    //s"'expectedSize'" +
-                  s"\n'nodesLevels' must contain only distinct 'nodes'" +
-                    s"\n'nodesRanks.length' must be equal to " +
-                    s"'expectedTotalLevels'" +
-                    s"\n and 'maxLevelNode.rank' must be equal to " +
-                    s"'expectedMaxLevel'"
+                  exploredSCCs.length == expectedSize,
+                  s"\nnumber of 'exploredSCCs' must be equal to " +
+                    s"'expectedSize'"
                 )
         }
 

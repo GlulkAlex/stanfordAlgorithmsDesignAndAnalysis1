@@ -80,6 +80,10 @@ object stronglyConnectedComponents {
   you exchange tips for doing this on the discussion forums.
    */
 
+  case class ComponentResult(
+                              nodesAmount: Int,
+                              exploredNodes: Vector[Int])
+
   /*node's 'rank' or 'layer'*/
   case class RankedNode(node: Int, rank: Int)
 
@@ -480,17 +484,17 @@ object stronglyConnectedComponents {
           /*?side effect?*/
           //RankedNode(currentArc.tail, 0) +: rankedNodes
           RankedNode(currentArc.head, 0) +: rankedNodes
-        } else  if (
-            rankedNodes.nonEmpty &&
-              currentArc.tail == currentArc.head
-          ) {
-            /*self loops skip*/
-            /*unchanged*/
-            rankedNodes
+        } else if (
+                 rankedNodes.nonEmpty &&
+                   currentArc.tail == currentArc.head
+               ) {
+          /*self loops skip*/
+          /*unchanged*/
+          rankedNodes
         } else /*if (
             rankedNodes.nonEmpty &&
               currentArc.tail != currentArc.head
-          )*/{
+          )*/ {
           if (rankedNodes.exists(_.node == currentArc.head)) {
             /*unchanged*/
             rankedNodes
@@ -511,27 +515,28 @@ object stronglyConnectedComponents {
       /*layer / rank of 'head' must be 'tail'.rank + 1*/
       /*!may be time consuming because of nested loop!*/
       val allArcsFromLastExplored: /*List*/ Vector[Arc] =
-      graph
-      .collect(
-      {case a if (
-        /*start with explored 'node'*/
-        a.tail == currentArc.head &&
-          //!rankedNodes.unzip._1.contains(a.head)
-          /*where 'arc's 'head' yet unexplored*/
-          !rankedNodes.exists(_.node == a.head)
-        ) => a}
-              )
+        graph
+        .collect(
+        { case a if (
+          /*start with explored 'node'*/
+          a.tail == currentArc.head &&
+            //!rankedNodes.unzip._1.contains(a.head)
+            /*where 'arc's 'head' yet unexplored*/
+            !rankedNodes.exists(_.node == a.head)
+          ) => a
+        }
+                )
       /*.filter(a =>
                 a.tail == currentArc.tail &&
                   !rankedNodes
                    .contains(a.head)
              )*/
-        /*(for {
-          arc <- graph if arc.tail == currentArc.head
-          /*contains at least one node*/
-          node <- currentlyRanked if arc.head != node.node
-        } yield arc)
-        .distinct*/
+      /*(for {
+        arc <- graph if arc.tail == currentArc.head
+        /*contains at least one node*/
+        node <- currentlyRanked if arc.head != node.node
+      } yield arc)
+      .distinct*/
       val newQueue =
         if (allArcsFromLastExplored.isEmpty) {
           dequeuedQueue
@@ -548,6 +553,157 @@ object stronglyConnectedComponents {
                  newQueue,
                  rankedNodes = currentlyRanked
                )
+    }
+  }
+
+  //Breadth-First Search
+  /*return number of nodes / size of strongly connected component*/
+  @scala.annotation.tailrec
+  def BFS_SCC_NodesAmount(
+                           graph: Vector[Arc],
+                           /*only needed when called from 'findAllSCCwithBFS'*/
+                           /*instead better return 'exploredNodesInSCC'*/
+                           /*unExploredGraphNodes: Vector[Int]
+                           = Vector.empty[Int],*/
+                           /*used for initialization only*/
+                           startingNode: Int,
+                           nextArcToCheckQueue: Queue[Arc] = Queue.empty[Arc],
+                           exploredNodesInSCC: Vector[Int] = Vector.empty[Int],
+                           nodesCounter: Int = 0
+                           //): Int = {
+                           ): ComponentResult = {
+    if (
+      (nodesCounter > 0 ||
+        exploredNodesInSCC.nonEmpty) &&
+        nextArcToCheckQueue.isEmpty) {
+      /*return value*/
+      /*at least has starting node, so must be > 0*/
+      //exploredNodesInSCC.length
+      //nodesCounter
+      ComponentResult(nodesCounter, exploredNodesInSCC)
+    } else /*if (nextArcToCheckQueue.nonEmpty)*/ {
+      val (currentArc, dequeuedQueue): (Arc, Queue[Arc]) =
+        if (nextArcToCheckQueue.isEmpty) {
+          /*?self pointed arc? at first step ?*/
+          (Arc(startingNode, startingNode), Queue.empty[Arc])
+        } else {
+          nextArcToCheckQueue
+          /*to converge and avoid endless recursion computation*/
+          .dequeue
+        }
+      /*add selected 'node' to ranked / as explored*/
+      /*!only if 'node' is yet `unExplored`!*/
+      val (currentlyInSCC, newCounter): (Vector[Int], Int) =
+        if (
+          nodesCounter == 0 ||
+            exploredNodesInSCC.isEmpty
+        ) {
+          /*for first node - only arc.tail*/
+          (currentArc.head +: exploredNodesInSCC, nodesCounter + 1)
+        } else if (
+                 (nodesCounter > 0 ||
+                   exploredNodesInSCC.nonEmpty) &&
+                   currentArc.tail == currentArc.head
+               ) {
+          /*self loops skip*/
+          /*unchanged*/
+          (exploredNodesInSCC, nodesCounter)
+        } else /*if (
+            rankedNodes.nonEmpty &&
+              currentArc.tail != currentArc.head
+          )*/ {
+          if (exploredNodesInSCC.contains(currentArc.head)) {
+            /*unchanged*/
+            (exploredNodesInSCC, nodesCounter)
+          } else {
+            /*return value*/
+            (currentArc.head +: exploredNodesInSCC, nodesCounter + 1)
+          }
+        }
+      /*!may be time consuming because of nested loop!*/
+      val allArcsFromLastExplored: /*List*/ Vector[Arc] =
+        graph
+        .collect(
+        { case a if (
+          /*start with explored 'node'*/
+          a.tail == currentArc.head &&
+            /*where 'arc's 'head' yet unexplored*/
+            !exploredNodesInSCC.contains(a.head)
+          ) => a
+        }
+                )
+      val newQueue =
+        if (allArcsFromLastExplored.isEmpty) {
+          dequeuedQueue
+        } else {
+          dequeuedQueue
+          .enqueue(allArcsFromLastExplored.toList)
+        }
+      /*recursion*/
+      BFS_SCC_NodesAmount(
+                           graph = graph,
+                           /*same & not changing*/
+                           startingNode = startingNode,
+                           /*eventually must reduce to empty*/
+                           nextArcToCheckQueue = newQueue,
+                           exploredNodesInSCC = currentlyInSCC,
+                           nodesCounter = newCounter
+                         )
+    }
+  }
+
+  //Breadth-First Search
+  /*return sequence of number of nodes / size of all strongly connected
+  components*/
+  @scala.annotation.tailrec
+  def findAllSCCwithBFS(
+                         /*may be worth it to be shrinked in each iteration*/
+                         graph: Vector[Arc],
+                         /*all corresponding graph 'nodes'*/
+                         unExploredGraphNodes: Vector[Int],
+                         exploredGraphNodes: Vector[Int] =
+                         Vector.empty[Int],
+                         connectedComponents: Vector[Int] =
+                         Vector.empty[Int]
+                         ): Seq[Int] = {
+    if (
+      unExploredGraphNodes.isEmpty) {
+      /*return value*/
+      connectedComponents
+    } else /*if (unExploredGraphNodes.nonEmpty)*/ {
+      if (exploredGraphNodes.contains(unExploredGraphNodes.head)) {
+        /*skip to next node*/
+        /*recursion*/
+        findAllSCCwithBFS(
+                           graph: Vector[Arc],
+                           /*eventually must reduce to empty*/
+                           unExploredGraphNodes.tail,
+                           exploredGraphNodes,
+                           connectedComponents
+                         )
+      } else {
+        /*have new unexplored 'node' not in explored SCC*/
+        val ComponentResult(
+        exploredConnectedComponent,
+        newExploredNodes
+                           ): ComponentResult =
+          BFS_SCC_NodesAmount(
+                               graph = graph,
+                               startingNode = unExploredGraphNodes.head
+                             )
+        val updatedConnectedComponents: Vector[Int] =
+          exploredConnectedComponent +: connectedComponents
+        val updatedExploredNodes: Vector[Int] =
+          exploredGraphNodes.union(newExploredNodes)
+        /*recursion*/
+        findAllSCCwithBFS(
+                           graph: Vector[Arc],
+                           /*eventually must reduce to empty*/
+                           unExploredGraphNodes.tail,
+                           updatedExploredNodes,
+                           updatedConnectedComponents
+                         )
+      }
     }
   }
 
