@@ -813,11 +813,11 @@ class stronglyConnectedComponentsSuit
                     Arc(10, 8),
                     Arc(8, 7),
                     Arc(8, 9)
-                  )
+                  ).sortBy(_.arcTail)
           val takeNumber: Int = 5
           val nodesLimit: Int =
-          //875714
-            13
+          875714
+            //13
           //val expectedNodesInSCC: Int = 3
           //val expectedSize: Int =
           //6
@@ -829,21 +829,22 @@ class stronglyConnectedComponentsSuit
               "testSCC/"
           //SCC.txt
           val fileName: String = "SCC.txt"
-          /*val actualFileContent: Iterator[String] =
+          val actualFileContent: Iterator[String] =
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
-                        )*/
+                        )
           val arcs: Vector[Arc] =
+            extractSortedArcs(actualFileContent)
           //extractArcs(actualFileContent)
-            mockUpTree1
+            //mockUpTree1
           /*val DirectedGraph(nodes, arcs): DirectedGraph =
             extractArcsAndNodes(actualFileContent)*/
 
           /*println(
                    s"\n'arcs.head` is:${arcs.head}"
                  )*/
-          println(
+          /*println(
                    s"\n'arcs.length` is:${arcs.length}" +
                      s"\nfirst $takeNumber 'arcs` are:" +
                      s"\n${
@@ -851,9 +852,9 @@ class stronglyConnectedComponentsSuit
                        .take(takeNumber)
                        .mkString("\n")
                      }"
-                 )
+                 )*/
 
-
+          /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
           val adjacencyList: Vector[AdjacencyListElem] =
             makeAdjacencyListFromArcs(
                                        minNodeVal = 1,

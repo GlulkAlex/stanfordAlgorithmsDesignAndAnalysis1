@@ -94,7 +94,10 @@ object stronglyConnectedComponents {
   case class IsExploredNode(
                              node: Int,
                              var isExplored: Boolean
-                             )
+                             ) {
+    override def toString =
+      s"""$node[${if (isExplored) "e" else "u"}]"""
+  }
 
   /*node's 'rank' or 'layer'*/
   case class RankedNode(node: Int, rank: Int)
@@ -110,6 +113,8 @@ object stronglyConnectedComponents {
     override def toString =
       s"""{${arcTail.node}[${if (arcTail.isExplored) "e" else "u"}]->""" +
         s"""${arcHead.node}[${if (arcHead.isExplored) "e" else "u"}]}"""
+
+    //final def showNode: String = this.toString
   }
 
   /*directed edge*/
@@ -139,7 +144,10 @@ object stronglyConnectedComponents {
                                 create &
                                 traversal*/
                                 adjustedNodes: List[Int]
-                                )
+                                ) {
+    override def toString =
+      s"""${node}>to>${adjustedNodes.mkString("", ">", "")}"""
+  }
 
   /*instead of 'indexOf'*/
   //@scala.annotation.tailrec
@@ -582,7 +590,7 @@ object stronglyConnectedComponents {
       'arcsRemains' = 'arcsRemains'
        */
     if (
-      currentNodeVal > maxNodeVal /*||
+      currentNodeVal >= maxNodeVal /*||
       arcsRemains.isEmpty*/
     ) {
       /*return value*/
@@ -665,7 +673,7 @@ object stronglyConnectedComponents {
              currentNodeVal < maxNodeVal &&
                (arcsRemains.isEmpty ||
                (arcsRemains.head.arcTail >= currentNodeVal + 1 ))
-           )*/{
+           )*/ {
       //next 'nodeVal'
       //=>add 'nodeToAdd' if any to 'adjustedNodes'
       val newAdjustedNodes =
