@@ -33,13 +33,13 @@ val pickRanked2 =
   mockUpGraph
   .collect(
   {case a if (
-    a.tail == 3 &&
+    a.arcTail == 3 &&
     //!ranked.contains(RankedNode(a.head,_: Int)) //&&
     //!ranked.contains(RankedNode(a.tail,_: Int))
     //ranked.contains(RankedNode(a.tail,_: Int))
     //ranked.exists(_.node == a.tail)
     //!ranked.exists(_.node == a.tail)
-    !ranked.exists(_.node == a.head)
+    !ranked.exists(_.node == a.arcHead)
     ) => a}
           )
 mockUpGraph.length

@@ -80,6 +80,12 @@ object stronglyConnectedComponents {
   you exchange tips for doing this on the discussion forums.
    */
 
+  trait TraverseDirection
+
+  case object Up extends TraverseDirection
+
+  case object Down extends TraverseDirection
+
   case class ComponentResult(
                               nodesAmount: Int,
                               exploredNodes: Vector[Int])
@@ -89,6 +95,7 @@ object stronglyConnectedComponents {
                              node: Int,
                              var isExplored: Boolean
                              )
+
   /*node's 'rank' or 'layer'*/
   case class RankedNode(node: Int, rank: Int)
 
@@ -97,10 +104,19 @@ object stronglyConnectedComponents {
                    endNode: Int)
 
   /*directed edge*/
+  case class ArcFromNodes(
+                           arcTail: IsExploredNode,
+                           arcHead: IsExploredNode) {
+    override def toString =
+      s"""{${arcTail.node}[${if (arcTail.isExplored) "e" else "u"}]->""" +
+        s"""${arcHead.node}[${if (arcHead.isExplored) "e" else "u"}]}"""
+  }
+
+  /*directed edge*/
   case class Arc(
-                  tail: Int,
-                  head: Int) {
-    override def toString = s">>$tail-->$head}"
+                  arcTail: Int,
+                  arcHead: Int) {
+    override def toString = s">$arcTail-->$arcHead>"
   }
 
   case class UnDirectedGraph(
@@ -115,6 +131,123 @@ object stronglyConnectedComponents {
   case class DirectedRankedGraph(
                                   nodes: Vector[RankedNode],
                                   arcs: Vector[Arc])
+
+  /*instead of 'indexOf'*/
+  //@scala.annotation.tailrec
+  def randomSearchForArcTailIndex(
+                                   arcs: Vector[ArcFromNodes],
+                                   tailValue: Int,
+                                   startIndex: Int = 0,
+                                   endIndex: Int = 0
+                                   ): Option[Int] = {
+    None
+  }
+
+  def collectInducedArcs(
+                          arcs: Vector[ArcFromNodes],
+                          tailValue: Int
+                          ): Vector[ArcFromNodes] =
+    arcs
+    .collect(
+    { case a if (
+      /*start with explored 'node'*/
+      a.arcTail.node == tailValue &&
+        /*where 'arc's 'head' yet unexplored*/
+        !a.arcHead.isExplored
+      ) => a
+    }
+            )
+
+  /*instead of 'filter'*/
+  /*return: Option or just empty / nonEmpty*/
+  def pickAllInducedArcs(
+                          arcs: Vector[ArcFromNodes],
+                          tailValue: Int
+                          ): Vector[ArcFromNodes] = {
+    //): Option[Vector[ArcFromNodes]] = {
+    def innerLoop(
+                   accum: Vector[ArcFromNodes] =
+                   Vector.empty,
+                   currentIndex: Int,
+                   arcLength: Int = 0,
+                   direction: TraverseDirection
+                   ): Vector[ArcFromNodes] = {
+      if (accum.isEmpty) {
+        /*first step / iteration*/
+        /*recursion*/
+        innerLoop(
+                   /*'prepend' ?order irrelevant?*/
+                   arcs(currentIndex) +: accum,
+                   currentIndex =
+                     if (direction == Up) {
+                       /*may be out of bound*/
+                       currentIndex - 1
+                     } else /*if (direction == Down)*/ {
+                       currentIndex + 1
+                     },
+                   arcLength = arcLength,
+                   direction: TraverseDirection
+                 )
+      } else /*if (accum.isEmpty)*/ {
+        if (
+          currentIndex < 0 ||
+            currentIndex >= arcLength
+        ) {
+          /*out of bound*/
+          /*return value*/
+          accum
+        } else {
+          val nextArc: ArcFromNodes =
+            arcs(currentIndex)
+
+          if (nextArc.arcTail.node != tailValue) {
+            /*sequence stop*/
+            accum
+          } else {
+            /*recursion*/
+            innerLoop(
+                       nextArc +: accum,
+                       currentIndex =
+                         if (direction == Up) {
+                           currentIndex - 1
+                         } else /*if (direction == Down)*/ {
+                           currentIndex + 1
+                         },
+                       arcLength = arcLength,
+                       direction = direction
+                     )
+          }
+        }
+      }
+    }
+
+    /*find first or any occurrence*/
+    val searchResult: Option[Int] =
+      randomSearchForArcTailIndex(
+                                   arcs: Vector[ArcFromNodes],
+                                   tailValue: Int
+                                 )
+
+    if (searchResult.isEmpty) {
+      /*return value*/
+      //None
+      //accum
+      Vector.empty[ArcFromNodes]
+    } else {
+      /*inner loop*/
+      /*for first occurrence*/
+      /*initialize*/
+      /*contain at least one element*/
+      //Some(
+      innerLoop(
+                 currentIndex =
+                   searchResult.get,
+                 arcLength = arcs.length,
+                 direction = Down
+               )
+      //)
+    }
+  }
 
   /*extract 'nodes' & 'arcs' from 'FileContent' strings*/
   /*? assume, all arcs are distinct & unique ?*/
@@ -157,6 +290,41 @@ object stronglyConnectedComponents {
                    //Arc(currentTailNode, currentHeadNode) +: arcs
                    Arc(tail, head) +: arcs
                  )
+    }
+  }
+
+  /*extract sorted / preserve original order 'arcs' from 'FileContent' strings*/
+  /*? assume, all arcs are distinct & unique ?*/
+  /*test reveals existence of cyclic self pointed arcs*/
+  @scala.annotation.tailrec
+  def extractSortedArcs(
+                         fileContentIter: Iterator[String],
+                         arcs: Vector[Arc] =
+                         /*Performance on: head, tail, apply, update,
+                         prepend, append
+                         * 'eC'	- The operation takes `effectively constant`
+                         * time*/
+                         Vector.empty[Arc] //,
+                         /*'nodes' is just a range from '1' to '875714'*/
+                         ): Vector[Arc] = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      arcs
+    } else /*if (adjacencyList.hasNext)*/ {
+      val Array(tail, head) =
+        fileContentIter
+        .next()
+        .split(" ")
+        .map(_.toInt)
+      /*recursion*/
+      extractSortedArcs(
+                         /*reduced already by '.next()'*/
+                         fileContentIter,
+                         /*'Stack' on: 'append' 'C'	The operation takes `
+                         (fast) constant` time*/
+                         /*keep it sorted, like in the input*/
+                         arcs :+ Arc(tail, head)
+                       )
     }
   }
 
@@ -205,7 +373,12 @@ object stronglyConnectedComponents {
         if (tail == head) {
           arcs
         } else {
-          Arc(tail, head) +: arcs
+          /*for 'Vector' 'prepend', 'append'
+                   operation takes ?same? `effectively constant` time*/
+          //'prepend'
+          //Arc(tail, head) +: arcs
+          //'append'
+          arcs :+ Arc(tail, head)
         }
       /*very expensive & highly time consuming computation*/
       /*val hasTail: Boolean =
@@ -310,13 +483,65 @@ object stronglyConnectedComponents {
                             arcs: Vector[Arc]
                             ): Vector[Int] = {
     val tails: Vector[Int] =
-      for {arc <- arcs} yield arc.tail
+      for {arc <- arcs} yield arc.arcTail
     val heads: Vector[Int] =
-      for {arc <- arcs} yield arc.head
+      for {arc <- arcs} yield arc.arcHead
     val nodes: Vector[Int] =
       tails.union(heads).distinct
     /*return value*/
     nodes
+  }
+
+  def setNodesUnExplored(
+                          minValue: Int,
+                          //nodesLimit: Int
+                          maxValue: Int
+                          ): Array[IsExploredNode] =
+    (minValue to maxValue)
+    .map(IsExploredNode(_, false))
+    .toArray
+
+  /*return 'arcs' from 'nodes' with mutable `explored` state*/
+  @scala.annotation.tailrec
+  def setArcsUnExplored(
+                         //nodesNarcs: DirectedGraph,
+                         /*unchanged*/
+                         //nodes: Vector[Int],
+                         /*range
+                         sorted,
+                          distinct,
+                          1-to-1 correspondence between index & value*/
+                         nodes: Vector[IsExploredNode],
+                         arcsRemain: Vector[Arc],
+                         /*accumulator*/
+                         unExploredArcs: Vector[ArcFromNodes] =
+                         Vector.empty[ArcFromNodes]
+                         ): Vector[ArcFromNodes] = {
+    //val DirectedGraph(nodes, arcs) = nodesNarcs
+    if (arcsRemain.isEmpty) {
+      /*return value*/
+      unExploredArcs
+    } else {
+      /*val arcTail: Int = arcsRemain.head.tail
+      val arcHead: Int = arcsRemain.head.head
+      val nodeTailIndex: Int =
+        arcTail
+      val nodeHeadIndex: Int =
+        arcHead*/
+      /*recursion*/
+      setArcsUnExplored(
+                         nodes = nodes,
+                         arcsRemain = arcsRemain.tail,
+                         unExploredArcs =
+                           /*preserve order, so 'append'*/
+                           unExploredArcs :+
+                             ArcFromNodes(
+                                           nodes
+                                           .apply(arcsRemain.head.arcTail - 1),
+                                           nodes
+                                           .apply(arcsRemain.head.arcHead - 1))
+                       )
+    }
   }
 
   //Breadth-First Search
@@ -372,8 +597,8 @@ object stronglyConnectedComponents {
         graph
         //.collect(pf match {case x if x.})
         .filter(a =>
-                  a.tail == startingNode &&
-                    !exploredNodes.contains(a.head))
+                  a.arcTail == startingNode &&
+                    !exploredNodes.contains(a.arcHead))
       val (Arc(_, nextNode), dequeuedQueue): (Arc, Queue[Arc]) =
         nextArcToCheckQueue
         /*to converge and avoid endless recursion computation*/
@@ -488,10 +713,10 @@ object stronglyConnectedComponents {
           /*for first node - only arc.tail*/
           /*?side effect?*/
           //RankedNode(currentArc.tail, 0) +: rankedNodes
-          RankedNode(currentArc.head, 0) +: rankedNodes
+          RankedNode(currentArc.arcHead, 0) +: rankedNodes
         } else if (
                  rankedNodes.nonEmpty &&
-                   currentArc.tail == currentArc.head
+                   currentArc.arcTail == currentArc.arcHead
                ) {
           /*self loops skip*/
           /*unchanged*/
@@ -500,7 +725,7 @@ object stronglyConnectedComponents {
             rankedNodes.nonEmpty &&
               currentArc.tail != currentArc.head
           )*/ {
-          if (rankedNodes.exists(_.node == currentArc.head)) {
+          if (rankedNodes.exists(_.node == currentArc.arcHead)) {
             /*unchanged*/
             rankedNodes
           } else {
@@ -510,11 +735,11 @@ object stronglyConnectedComponents {
               rankedNodes
               //.find(_.node == currentArc.head)
               /*`parent` 'node'*/
-              .find(_.node == currentArc.tail)
+              .find(_.node == currentArc.arcTail)
               /*must never occur*/
-              .getOrElse(RankedNode(currentArc.tail, 0))
+              .getOrElse(RankedNode(currentArc.arcTail, 0))
             /*return value*/
-            RankedNode(currentArc.head, rankedTail.rank + 1) +: rankedNodes
+            RankedNode(currentArc.arcHead, rankedTail.rank + 1) +: rankedNodes
           }
         }
       /*layer / rank of 'head' must be 'tail'.rank + 1*/
@@ -524,10 +749,10 @@ object stronglyConnectedComponents {
         .collect(
         { case a if (
           /*start with explored 'node'*/
-          a.tail == currentArc.head &&
+          a.arcTail == currentArc.arcHead &&
             //!rankedNodes.unzip._1.contains(a.head)
             /*where 'arc's 'head' yet unexplored*/
-            !rankedNodes.exists(_.node == a.head)
+            !rankedNodes.exists(_.node == a.arcHead)
           ) => a
         }
                 )
@@ -604,11 +829,11 @@ object stronglyConnectedComponents {
             exploredNodesInSCC.isEmpty
         ) {
           /*for first node - only arc.tail*/
-          (currentArc.head +: exploredNodesInSCC, nodesCounter + 1)
+          (currentArc.arcHead +: exploredNodesInSCC, nodesCounter + 1)
         } else if (
                  (nodesCounter > 0 ||
                    exploredNodesInSCC.nonEmpty) &&
-                   currentArc.tail == currentArc.head
+                   currentArc.arcTail == currentArc.arcHead
                ) {
           /*self loops skip*/
           /*unchanged*/
@@ -617,12 +842,12 @@ object stronglyConnectedComponents {
             rankedNodes.nonEmpty &&
               currentArc.tail != currentArc.head
           )*/ {
-          if (exploredNodesInSCC.contains(currentArc.head)) {
+          if (exploredNodesInSCC.contains(currentArc.arcHead)) {
             /*unchanged*/
             (exploredNodesInSCC, nodesCounter)
           } else {
             /*return value*/
-            (currentArc.head +: exploredNodesInSCC, nodesCounter + 1)
+            (currentArc.arcHead +: exploredNodesInSCC, nodesCounter + 1)
           }
         }
       /*!may be time consuming because of nested loop!*/
@@ -631,9 +856,9 @@ object stronglyConnectedComponents {
         .collect(
         { case a if (
           /*start with explored 'node'*/
-          a.tail == currentArc.head &&
+          a.arcTail == currentArc.arcHead &&
             /*where 'arc's 'head' yet unexplored*/
-            !exploredNodesInSCC.contains(a.head)
+            !exploredNodesInSCC.contains(a.arcHead)
           ) => a
         }
                 )
@@ -656,26 +881,30 @@ object stronglyConnectedComponents {
                          )
     }
   }
+
   //Breadth-First Search
   /*return number of nodes / size of strongly connected component*/
   /*mark / check explored 'nodes' in-place as side effect*/
   @scala.annotation.tailrec
   def BFS_SCC_NodesAmountImproved(
-                           graph: Vector[Arc],
-                           /*only needed when called from 'findAllSCCwithBFS'*/
-                           /*instead better return 'exploredNodesInSCC'*/
-                           /*unExploredGraphNodes: Vector[Int]
-                           = Vector.empty[Int],*/
-                           /*used for initialization only*/
-                           startingNode: Int,
-                           nextArcToCheckQueue: Queue[Arc] = Queue.empty[Arc],
-                           /*all corresponding graph 'nodes'*/
-                           graphNodes: Array[IsExploredNode],
-                           nodesCounter: Int = 0
-                           //): Int = {
-                           ): Int = {
+                                   graph: Vector[Arc],
+                                   /*only needed when called from
+                                           *  */
+                                   /*instead better return
+                                     *  */
+                                   /*unExploredGraphNodes: Vector[Int]
+                                   = Vector.empty[Int],*/
+                                   /*used for initialization only*/
+                                   startingNode: Int,
+                                   nextArcToCheckQueue: Queue[Arc] = Queue
+                                                                     .empty[Arc],
+                                   /*all corresponding graph 'nodes'*/
+                                   graphNodes: Array[IsExploredNode],
+                                   nodesCounter: Int = 0
+                                   //): Int = {
+                                   ): Int = {
     if (
-      (nodesCounter > 0 ) &&
+      (nodesCounter > 0) &&
         nextArcToCheckQueue.isEmpty) {
       /*return value*/
       /*at least has starting node, so must be > 0*/
@@ -699,12 +928,12 @@ object stronglyConnectedComponents {
         ) {
           /*for first node - only arc.tail*/
           /*side effect*/
-          graphNodes(currentArc.head - 1).isExplored = true
+          graphNodes(currentArc.arcHead - 1).isExplored = true
           /*return value*/
           nodesCounter + 1
         } else if (
-                 (nodesCounter > 0 ) &&
-                   currentArc.tail == currentArc.head
+                 (nodesCounter > 0) &&
+                   currentArc.arcTail == currentArc.arcHead
                ) {
           /*self loops skip*/
           /*unchanged*/
@@ -714,12 +943,12 @@ object stronglyConnectedComponents {
               currentArc.tail != currentArc.head
           )*/ {
           /*ont-to-one correspondence between 'node'.value & index*/
-          if (graphNodes(currentArc.head - 1).isExplored) {
+          if (graphNodes(currentArc.arcHead - 1).isExplored) {
             /*unchanged*/
             nodesCounter
           } else {
             /*side effect*/
-            graphNodes(currentArc.head - 1).isExplored = true
+            graphNodes(currentArc.arcHead - 1).isExplored = true
             /*return value*/
             nodesCounter + 1
           }
@@ -730,9 +959,9 @@ object stronglyConnectedComponents {
         .collect(
         { case a if (
           /*start with explored 'node'*/
-          a.tail == currentArc.head &&
+          a.arcTail == currentArc.arcHead &&
             /*where 'arc's 'head' yet unexplored*/
-            !graphNodes(a.head - 1).isExplored
+            !graphNodes(a.arcHead - 1).isExplored
           ) => a
         }
                 )
@@ -745,14 +974,165 @@ object stronglyConnectedComponents {
         }
       /*recursion*/
       BFS_SCC_NodesAmountImproved(
-                           graph = graph,
-                           /*same & not changing*/
-                           startingNode = startingNode,
-                           /*eventually must reduce to empty*/
-                           nextArcToCheckQueue = newQueue,
-                           graphNodes = graphNodes,
-                           nodesCounter = newCounter
-                         )
+                                   graph = graph,
+                                   /*same & not changing*/
+                                   startingNode = startingNode,
+                                   /*eventually must reduce to empty*/
+                                   nextArcToCheckQueue = newQueue,
+                                   graphNodes = graphNodes,
+                                   nodesCounter = newCounter
+                                 )
+    }
+  }
+
+  //Breadth-First Search
+  /*return number of nodes / size of strongly connected component*/
+  /*mark / check explored 'nodes' in-place as side effect*/
+  @scala.annotation.tailrec
+  def BFS_SCC_NodesAmountOptimized(
+                                    graph: Vector[ArcFromNodes],
+                                    /*used for initialization only*/
+                                    startingNode: Int,
+                                    nextArcToCheckQueue: Queue[ArcFromNodes] =
+                                    Queue
+                                    .empty[ArcFromNodes],
+                                    /*all corresponding graph 'nodes'*/
+                                    nodesCounter: Int = 0
+                                    //): Int = {
+                                    ): Int = {
+    if (
+      (nodesCounter > 0) &&
+        nextArcToCheckQueue.isEmpty) {
+      /*return value*/
+      /*at least has starting node, so must be > 0*/
+      //exploredNodesInSCC.length
+      nodesCounter
+    } else /*if (nextArcToCheckQueue.nonEmpty)*/ {
+      /*cases:
+      >first step
+      >>startingNode.isSink
+      >>startingNode.nonSink
+      >nextArcToCheckQueue.nonEmpty
+      * */
+      val (currentArc, dequeuedQueue): (ArcFromNodes, Queue[ArcFromNodes]) =
+        if (nextArcToCheckQueue.isEmpty) {
+          /*>>?self pointed arc? at first step ?<<*/
+          /*'node' may be 'tail', so point to 'head' or
+          * it may be 'head' only, so 'sink' & point nowhere
+          * then CC has exactly one 'node'
+          * also
+          * may point to itself
+          * */
+          val searchForArc: Option[ArcFromNodes] =
+            graph
+            /*must be at least one 'arc'*/
+            .find(_.arcTail.node == startingNode)
+          //.get
+          if (searchForArc.isEmpty) {
+            /*'head' only or 'sink'*/
+            /*must exit at next iteration*/
+            (graph
+             /*must be at least one 'arc'*/
+             .find(_.arcHead.node == startingNode)
+             .get,
+              Queue.empty[ArcFromNodes])
+          } else {
+            (searchForArc.get,
+              Queue.empty[ArcFromNodes])
+          }
+        } else {
+          nextArcToCheckQueue
+          /*to converge and avoid endless recursion computation*/
+          .dequeue
+        }
+      /*mark selected 'node' as explored*/
+      /*!only if 'node' is yet `unExplored`!*/
+      val newCounter: Int =
+        if (
+          nodesCounter == 0
+        ) {
+          /*for the first 'arc'*/
+          if (
+            currentArc.arcTail.node != startingNode &&
+              currentArc.arcHead.node == startingNode
+          ) {
+            /*sink*/
+            /*side effect*/
+            currentArc.arcHead.isExplored = true
+            /*return value*/
+            nodesCounter + 1
+          } else if (
+                   currentArc.arcTail.node == startingNode &&
+                     currentArc.arcHead.node == startingNode
+                 ) {
+            /*self reference*/
+            /*may be sink*/
+            /*side effect*/
+            currentArc.arcHead.isExplored = true
+            /*return value*/
+            nodesCounter + 1
+          } else /*if (
+                                                currentArc.arcHead.node !=
+                                                startingNode
+                                            )*/ {
+            /*not 'sink', both 'nodes' in 'SCC'*/
+            /*side effect*/
+            currentArc.arcTail.isExplored = true
+            //currentArc.arcHead.isExplored = true
+            /*return value*/
+            nodesCounter + 1//2
+          }
+        } else if (
+                 (nodesCounter > 0) &&
+                   currentArc.arcTail.node == currentArc.arcHead.node
+               ) {
+          /*self loops skip*/
+          /*unchanged*/
+          nodesCounter
+        } else /*if (
+            rankedNodes.nonEmpty &&
+              currentArc.tail != currentArc.head
+          )*/ {
+          if (currentArc.arcHead.isExplored) {
+            /*unchanged*/
+            nodesCounter
+          } else {
+            /*side effect*/
+            currentArc.arcHead.isExplored = true
+            /*return value*/
+            nodesCounter + 1
+          }
+        }
+      /*!may be time consuming because of nested loop!*/
+      val allArcsFromLastExplored: Vector[ArcFromNodes] =
+        collectInducedArcs(
+                            arcs = graph,
+                            /*for first step must be 'arcTail'*/
+                            tailValue =
+                            if (nodesCounter == 0) {
+                              currentArc.arcTail.node
+                            } else {
+                              currentArc.arcHead.node
+                            }
+                          )
+      val newQueue =
+        if (allArcsFromLastExplored.isEmpty) {
+          dequeuedQueue
+        } else {
+          dequeuedQueue
+          /*time consuming conversion*/
+          //.enqueue(allArcsFromLastExplored.toList)
+          .enqueue(allArcsFromLastExplored)
+        }
+      /*recursion*/
+      BFS_SCC_NodesAmountOptimized(
+                                    graph = graph,
+                                    /*same & not changing*/
+                                    startingNode = startingNode,
+                                    /*eventually must reduce to empty*/
+                                    nextArcToCheckQueue = newQueue,
+                                    nodesCounter = newCounter
+                                  )
     }
   }
 
@@ -813,22 +1193,25 @@ object stronglyConnectedComponents {
       }
     }
   }
+
   //Breadth-First Search
   /*return sequence of number of nodes / size of all strongly connected
   components*/
   /*do all explored checks in-place in special array*/
   @scala.annotation.tailrec
   def findAllSCCwithBFSImproved(
-                         /*may be worth it to be shrinked in each iteration*/
-                         graph: Vector[Arc],
-                         /*all corresponding graph 'nodes'*/
-                         graphNodes: Array[IsExploredNode],
-                               /*as 'nodes' are range from '1' to 'nodesLimit'*/
-                         nodesLimit: Int,
-                         currentNodeIndex: Int = 0,
-                         connectedComponents: Seq[Int] =
-                         Seq.empty[Int]
-                         ): Seq[Int] = {
+                                 /*may be worth it to be shrinked in each
+                                 iteration*/
+                                 graph: Vector[Arc],
+                                 /*all corresponding graph 'nodes'*/
+                                 graphNodes: Array[IsExploredNode],
+                                 /*as 'nodes' are range from '1' to
+                                    *  */
+                                 nodesLimit: Int,
+                                 currentNodeIndex: Int = 0,
+                                 connectedComponents: Seq[Int] =
+                                 Seq.empty[Int]
+                                 ): Seq[Int] = {
     if (
       currentNodeIndex >= nodesLimit) {
       /*return value*/
@@ -839,35 +1222,35 @@ object stronglyConnectedComponents {
         /*skip to next node*/
         /*recursion*/
         findAllSCCwithBFSImproved(
-                           graph: Vector[Arc],
-                           graphNodes = graphNodes,
-                           nodesLimit = nodesLimit,
-                           /*eventually must exceed limit*/
-                           currentNodeIndex + 1,
-                           connectedComponents
-                         )
+                                   graph: Vector[Arc],
+                                   graphNodes = graphNodes,
+                                   nodesLimit = nodesLimit,
+                                   /*eventually must exceed limit*/
+                                   currentNodeIndex + 1,
+                                   connectedComponents
+                                 )
       } else {
         /*have new unexplored 'node' not in explored SCC*/
-        val         exploredConnectedComponent: Int =
+        val exploredConnectedComponent: Int =
           BFS_SCC_NodesAmountImproved(
-                               graph = graph,
-                               startingNode =
-                               /*must be within bounds*/
-                                 graphNodes(currentNodeIndex).node,
-                               graphNodes = graphNodes
-                             )
+                                       graph = graph,
+                                       startingNode =
+                                         /*must be within bounds*/
+                                         graphNodes(currentNodeIndex).node,
+                                       graphNodes = graphNodes
+                                     )
         val updatedConnectedComponents: Seq[Int] =
           exploredConnectedComponent +: connectedComponents
         /*recursion*/
         findAllSCCwithBFSImproved(
-                           graph: Vector[Arc],
-                           graphNodes = graphNodes,
-                           nodesLimit = nodesLimit,
-                           /*eventually must must exceed limit*/
-                           currentNodeIndex + 1,
-                           connectedComponents =
-                             updatedConnectedComponents
-                         )
+                                   graph: Vector[Arc],
+                                   graphNodes = graphNodes,
+                                   nodesLimit = nodesLimit,
+                                   /*eventually must must exceed limit*/
+                                   currentNodeIndex + 1,
+                                   connectedComponents =
+                                     updatedConnectedComponents
+                                 )
       }
     }
   }
