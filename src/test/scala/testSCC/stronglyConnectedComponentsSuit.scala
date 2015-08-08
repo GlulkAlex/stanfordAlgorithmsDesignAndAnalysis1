@@ -804,7 +804,7 @@ class stronglyConnectedComponentsSuit
           val expectedSize: Int =
             6
           val startingNode: Int =
-            6
+            1
           val expectedNodesInSCC: Int = 1
           val filePath: String =
             "/media/gluk-alex/" +
@@ -814,15 +814,15 @@ class stronglyConnectedComponentsSuit
               "testSCC/"
           //SCC.txt
           val fileName: String = "SCC.txt"
-          /*val actualFileContent: Iterator[String] =
+          val actualFileContent: Iterator[String] =
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
-                        )*/
+                        )
           /*val arcs: Vector[Arc] =
             extractArcs(actualFileContent)*/
-          /*val DirectedGraph(nodes, arcs): DirectedGraph =
-            extractArcsAndNodes(actualFileContent)*/
+          val DirectedGraph(nodes, arcs): DirectedGraph =
+            extractArcsAndNodes(actualFileContent)
           val mockUpNodes: Vector[IsExploredNode] =
             (1 to 6)
             .map(IsExploredNode(_, false))
@@ -862,10 +862,10 @@ class stronglyConnectedComponentsSuit
 
 
           val unExploredNodes: Vector[IsExploredNode] =
-            mockUpNodes
-          /*nodes
+            //mockUpNodes
+          nodes
           .map(IsExploredNode(_, false))
-          .toVector*/
+          .toVector
 
           /*println(
                    s"\n'unExploredNodes.head` is:${unExploredNodes.head}"
@@ -875,12 +875,13 @@ class stronglyConnectedComponentsSuit
                  )
 
           /*?too slow on big input?*/
-          val unExploredArcs: Seq[ArcFromNodes] =
-            mockUpGraphWith3SCC
-          /*setArcsUnExplored(
+          //val unExploredArcs: Seq[ArcFromNodes] =
+          val unExploredArcs: Vector[ArcFromNodes] =
+            //mockUpGraphWith3SCC
+          setArcsUnExplored(
                              nodes = unExploredNodes,
                              arcsRemain = arcs
-                             )*/
+                             )
 
           println(
                    s"\n'unExploredArcs.length` is:${unExploredArcs.length}" +
@@ -894,8 +895,8 @@ class stronglyConnectedComponentsSuit
           val nodesInSCC: Int =
             BFS_SCC_NodesAmountOptimized(
                                           graph =
-                                            //unExploredArcs,
-                                            mockUpGraphWith3SCC,
+                                            unExploredArcs,
+                                            //mockUpGraphWith3SCC,
                                           startingNode = startingNode
                                         )
 
