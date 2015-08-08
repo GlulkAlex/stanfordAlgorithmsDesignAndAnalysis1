@@ -795,17 +795,32 @@ class stronglyConnectedComponentsSuit
                   )
           }
   test(
-        "41: 'BFS_SCC_NodesAmountOptimized'" +
-          "should " +
-          "return exact amount of 'nodes' in `connected component`"
+        "32: 'makeAdjacencyListFromArcs'" +
+          "should return " +
+          "'AdjacencyList'"
       ) {
+          val mockUpTree1: Vector[Arc] =
+            Vector(
+                    Arc(6, 4),
+                    Arc(6, 12),
+                    Arc(4, 5),
+                    Arc(4, 2),
+                    Arc(2, 3),
+                    Arc(2, 1),
+                    Arc(12, 10),
+                    Arc(12, 13),
+                    Arc(10, 11),
+                    Arc(10, 8),
+                    Arc(8, 7),
+                    Arc(8, 9)
+                  )
           val takeNumber: Int = 5
-          val nodesLimit: Int = 875714
-          val expectedSize: Int =
-            6
-          val startingNode: Int =
-            1
-          val expectedNodesInSCC: Int = 1
+          val nodesLimit: Int =
+          //875714
+            13
+          //val expectedNodesInSCC: Int = 3
+          //val expectedSize: Int =
+          //6
           val filePath: String =
             "/media/gluk-alex/" +
               "GDI/Java/Scala/sbt/projects/" +
@@ -814,43 +829,21 @@ class stronglyConnectedComponentsSuit
               "testSCC/"
           //SCC.txt
           val fileName: String = "SCC.txt"
-          val actualFileContent: Iterator[String] =
+          /*val actualFileContent: Iterator[String] =
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
-                        )
-          /*val arcs: Vector[Arc] =
-            extractArcs(actualFileContent)*/
-          val DirectedGraph(nodes, arcs): DirectedGraph =
-            extractArcsAndNodes(actualFileContent)
-          val mockUpNodes: Vector[IsExploredNode] =
-            (1 to 6)
-            .map(IsExploredNode(_, false))
-            .toVector
-          val mockUpGraphWith3SCC: Vector[ArcFromNodes] =
-            Vector(
-                    ArcFromNodes(mockUpNodes(1 - 1), mockUpNodes(2 - 1)),
-                    ArcFromNodes(mockUpNodes(3 - 1), mockUpNodes(5 - 1)),
-                    ArcFromNodes(mockUpNodes(3 - 1), mockUpNodes(4 - 1)),
-                    ArcFromNodes(mockUpNodes(4 - 1), mockUpNodes(5 - 1)),
-                    ArcFromNodes(mockUpNodes(6 - 1), mockUpNodes(6 - 1))
-                  )
+                        )*/
+          val arcs: Vector[Arc] =
+          //extractArcs(actualFileContent)
+            mockUpTree1
+          /*val DirectedGraph(nodes, arcs): DirectedGraph =
+            extractArcsAndNodes(actualFileContent)*/
 
-          /*println(
-                   s"\n'mockUpGraphWith3SCC.length` is:${
-                     mockUpGraphWith3SCC.length
-                   }" +
-                     s"\nfirst $takeNumber from 'mockUpGraphWith3SCC` are:" +
-                     s"\n${
-                       mockUpGraphWith3SCC
-                       .take(takeNumber)
-                       .mkString("\n")
-                     }"
-                 )*/
           /*println(
                    s"\n'arcs.head` is:${arcs.head}"
                  )*/
-          /*println(
+          println(
                    s"\n'arcs.length` is:${arcs.length}" +
                      s"\nfirst $takeNumber 'arcs` are:" +
                      s"\n${
@@ -858,56 +851,148 @@ class stronglyConnectedComponentsSuit
                        .take(takeNumber)
                        .mkString("\n")
                      }"
-                 )*/
-
-
-          val unExploredNodes: Vector[IsExploredNode] =
-            //mockUpNodes
-          nodes
-          .map(IsExploredNode(_, false))
-          .toVector
-
-          /*println(
-                   s"\n'unExploredNodes.head` is:${unExploredNodes.head}"
-                 )*/
-          println(
-                   s"\n'startingNode` is:${startingNode}"
                  )
 
-          /*?too slow on big input?*/
-          //val unExploredArcs: Seq[ArcFromNodes] =
-          val unExploredArcs: Vector[ArcFromNodes] =
-            //mockUpGraphWith3SCC
-          setArcsUnExplored(
-                             nodes = unExploredNodes,
-                             arcsRemain = arcs
-                             )
+
+          val adjacencyList: Vector[AdjacencyListElem] =
+            makeAdjacencyListFromArcs(
+                                       minNodeVal = 1,
+                                       maxNodeVal =
+                                         nodesLimit,
+                                       currentNodeVal = 1 - 1,
+                                       arcsRemains = arcs.toList
+                                     )
 
           println(
-                   s"\n'unExploredArcs.length` is:${unExploredArcs.length}" +
+                   s"\n'adjacencyList.length` is:${adjacencyList.length}" +
                      s"\nfirst $takeNumber 'unExploredArcs` are:" +
                      s"\n${
-                       unExploredArcs
+                       adjacencyList
                        .take(takeNumber)
                        .mkString("\n")
                      }"
                  )
-          val nodesInSCC: Int =
-            BFS_SCC_NodesAmountOptimized(
-                                          graph =
-                                            unExploredArcs,
-                                            //mockUpGraphWith3SCC,
-                                          startingNode = startingNode
-                                        )
-
-          println(
-                   s"\n'nodesInSCC` is:${nodesInSCC}")
           assume(
                   //true == true,
-                  nodesInSCC == expectedNodesInSCC,
-                  s"\n'nodesInSCC' must be 'nonEmpty' & " +
-                    s"equal to 'expectedNodesInSCC'"
+                  adjacencyList.nonEmpty &&
+                    adjacencyList.length == nodesLimit,
+                  s"\n'adjacencyList' must be 'nonEmpty' & sorted by 'tail'"
                 )
         }
+  ignore(
+          "41: 'BFS_SCC_NodesAmountOptimized'" +
+            "should " +
+            "return exact amount of 'nodes' in `connected component`"
+        ) {
+            val takeNumber: Int = 5
+            val nodesLimit: Int = 875714
+            val expectedSize: Int =
+              6
+            val startingNode: Int =
+              1
+            val expectedNodesInSCC: Int = 1
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String = "SCC.txt"
+            val actualFileContent: Iterator[String] =
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            /*val arcs: Vector[Arc] =
+              extractArcs(actualFileContent)*/
+            val DirectedGraph(nodes, arcs): DirectedGraph =
+              extractArcsAndNodes(actualFileContent)
+            val mockUpNodes: Vector[IsExploredNode] =
+              (1 to 6)
+              .map(IsExploredNode(_, false))
+              .toVector
+            val mockUpGraphWith3SCC: Vector[ArcFromNodes] =
+              Vector(
+                      ArcFromNodes(mockUpNodes(1 - 1), mockUpNodes(2 - 1)),
+                      ArcFromNodes(mockUpNodes(3 - 1), mockUpNodes(5 - 1)),
+                      ArcFromNodes(mockUpNodes(3 - 1), mockUpNodes(4 - 1)),
+                      ArcFromNodes(mockUpNodes(4 - 1), mockUpNodes(5 - 1)),
+                      ArcFromNodes(mockUpNodes(6 - 1), mockUpNodes(6 - 1))
+                    )
+
+            /*println(
+                     s"\n'mockUpGraphWith3SCC.length` is:${
+                       mockUpGraphWith3SCC.length
+                     }" +
+                       s"\nfirst $takeNumber from 'mockUpGraphWith3SCC` are:" +
+                       s"\n${
+                         mockUpGraphWith3SCC
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )*/
+            /*println(
+                     s"\n'arcs.head` is:${arcs.head}"
+                   )*/
+            /*println(
+                     s"\n'arcs.length` is:${arcs.length}" +
+                       s"\nfirst $takeNumber 'arcs` are:" +
+                       s"\n${
+                         arcs
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )*/
+
+
+            val unExploredNodes: Vector[IsExploredNode] =
+            //mockUpNodes
+              nodes
+              .map(IsExploredNode(_, false))
+              .toVector
+
+            /*println(
+                     s"\n'unExploredNodes.head` is:${unExploredNodes.head}"
+                   )*/
+            println(
+                     s"\n'startingNode` is:${startingNode}"
+                   )
+
+            /*?too slow on big input?*/
+            //val unExploredArcs: Seq[ArcFromNodes] =
+            val unExploredArcs: Vector[ArcFromNodes] =
+            //mockUpGraphWith3SCC
+              setArcsUnExplored(
+                                 nodes = unExploredNodes,
+                                 arcsRemain = arcs
+                               )
+
+            println(
+                     s"\n'unExploredArcs.length` is:${unExploredArcs.length}" +
+                       s"\nfirst $takeNumber 'unExploredArcs` are:" +
+                       s"\n${
+                         unExploredArcs
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )
+            val nodesInSCC: Int =
+              BFS_SCC_NodesAmountOptimized(
+                                            graph =
+                                              unExploredArcs,
+                                            //mockUpGraphWith3SCC,
+                                            startingNode = startingNode
+                                          )
+
+            println(
+                     s"\n'nodesInSCC` is:${nodesInSCC}")
+            assume(
+                    //true == true,
+                    nodesInSCC == expectedNodesInSCC,
+                    s"\n'nodesInSCC' must be 'nonEmpty' & " +
+                      s"equal to 'expectedNodesInSCC'"
+                  )
+          }
 
 }

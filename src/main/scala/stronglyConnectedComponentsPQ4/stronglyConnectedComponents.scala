@@ -661,97 +661,39 @@ object stronglyConnectedComponents {
                                  nodeToAdd =
                                    Some(newNodeToAdd)
                                )
-    } else {
-      if (
-        arcsRemains.isEmpty
-      ) {
-        /*all remaining 'nodes' have empty 'AdjacencyList's*/
-        val updatedLast: AdjacencyListElem =
-          AdjacencyListElem(
-                             IsExploredNode(currentNodeVal, false),
-                             List.empty
-                           )
-        val updatedAdjusted: Vector[AdjacencyListElem] =
-          adjustedNodes :+ updatedLast
-        /*recursion*/
-        makeAdjacencyListFromArcs(
-                                   minNodeVal: Int,
-                                   maxNodeVal: Int,
-                                   currentNodeVal = currentNodeVal + 1,
-                                   /*empty at that moment*/
-                                   arcsRemains: List[Arc],
-                                   adjustedNodes = updatedAdjusted,
-                                   nodeToAdd =
-                                     Some(updatedLast)
-                                 )
-      } else {
-        /*
-      cases:
-      >add new 'node' => new element
-      >> with empty 'AdjacencyList'
-      >> or with 'AdjacencyList' with 'arcHead' from 'arcsRemains.head'
-      >or add new adjusted 'node' to existing element => updated element
-       */
-        val currentNode: Int =
-        //if (lastNode.isEmpty) {
-          arcsRemains.head.arcTail
-        /*} else {
-        arcsRemains.head.arcTail
-      }*/
-        if (currentNode == currentNodeVal) {
-          /*no skipped empty 'arcs'*/
-        } else if (currentNode < currentNodeVal) {
-          /*something fails in method logic*/
-        } else /*if (currentNode > currentNodeVal)*/ {
-
+    } else /*if (
+             currentNodeVal < maxNodeVal &&
+               (arcsRemains.isEmpty ||
+               (arcsRemains.head.arcTail >= currentNodeVal + 1 ))
+           )*/{
+      //next 'nodeVal'
+      //=>add 'nodeToAdd' if any to 'adjustedNodes'
+      val newAdjustedNodes =
+        if (nodeToAdd.isEmpty) {
+          adjustedNodes
+        } else {
+          adjustedNodes :+ nodeToAdd.get
         }
-        /*store 'updatedElement'
-      add to 'adjustedNodes' only when 'tail' seq ends
-      * */
-        val (updatedAdjusted, updatedLast): (Vector[AdjacencyListElem],
-          AdjacencyListElem) =
-          if (
-            nodeToAdd.isDefined &&
-              //arcsRemains.head.arcTail == lastNode.get.node
-              currentNode == nodeToAdd.get.node
-          ) {
-            /*same sequence, same 'arc.tail'*/
-            /*add new adjusted 'node' to existing element*/
-            /*?preserve order?*/
-            val previousVal: AdjacencyListElem = nodeToAdd.get
-            /*'prepend' new 'arc.head'*/
-            ( /*same*/
-              adjustedNodes,
-              /*new / updated*/
-              AdjacencyListElem(
-                                 previousVal.node,
-                                 arcsRemains.head.arcHead +:
-                                   previousVal.adjustedNodes
-                               )
-              )
-          } else /*if (
-                     lastNode.isEmpty ||
-                       currentNode != lastNode.get.node
-                   )*/ {
-            /*add new 'node'*/
-            adjustedNodes :+
-              AdjacencyListElem(
-                                 IsExploredNode(arcsRemains.head
-                                                .arcTail, false),
-                                 List(arcsRemains.head.arcHead)
-                               )
-          }
+      val newNodeToAdd =
+        AdjacencyListElem(
+                           IsExploredNode(currentNodeVal + 1, false),
+                           List()
+                         )
+      val newCurrentNodeVal = currentNodeVal + 1
+      val newArcsRemains = arcsRemains
 
-        /*recursion*/
-        makeAdjacencyListFromArcs(
-                                   arcsRemains =
-                                     arcsRemains.tail,
-                                   adjustedNodes =
-                                     updatedAdjusted,
-                                   nodeToAdd =
-                                     Some(arcsRemains.head.arcTail)
-                                 )
-      }
+      /*recursion*/
+      makeAdjacencyListFromArcs(
+                                 minNodeVal = minNodeVal,
+                                 maxNodeVal = maxNodeVal,
+                                 currentNodeVal = newCurrentNodeVal,
+                                 arcsRemains =
+                                   newArcsRemains,
+                                 adjustedNodes =
+                                   newAdjustedNodes,
+                                 nodeToAdd =
+                                   Some(newNodeToAdd)
+                               )
     }
   }
 
