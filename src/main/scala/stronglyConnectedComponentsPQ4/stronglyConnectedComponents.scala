@@ -164,6 +164,18 @@ object stronglyConnectedComponents {
                                            adjustedNodes: List[IndexedNode]
                                            )
 
+  case class ExplorableNodeWithAdjusted(
+                                         node: IsExploredNode,
+                                         adjustedNodes: List[IsExploredNode]
+                                         )
+
+  case class SCC_Result(
+                         lowlink: Int,
+                         index: Int,
+                         stack: List[IndexedNode],
+                         sCC: List[Int]
+                         )
+
   /*instead of 'indexOf'*/
   //@scala.annotation.tailrec
   def randomSearchForArcTailIndex(
@@ -740,7 +752,8 @@ object stronglyConnectedComponents {
                                                 currentNodeVal: Int,
                                                 /*must be empty eventually*/
                                                 arcsRemains: List[Arc],
-                                                /*result is 'Vector' for               */
+                                                /*result is 'Vector' for
+                                                          *  */
                                                 adjustedNodes:
                                                 Vector[IndexedNodeWithAdjacencyList] =
                                                 Vector.empty,
@@ -1639,6 +1652,71 @@ object stronglyConnectedComponents {
   }
 
   //Breadth-First Search
+  /*return sequence of number of nodes / size of all connected
+  components*/
+  /*do all explored checks in-place in special array*/
+  @scala.annotation.tailrec
+  def findAllCCwithBFSOptimized(
+                                 /*may be worth it to be shrinked in each
+                                 iteration*/
+                                 graph: Vector[ArcFromNodes],
+                                 /*all corresponding graph 'nodes'*/
+                                 /*`lookUp` 'apply' for 'Array'
+                                 * 'C'	The operation takes (fast) constant
+                                 * time.
+                                 * vs. 'eC' for 'Vector'*/
+                                 graphNodes: Array[IsExploredNode],
+                                 /*as 'nodes' are range from '1' to
+                                    *  */
+                                 nodesLimit: Int,
+                                 currentNodeIndex: Int = 0,
+                                 connectedComponents: Seq[Int] =
+                                 Seq.empty[Int]
+                                 ): Seq[Int] = {
+    if (
+      currentNodeIndex >= nodesLimit) {
+      /*return value*/
+      connectedComponents
+    } else /*if (unExploredGraphNodes.nonEmpty)*/ {
+      /*time consuming operation*/
+      if (graphNodes(currentNodeIndex).isExplored) {
+        /*skip to next node*/
+        /*recursion*/
+        findAllCCwithBFSOptimized(
+                                   graph = graph,
+                                   graphNodes = graphNodes,
+                                   nodesLimit = nodesLimit,
+                                   /*eventually must exceed limit*/
+                                   currentNodeIndex + 1,
+                                   connectedComponents
+                                 )
+      } else {
+        /*have new unexplored 'node' not in explored SCC*/
+        val exploredConnectedComponent: Int =
+          BFS_SCC_NodesAmountOptimized(
+                                        graph = graph,
+                                        startingNode =
+                                          /*must be within bounds*/
+                                          graphNodes(currentNodeIndex).node /*,
+                                       nodesCounter = 0*/
+                                      )
+        val updatedConnectedComponents: Seq[Int] =
+          exploredConnectedComponent +: connectedComponents
+        /*recursion*/
+        findAllCCwithBFSOptimized(
+                                   graph = graph,
+                                   graphNodes = graphNodes,
+                                   nodesLimit = nodesLimit,
+                                   /*eventually must must exceed limit*/
+                                   currentNodeIndex + 1,
+                                   connectedComponents =
+                                     updatedConnectedComponents
+                                 )
+      }
+    }
+  }
+
+  //Breadth-First Search
   /*return all connected components in graph as sequences of nodes*/
   @scala.annotation.tailrec
   def connectedComponentsBFS(
@@ -1672,12 +1750,67 @@ object stronglyConnectedComponents {
     }
   }
 
+  /*Depth-first search (DFS)*/
+  //A recursive implementation of DFS
+  //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
+  //Output: All `vertices` reachable from 'v', labeled as discovered
+  def DFS(
+           /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
+           v: Int,
+           /*accum*/
+           exploredNodes: List[IsExploredNode] =
+           List.empty
+           ): List[IsExploredNode] = {
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: List[IsExploredNode],
+                   exploredNodes: List[IsExploredNode]
+                   ): List[IsExploredNode] = {
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        exploredNodes
+      } else {
+        val exploredNodesUpdated: List[IsExploredNode] =
+          if (adjacentEdges.head.isExplored) {
+            /*same value*/
+            exploredNodes
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            DFS(
+                 graph = graph,
+                 v = adjacentEdges.head.node,
+                 exploredNodes =
+                   exploredNodes
+               ).union(exploredNodes)
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges = adjacentEdges.tail,
+                   exploredNodes = exploredNodesUpdated
+                 )
+      }
+    }
+    //label v as discovered
+    val starNode: ExplorableNodeWithAdjusted = graph(v - 1)
+    /*side effect*/
+    starNode.node.isExplored = true
+    /*for all edges from v to w in G.adjacentEdges(v) do
+        if vertex w is not labeled as discovered then
+              recursively call DFS(G,w)*/
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 starNode.adjustedNodes,
+               exploredNodes = exploredNodes
+             )
+  }
+
   //input: graph G = (V, E)
   //output: set of strongly connected components (sets of vertices)
   def tarjan(
               adjacencyList: Vector[IndexedNodeWithAdjacencyList],
               index: Int = 0,
-                stack:List[IndexedNode] =
+              stack: List[IndexedNode] =
               List.empty[IndexedNode]
               ): Vector[List[Int]] = {
     //): List[List[Int]] = {
@@ -1692,7 +1825,7 @@ object stronglyConnectedComponents {
      */
     //val stack /*: Stack[Nothing]*/ =
     //scala.collection.immutable.Stack.empty[IndexedNode]
-      //List.empty[IndexedNode]
+    //List.empty[IndexedNode]
 
     /*auxiliary method*/
     def createNewSCC(
@@ -1702,7 +1835,7 @@ object stronglyConnectedComponents {
                       None,
                       /*assume that 'v.inStack'*/
                       currentStack: /*Stack*/ List[IndexedNode],
-                      v:IndexedNode
+                      v: IndexedNode
                       ): List[Int] = {
       if (
         nodeFromStack.isDefined &&
@@ -1723,16 +1856,111 @@ object stronglyConnectedComponents {
                         w.nodeVal +: newSCC,
                       nodeFromStack = Some(w),
                       currentStack = stackWithoutTop,
-        v = v
+                      v = v
                     )
       }
     }
+
     /*recursive method, what is the output, except side effects ?*/
+    /*changes 'index', so must return new value*/
+    /*create discovered 'SCC', so must return it*/
+    /*changes 'stack', so must return it*/
     def strongConnect(
                        v: IndexedNode,
                        index: Int
-                       ): List[Int] = {
+                       ): SCC_Result = {
+      //): List[Int] = {
+      /*auxiliary method*/
+      /*trying to find `min` val*/
+      def minLowLink(
+                      //nodeAndAdjusted: IndexedNodeWithAdjacencyList,
+                      adjustedNodes: List[IndexedNode],
+                      /*actually started with 'v.nodeLowLink'*/
+                      currentMin: Int = Int.MaxValue,
+                      v: IndexedNode,
+                      /*global index state changing with time*/
+                      index: Int
+                      ): Int = {
+        if (adjustedNodes.isEmpty) {
+          /*return value*/
+          currentMin
+        } else {
+          val adjNode: IndexedNode = adjustedNodes.head
+
+          /*? partial function ?*/
+          //val newMin: Int =
+          if (adjNode.nodeIndex.isEmpty) {
+            // Successor 'w'
+            // has not yet been visited recurse on it
+            /*outer recursion*/
+            /*?must change 'v.nodeLowLink'?*/
+            val SCC_Result(newLowlink, newIndex, newStack, newSCC) =
+              strongConnect(
+                             adjNode,
+                             /*?must return as global state?*/
+                             //newIndex
+                             index
+                           )
+            /*side effect*/
+            v.nodeLowLink = newLowlink
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          newLowlink.min(adjNode.nodeLowLink),
+                        //v.nodeLowLink.min(adjNode.nodeLowLink),
+                        v: IndexedNode,
+                        newIndex
+                      )
+            /*return value*/
+            //v.nodeLowLink.min(adjNode.nodeLowLink)
+          } else if (adjNode.inStack) {
+            // Successor 'w' is in `stack` S and
+            // hence in the current `SCC`
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          v.nodeLowLink
+                          .min(adjNode.nodeIndex.getOrElse(v.nodeLowLink)),
+                        v: IndexedNode,
+                        index
+                      )
+            /*return value*/
+            //v.nodeLowLink.min(adjNode.nodeIndex.getOrElse(v.nodeLowLink))
+          } else {
+            /*return value*/
+            //currentMin
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          currentMin,
+                        v: IndexedNode,
+                        index
+                      )
+          }
+          /*recursion*/
+          /*minLowLink(
+                      adjustedNodes=
+                        /*must converge eventually*/
+                        adjustedNodes.tail,
+                      currentMin=
+                        newMin,
+                      v: IndexedNode,
+                      index
+                    )*/
+        }
+      }
+
       // Set the depth index for 'v' to the smallest unused `index`
+      /*initialization*/
       /*side effects*/
       v.nodeIndex = Some(index)
       /*?And what is initial value +infinity?*/
@@ -1745,13 +1973,24 @@ object stronglyConnectedComponents {
       /*side effect*/
       v.inStack = true
 
-      /*must be separete method*/
+      /*must be separate method*/
       // Consider `successors` of 'v'
       //for each(v, w) in E do
-      val nodeAndAdjusted = adjacencyList(v.nodeVal - 1)
-      //v.nodeLowLink: Int =
+      val nodeAndAdjusted: IndexedNodeWithAdjacencyList =
+        adjacencyList(v.nodeVal - 1)
+      /*trying to find `min` val*/
+      v.nodeLowLink =
+        minLowLink(
+                    adjustedNodes =
+                      nodeAndAdjusted.adjustedNodes,
+                    currentMin =
+                      v.nodeLowLink,
+                    v: IndexedNode,
+                    /*? may change within ?*/
+                    index = newIndex
+                  )
       //(
-      for {
+      /*for {
         adjNode <- nodeAndAdjusted.adjustedNodes
       } yield
       /*? partial function ?*/
@@ -1779,13 +2018,14 @@ object stronglyConnectedComponents {
             .min(adjNode.nodeIndex.getOrElse(v.nodeLowLink))
           /*return*/
           v.nodeLowLink
-        }
+        }*/
       //).head
 
       // If 'v' is a `root` node,
       // 'pop' the `stack` and
       // generate an `SCC`
-      if (v.nodeLowLink == v.nodeIndex) {
+      /*assume that 'v.nodeIndex.isDefined'*/
+      if (v.nodeLowLink == v.nodeIndex.get) {
         //start a new strongly connected component
         //val newSCC: List[Int] = List.empty
         //repeat
@@ -1799,16 +2039,26 @@ object stronglyConnectedComponents {
 
         /*return value*/
         //newSCC.reverse
-        createNewSCC(
-                      newSCC =
-                        List.empty,
-                      nodeFromStack = None,
-                      currentStack = vInStack,
-        v = v
-                    )
+        SCC_Result(
+                    v.nodeLowLink,
+                    newIndex,
+                    vInStack,
+                    createNewSCC(
+                                  newSCC =
+                                    List.empty,
+                                  nodeFromStack = None,
+                                  currentStack = vInStack,
+                                  v = v
+                                )
+                  )
       } else {
         /*return value*/
-        List.empty[Int]
+        SCC_Result(
+                    v.nodeLowLink,
+                    newIndex,
+                    vInStack,
+                    List.empty[Int]
+                  )
       }
     }
 
@@ -1823,7 +2073,7 @@ object stronglyConnectedComponents {
                            v.node,
                            /*incremented every iteration within method call*/
                            index
-                         )
+                         ).sCC
   }
 
 }

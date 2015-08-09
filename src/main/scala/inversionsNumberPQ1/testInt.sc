@@ -1,6 +1,7 @@
 val smallestCut: Int =
   Double.PositiveInfinity
   .toInt
+Int.MaxValue
 val bigNumber: Int = 5105043
 (3 + 1) / 2
 (4 + 1) / 2
