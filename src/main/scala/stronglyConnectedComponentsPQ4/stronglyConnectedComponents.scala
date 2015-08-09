@@ -1,7 +1,10 @@
 package stronglyConnectedComponentsPQ4
 
 import scala.math.log
+import scala.math.min
+import scala.math.max
 import scala.collection.immutable.Queue
+import scala.collection.immutable.Stack
 import randomGenerators.RandomGenerators.randomIntWithinInterval
 
 /**
@@ -100,6 +103,13 @@ object stronglyConnectedComponents {
   }
 
   /*node's 'rank' or 'layer'*/
+  case class IndexedNode(
+                          nodeVal: Int,
+                          var nodeIndex: Option[Int],
+                          var nodeLowLink: Int,
+                          var inStack: Boolean
+                          )
+
   case class RankedNode(node: Int, rank: Int)
 
   case class Edge(
@@ -148,6 +158,11 @@ object stronglyConnectedComponents {
     override def toString =
       s"""${node}>to>${adjustedNodes.mkString("", ">", "")}"""
   }
+
+  case class IndexedNodeWithAdjacencyList(
+                                           node: IndexedNode,
+                                           adjustedNodes: List[IndexedNode]
+                                           )
 
   /*instead of 'indexOf'*/
   //@scala.annotation.tailrec
@@ -702,6 +717,161 @@ object stronglyConnectedComponents {
                                  nodeToAdd =
                                    Some(newNodeToAdd)
                                )
+    }
+  }
+
+  /*assume that 'arcsRemains.sorted' by 'tail'*/
+  /*assume that 'nodes' form range / consequential interval*/
+  /*prerequisite: nodes[IndexedNode] sorted by 'nodeVal'*/
+  @scala.annotation.tailrec
+  def makeIndexedNodeWithAdjacencyListFromArcs(
+                                                /*for look up*/
+                                                nodes: Vector[IndexedNode] =
+                                                Vector.empty,
+                                                /*for use 'head','tail'*/
+                                                nodesRemains:
+                                                List[IndexedNode] =
+                                                List.empty,
+                                                /*at start equal 'minNodeVal'
+                                                 - '1'*/
+                                                /*counter of added 'nodes'*/
+                                                /*must exceed 'maxNodeVal'
+                                                eventually*/
+                                                currentNodeVal: Int,
+                                                /*must be empty eventually*/
+                                                arcsRemains: List[Arc],
+                                                /*result is 'Vector' for               */
+                                                adjustedNodes:
+                                                Vector[IndexedNodeWithAdjacencyList] =
+                                                Vector.empty,
+                                                /*accum to add later to
+                                                'adjustedNodes'*/
+                                                nodeToAdd:
+                                                Option[IndexedNodeWithAdjacencyList] =
+                                                None
+                                                ):
+  Vector[IndexedNodeWithAdjacencyList] = {
+    if (
+      nodesRemains.isEmpty
+    //currentNodeVal >= maxNodeVal /*||
+    //arcsRemains.isEmpty*/
+    ) {
+      /*return value*/
+      if (nodeToAdd.isEmpty) {
+        adjustedNodes
+      } else {
+        adjustedNodes :+ nodeToAdd.get
+      }
+    } else if (
+           //currentNodeVal < maxNodeVal &&
+             arcsRemains.nonEmpty &&
+               arcsRemains.head.arcTail == currentNodeVal &&
+               /*must be*/
+               nodeToAdd.isDefined
+           ) {
+      //same sequence, same 'arcTail'
+      //=>update element => add new adjusted 'node' to list
+      val nodeToAddValue =
+        nodeToAdd.get
+      val newNodeToAdd =
+        IndexedNodeWithAdjacencyList(
+                                      nodeToAddValue.node,
+                                      nodeToAddValue.adjustedNodes :+
+                                        nodes(arcsRemains.head.arcHead - 1)
+                                    )
+      val newCurrentNodeVal = currentNodeVal
+      val newArcsRemains = arcsRemains.tail
+      val newAdjustedNodes = adjustedNodes
+
+      /*recursion*/
+      makeIndexedNodeWithAdjacencyListFromArcs(
+                                                nodes = nodes,
+                                                nodesRemains = nodesRemains,
+                                                currentNodeVal =
+                                                  newCurrentNodeVal,
+                                                arcsRemains =
+                                                  newArcsRemains,
+                                                adjustedNodes =
+                                                  newAdjustedNodes,
+                                                nodeToAdd =
+                                                  Some(newNodeToAdd)
+                                              )
+    } else if (
+           //currentNodeVal < maxNodeVal &&
+             arcsRemains.nonEmpty &&
+               arcsRemains.head.arcTail == currentNodeVal + 1 /*&&
+               /*may be*/
+               nodeToAdd.isDefined*/
+           ) {
+      //new 'arcTail'
+      //=>add 'nodeToAdd' if any to 'adjustedNodes'
+      val newAdjustedNodes =
+        if (nodeToAdd.isEmpty) {
+          adjustedNodes
+        } else {
+          adjustedNodes :+ nodeToAdd.get
+        }
+      /*val nodeToAddValue =
+        nodeToAdd.get*/
+      val newNodeToAdd =
+        IndexedNodeWithAdjacencyList(
+                                      nodes(arcsRemains.head.arcTail - 1),
+                                      List(nodes(arcsRemains.head.arcHead - 1))
+                                    )
+      val newCurrentNodeVal =
+        currentNodeVal + 1
+      //nodesRemains.head.nodeVal
+      val newArcsRemains = arcsRemains.tail
+
+      /*recursion*/
+      makeIndexedNodeWithAdjacencyListFromArcs(
+                                                nodes = nodes,
+                                                nodesRemains = nodesRemains
+                                                               .tail,
+                                                currentNodeVal =
+                                                  newCurrentNodeVal,
+                                                arcsRemains =
+                                                  newArcsRemains,
+                                                adjustedNodes =
+                                                  newAdjustedNodes,
+                                                nodeToAdd =
+                                                  Some(newNodeToAdd)
+                                              )
+    } else /*if (
+             currentNodeVal < maxNodeVal &&
+               (arcsRemains.isEmpty ||
+               (arcsRemains.head.arcTail >= currentNodeVal + 1 ))
+           )*/ {
+      //next 'nodeVal'
+      //=>add 'nodeToAdd' if any to 'adjustedNodes'
+      val newAdjustedNodes =
+        if (nodeToAdd.isEmpty) {
+          adjustedNodes
+        } else {
+          adjustedNodes :+ nodeToAdd.get
+        }
+      val newNodeToAdd =
+        IndexedNodeWithAdjacencyList(
+                                      nodes(currentNodeVal),
+                                      List()
+                                    )
+      val newCurrentNodeVal = currentNodeVal + 1
+      val newArcsRemains = arcsRemains
+
+      /*recursion*/
+      makeIndexedNodeWithAdjacencyListFromArcs(
+                                                nodes = nodes,
+                                                nodesRemains = nodesRemains
+                                                               .tail,
+                                                currentNodeVal =
+                                                  newCurrentNodeVal,
+                                                arcsRemains =
+                                                  newArcsRemains,
+                                                adjustedNodes =
+                                                  newAdjustedNodes,
+                                                nodeToAdd =
+                                                  Some(newNodeToAdd)
+                                              )
     }
   }
 
@@ -1500,6 +1670,160 @@ object stronglyConnectedComponents {
                               graphComponents
                             )
     }
+  }
+
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjan(
+              adjacencyList: Vector[IndexedNodeWithAdjacencyList],
+              index: Int = 0,
+                stack:List[IndexedNode] =
+              List.empty[IndexedNode]
+              ): Vector[List[Int]] = {
+    //): List[List[Int]] = {
+    /*global 'index' tracker*/
+    //var index: Int = 0
+    //S := empty
+    /*
+    Use 'List' instead:
+    'stack.push' 'x' becomes
+    'x :: list'
+    'stack.pop' is 'list.tail'
+     */
+    //val stack /*: Stack[Nothing]*/ =
+    //scala.collection.immutable.Stack.empty[IndexedNode]
+      //List.empty[IndexedNode]
+
+    /*auxiliary method*/
+    def createNewSCC(
+                      newSCC: List[Int] =
+                      List.empty,
+                      nodeFromStack: Option[IndexedNode] =
+                      None,
+                      /*assume that 'v.inStack'*/
+                      currentStack: /*Stack*/ List[IndexedNode],
+                      v:IndexedNode
+                      ): List[Int] = {
+      if (
+        nodeFromStack.isDefined &&
+          nodeFromStack.get == v
+      ) {
+        /*return value*/
+        newSCC.reverse
+      } else {
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop*/
+        val stackWithoutTop = currentStack.tail
+        val w = currentStack.head
+        /*side effect*/
+        w.inStack = false
+        /*recursion*/
+        createNewSCC(
+                      newSCC =
+                        w.nodeVal +: newSCC,
+                      nodeFromStack = Some(w),
+                      currentStack = stackWithoutTop,
+        v = v
+                    )
+      }
+    }
+    /*recursive method, what is the output, except side effects ?*/
+    def strongConnect(
+                       v: IndexedNode,
+                       index: Int
+                       ): List[Int] = {
+      // Set the depth index for 'v' to the smallest unused `index`
+      /*side effects*/
+      v.nodeIndex = Some(index)
+      /*?And what is initial value +infinity?*/
+      v.nodeLowLink = index
+      /*change state*/
+      //index = index + 1
+      val newIndex = index + 1
+      //stack.push(v)
+      val vInStack = v +: stack
+      /*side effect*/
+      v.inStack = true
+
+      /*must be separete method*/
+      // Consider `successors` of 'v'
+      //for each(v, w) in E do
+      val nodeAndAdjusted = adjacencyList(v.nodeVal - 1)
+      //v.nodeLowLink: Int =
+      //(
+      for {
+        adjNode <- nodeAndAdjusted.adjustedNodes
+      } yield
+      /*? partial function ?*/
+      //if (w.index is undefined) then
+        if (adjNode.nodeIndex.isEmpty) {
+          // Successor 'w'
+          // has not yet been visited recurse on it
+          /*recursion*/
+          strongConnect(
+                         adjNode,
+                        /*?must return as global state?*/
+                        newIndex
+                       )
+          /*side effect*/
+          v.nodeLowLink =
+            v.nodeLowLink.min(adjNode.nodeLowLink)
+          /*return*/
+          v.nodeLowLink
+        } else if (adjNode.inStack) {
+          // Successor 'w' is in `stack` S and
+          // hence in the current `SCC`
+          /*side effect*/
+          v.nodeLowLink =
+            v.nodeLowLink
+            .min(adjNode.nodeIndex.getOrElse(v.nodeLowLink))
+          /*return*/
+          v.nodeLowLink
+        }
+      //).head
+
+      // If 'v' is a `root` node,
+      // 'pop' the `stack` and
+      // generate an `SCC`
+      if (v.nodeLowLink == v.nodeIndex) {
+        //start a new strongly connected component
+        //val newSCC: List[Int] = List.empty
+        //repeat
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop
+        w.inStack = false*/
+        //add 'w' to `current` `strongly connected component`
+        //w +: newSCC
+        //until(w = v)
+        //output the current strongly connected component
+
+        /*return value*/
+        //newSCC.reverse
+        createNewSCC(
+                      newSCC =
+                        List.empty,
+                      nodeFromStack = None,
+                      currentStack = vInStack,
+        v = v
+                    )
+      } else {
+        /*return value*/
+        List.empty[Int]
+      }
+    }
+
+    /*instead must call recursion on itself*/
+    /*return value*/
+    for {
+      v <- adjacencyList //G.V
+      /*guard*/
+      //if (v.index is undefined)
+      if (v.node.nodeIndex.isEmpty)
+    } yield strongConnect(
+                           v.node,
+                           /*incremented every iteration within method call*/
+                           index
+                         )
   }
 
 }
