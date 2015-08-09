@@ -888,6 +888,158 @@ object stronglyConnectedComponents {
     }
   }
 
+  /*assume that 'arcsRemains.sorted' by 'tail'*/
+  /*assume that 'nodes' form range / consequential interval*/
+  /*prerequisite: nodes[IndexedNode] sorted by 'nodeVal'*/
+  @scala.annotation.tailrec
+  def makeExplorableAdjacencyListFromArcs(
+                                           /*for look up*/
+                                           nodes: Vector[IsExploredNode] =
+                                           Vector.empty,
+                                           /*for use 'head','tail'*/
+                                           nodesRemains:
+                                           List[IsExploredNode] =
+                                           List.empty,
+                                           /*at start equal 'minNodeVal'
+                                            - '1'*/
+                                           /*counter of added 'nodes'*/
+                                           /*must exceed 'maxNodeVal'
+                                           eventually*/
+                                           currentNodeVal: Int,
+                                           /*must be empty eventually*/
+                                           arcsRemains: List[Arc],
+                                           /*resulting 'Vector'*/
+                                           adjustedNodes:
+                                           Vector[ExplorableNodeWithAdjusted] =
+                                           Vector.empty,
+                                           /*accum to add later to
+                                           'adjustedNodes'*/
+                                           nodeToAdd:
+                                           Option[ExplorableNodeWithAdjusted] =
+                                           None
+                                           ):
+  Vector[ExplorableNodeWithAdjusted] = {
+    if (
+      nodesRemains.isEmpty
+    ) {
+      /*return value*/
+      if (nodeToAdd.isEmpty) {
+        adjustedNodes
+      } else {
+        adjustedNodes :+ nodeToAdd.get
+      }
+    } else if (
+             arcsRemains.nonEmpty &&
+               arcsRemains.head.arcTail == currentNodeVal &&
+               /*must be*/
+               nodeToAdd.isDefined
+           ) {
+      //same sequence, same 'arcTail'
+      //=>update element => add new adjusted 'node' to list
+      val nodeToAddValue: ExplorableNodeWithAdjusted =
+        nodeToAdd.get
+      val newNodeToAdd: ExplorableNodeWithAdjusted =
+        ExplorableNodeWithAdjusted(
+                                    nodeToAddValue.node,
+                                    nodeToAddValue.adjustedNodes :+
+                                      nodes(arcsRemains.head.arcHead - 1)
+                                  )
+      val newCurrentNodeVal = currentNodeVal
+      val newArcsRemains = arcsRemains.tail
+      val newAdjustedNodes = adjustedNodes
+
+      /*recursion*/
+      makeExplorableAdjacencyListFromArcs(
+                                           nodes = nodes,
+                                           nodesRemains = nodesRemains,
+                                           currentNodeVal =
+                                             newCurrentNodeVal,
+                                           arcsRemains =
+                                             newArcsRemains,
+                                           adjustedNodes =
+                                             newAdjustedNodes,
+                                           nodeToAdd =
+                                             Some(newNodeToAdd)
+                                         )
+    } else if (
+           //currentNodeVal < maxNodeVal &&
+             arcsRemains.nonEmpty &&
+               arcsRemains.head.arcTail == currentNodeVal + 1 /*&&
+               /*may be*/
+               nodeToAdd.isDefined*/
+           ) {
+      //new 'arcTail'
+      //=>add 'nodeToAdd' if any to 'adjustedNodes'
+      val newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
+        if (nodeToAdd.isEmpty) {
+          adjustedNodes
+        } else /*if (nodeToAdd.isDefined)*/ {
+          adjustedNodes :+ nodeToAdd.get
+        }
+      /*val nodeToAddValue =
+        nodeToAdd.get*/
+      val newNodeToAdd =
+        ExplorableNodeWithAdjusted(
+                                    nodes(arcsRemains.head.arcTail - 1),
+                                    List(nodes(arcsRemains.head.arcHead - 1))
+                                  )
+      val newCurrentNodeVal =
+        currentNodeVal + 1
+      //nodesRemains.head.nodeVal
+      val newArcsRemains = arcsRemains.tail
+
+      /*recursion*/
+      makeExplorableAdjacencyListFromArcs(
+                                           nodes = nodes,
+                                           nodesRemains = nodesRemains
+                                                          .tail,
+                                           currentNodeVal =
+                                             newCurrentNodeVal,
+                                           arcsRemains =
+                                             newArcsRemains,
+                                           adjustedNodes =
+                                             newAdjustedNodes,
+                                           nodeToAdd =
+                                             Some(newNodeToAdd)
+                                         )
+    } else /*if (
+             currentNodeVal < maxNodeVal &&
+               (arcsRemains.isEmpty ||
+               (arcsRemains.head.arcTail >= currentNodeVal + 1 ))
+           )*/ {
+      //next 'nodeVal'
+      //=>add 'nodeToAdd' if any to 'adjustedNodes'
+      val newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
+        if (nodeToAdd.isEmpty) {
+          adjustedNodes
+        } else {
+          adjustedNodes :+ nodeToAdd.get
+        }
+      val newNodeToAdd =
+        ExplorableNodeWithAdjusted(
+                                    nodes(currentNodeVal),
+                                    List()
+                                  )
+      val newCurrentNodeVal = currentNodeVal + 1
+      val newArcsRemains = arcsRemains
+
+      /*recursion*/
+      makeExplorableAdjacencyListFromArcs(
+                                           nodes = nodes,
+                                           nodesRemains = nodesRemains
+                                                          .tail,
+                                           currentNodeVal =
+                                             newCurrentNodeVal,
+                                           arcsRemains =
+                                             newArcsRemains,
+                                           adjustedNodes =
+                                             newAdjustedNodes,
+                                           nodeToAdd =
+                                             Some(newNodeToAdd)
+                                         )
+    }
+  }
+
   def setNodesUnExplored(
                           minValue: Int,
                           //nodesLimit: Int
@@ -1756,7 +1908,10 @@ object stronglyConnectedComponents {
   //Output: All `vertices` reachable from 'v', labeled as discovered
   def DFS(
            /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
+         /*start node*/
            v: Int,
+           /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
+           None,*/
            /*accum*/
            exploredNodes: List[IsExploredNode] =
            List.empty
@@ -1772,6 +1927,7 @@ object stronglyConnectedComponents {
       } else {
         val exploredNodesUpdated: List[IsExploredNode] =
           if (adjacentEdges.head.isExplored) {
+            /*skip current 'node', check next*/
             /*same value*/
             exploredNodes
           } else /*if (!adjacentEdges.head.isExplored)*/ {
@@ -1779,9 +1935,10 @@ object stronglyConnectedComponents {
             DFS(
                  graph = graph,
                  v = adjacentEdges.head.node,
+                 //nodeToCheck = Some(adjacentEdges.head),
                  exploredNodes =
                    exploredNodes
-               ).union(exploredNodes)
+               )
           }
         /*recursion*/
         innerLoop(
@@ -1790,9 +1947,11 @@ object stronglyConnectedComponents {
                  )
       }
     }
-    //label v as discovered
-    val starNode: ExplorableNodeWithAdjusted = graph(v - 1)
+    //label 'v' as `discovered`
+    val starNode: ExplorableNodeWithAdjusted =
+      graph(v - 1)
     /*side effect*/
+    /*must be added to output only once*/
     starNode.node.isExplored = true
     /*for all edges from v to w in G.adjacentEdges(v) do
         if vertex w is not labeled as discovered then
@@ -1801,7 +1960,8 @@ object stronglyConnectedComponents {
     innerLoop(
                adjacentEdges =
                  starNode.adjustedNodes,
-               exploredNodes = exploredNodes
+               exploredNodes =
+                 exploredNodes :+ starNode.node
              )
   }
 
