@@ -102,6 +102,11 @@ object stronglyConnectedComponents {
       s"""$node[${if (isExplored) "e" else "u"}]"""
   }
 
+  case class DepthFirstSearchResult(
+                                     preOrder: List[IsExploredNode],
+                                     postOrder: List[IsExploredNode]
+                                     )
+
   /*node's 'rank' or 'layer'*/
   case class IndexedNode(
                           nodeVal: Int,
@@ -893,10 +898,13 @@ object stronglyConnectedComponents {
   /*prerequisite: nodes[IndexedNode] sorted by 'nodeVal'*/
   @scala.annotation.tailrec
   def makeExplorableAdjacencyListFromArcs(
-                                           /*for look up*/
+                                           /*for look up
+                                           * may be created dynamically
+                                           * from scratch*/
                                            nodes: Vector[IsExploredNode] =
                                            Vector.empty,
                                            /*for use 'head','tail'*/
+                                           /*may be redundant*/
                                            nodesRemains:
                                            List[IsExploredNode] =
                                            List.empty,
@@ -905,6 +913,7 @@ object stronglyConnectedComponents {
                                            /*counter of added 'nodes'*/
                                            /*must exceed 'maxNodeVal'
                                            eventually*/
+                                         /*may be redundant*/
                                            currentNodeVal: Int,
                                            /*must be empty eventually*/
                                            arcsRemains: List[Arc],
@@ -913,10 +922,34 @@ object stronglyConnectedComponents {
                                            Vector[ExplorableNodeWithAdjusted] =
                                            Vector.empty,
                                            /*accum to add later to
-                                           'adjustedNodes'*/
+                                           'adjustedNodes'
+                                           also may be used to
+                                           check vs. current value
+                                           is it new or same*/
                                            nodeToAdd:
                                            Option[ExplorableNodeWithAdjusted] =
-                                           None
+                                           None,
+                                         /*used to start 'nodes' range
+                                         * also to define shift vs. nodes index
+                                         * if > 0 then
+                                         * index =(currentNodeVal - minNodeVal)
+                                         * if == 0 then
+                                         * index = currentNodeVal
+                                         * if < 0 then
+                                         * index =(currentNodeVal + minNodeVal)
+                                         * */
+                                         minNodeVal: Int = 1,
+                                         /*used to stop execution
+                                         *and add missing `sink` 'nodes'
+                                         * with empty adjusted list
+                                         * maxNodeVal = rangeSize - 1
+                                         * or computed within method calls
+                                         * provided that input 'arc's
+                                         * sorted by 'arcTail'
+                                         * */
+                                         maxNodeVal: Int = Int.MaxValue,
+                                         /*rangeSize*/
+                                         nodesAmount: Int = 1
                                            ):
   Vector[ExplorableNodeWithAdjusted] = {
     if (
@@ -931,6 +964,7 @@ object stronglyConnectedComponents {
     } else if (
              arcsRemains.nonEmpty &&
                arcsRemains.head.arcTail == currentNodeVal &&
+               //arcsRemains.head.arcTail == nodesRemains.head &&
                /*must be*/
                nodeToAdd.isDefined
            ) {
@@ -944,7 +978,9 @@ object stronglyConnectedComponents {
                                     nodeToAddValue.adjustedNodes :+
                                       nodes(arcsRemains.head.arcHead - 1)
                                   )
-      val newCurrentNodeVal = currentNodeVal
+      val newCurrentNodeVal =
+        currentNodeVal
+      //nodesRemains.head.node
       val newArcsRemains = arcsRemains.tail
       val newAdjustedNodes = adjustedNodes
 
@@ -965,8 +1001,9 @@ object stronglyConnectedComponents {
            //currentNodeVal < maxNodeVal &&
              arcsRemains.nonEmpty &&
                arcsRemains.head.arcTail == currentNodeVal + 1 /*&&
+               //arcsRemains.head.arcTail == nodesRemains.head.node + 1
                /*may be*/
-               nodeToAdd.isDefined*/
+               //nodeToAdd.isDefined*/
            ) {
       //new 'arcTail'
       //=>add 'nodeToAdd' if any to 'adjustedNodes'
@@ -985,6 +1022,7 @@ object stronglyConnectedComponents {
                                   )
       val newCurrentNodeVal =
         currentNodeVal + 1
+      //nodesRemains.head.node
       //nodesRemains.head.nodeVal
       val newArcsRemains = arcsRemains.tail
 
@@ -1018,9 +1056,12 @@ object stronglyConnectedComponents {
       val newNodeToAdd =
         ExplorableNodeWithAdjusted(
                                     nodes(currentNodeVal),
+                                    //nodes(nodesRemains.head.node),
                                     List()
                                   )
-      val newCurrentNodeVal = currentNodeVal + 1
+      val newCurrentNodeVal =
+        currentNodeVal + 1
+      //nodesRemains.head.node
       val newArcsRemains = arcsRemains
 
       /*recursion*/
@@ -1906,16 +1947,16 @@ object stronglyConnectedComponents {
   //A recursive implementation of DFS
   //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
   //Output: All `vertices` reachable from 'v', labeled as discovered
-  def DFS(
-           /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
-         /*start node*/
-           v: Int,
-           /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
-           None,*/
-           /*accum*/
-           exploredNodes: List[IsExploredNode] =
-           List.empty
-           ): List[IsExploredNode] = {
+  def preOrderDFS(
+                   /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
+                   /*start node*/
+                   v: Int,
+                   /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
+                   None,*/
+                   /*accum*/
+                   exploredNodes: List[IsExploredNode] =
+                   List.empty
+                   ): List[IsExploredNode] = {
     @scala.annotation.tailrec
     def innerLoop(
                    adjacentEdges: List[IsExploredNode],
@@ -1932,13 +1973,13 @@ object stronglyConnectedComponents {
             exploredNodes
           } else /*if (!adjacentEdges.head.isExplored)*/ {
             /*outer recursion*/
-            DFS(
-                 graph = graph,
-                 v = adjacentEdges.head.node,
-                 //nodeToCheck = Some(adjacentEdges.head),
-                 exploredNodes =
-                   exploredNodes
-               )
+            preOrderDFS(
+                         graph = graph,
+                         v = adjacentEdges.head.node,
+                         //nodeToCheck = Some(adjacentEdges.head),
+                         exploredNodes =
+                           exploredNodes
+                       )
           }
         /*recursion*/
         innerLoop(
@@ -1963,6 +2004,233 @@ object stronglyConnectedComponents {
                exploredNodes =
                  exploredNodes :+ starNode.node
              )
+  }
+
+  /*Depth-first search (DFS)*/
+  //A recursive implementation of DFS
+  //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
+  //Output: All `vertices` reachable from 'v', labeled as discovered
+  def postOrderDFS(
+                    /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
+                    /*start node*/
+                    v: Int,
+                    /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
+                    None,*/
+                    /*accum*/
+                    exploredNodes: List[IsExploredNode] =
+                    List.empty
+                    ): List[IsExploredNode] = {
+    //label 'v' as `discovered`
+    val starNode: ExplorableNodeWithAdjusted =
+      graph(v - 1)
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: List[IsExploredNode],
+                   exploredNodes: List[IsExploredNode]
+                   ): List[IsExploredNode] = {
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        /*same value for 'preOrder'*/
+        //exploredNodes
+        exploredNodes :+ starNode.node
+      } else {
+        val exploredNodesUpdated: List[IsExploredNode] =
+          if (adjacentEdges.head.isExplored) {
+            /*skip current 'node', check next*/
+            /*same value for 'preOrder'*/
+            exploredNodes
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            postOrderDFS(
+                          graph = graph,
+                          v = adjacentEdges.head.node,
+                          //nodeToCheck = Some(adjacentEdges.head),
+                          exploredNodes =
+                            /*same value for 'preOrder'*/
+                            exploredNodes
+                          //exploredNodes :+ adjacentEdges.head
+                          //exploredNodes :+ starNode.node
+                        )
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges = adjacentEdges.tail,
+                   exploredNodes = exploredNodesUpdated
+                 )
+      }
+    }
+
+    /*side effect*/
+    /*must be added to output only once*/
+    starNode.node.isExplored = true
+    /*for all edges from v to w in G.adjacentEdges(v) do
+        if vertex w is not labeled as discovered then
+              recursively call DFS(G,w)*/
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 starNode.adjustedNodes,
+               /*for postOrder be added later within 'innerLoop' check*/
+               exploredNodes =
+                 exploredNodes
+               //exploredNodes :+ starNode.node
+             )
+  }
+
+  /*Depth-first search (DFS)*/
+  def preAndPostOrderDFS(
+                          graph: Vector[ExplorableNodeWithAdjusted],
+                          /*start node*/
+                          v: Int,
+                          /*accum*/
+                          exploredNodesPre: List[IsExploredNode] =
+                          List.empty,
+                          exploredNodesPost: List[IsExploredNode] =
+                          List.empty,
+                          nodesValuesZeroBased: Boolean = false
+                          ): DepthFirstSearchResult = {
+    //label 'v' as `discovered`
+    val starNode: ExplorableNodeWithAdjusted =
+    /*may be out of bound
+    when nodes values zero based and,
+    so equal to indices*/
+    if (nodesValuesZeroBased) {
+      //graph(v)
+      graph(v - 1)
+    } else {
+      graph(v - 1)
+    }
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: List[IsExploredNode],
+                   preExploredNodes: List[IsExploredNode],
+                   postExploredNodes: List[IsExploredNode]
+                   ): DepthFirstSearchResult = {
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        DepthFirstSearchResult(
+                                /*same value for 'preOrder'*/
+                                preExploredNodes,
+                                postExploredNodes :+ starNode.node
+                              )
+      } else {
+        val DepthFirstSearchResult(preExploredNodesUpdated,
+        postExploredNodesUpdated): DepthFirstSearchResult =
+          if (adjacentEdges.head.isExplored) {
+            /*skip current 'node', check next*/
+            DepthFirstSearchResult(
+                                    /*same value for 'preOrder'*/
+                                    preExploredNodes,
+                                    postExploredNodes
+                                  )
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            preAndPostOrderDFS(
+                                graph = graph,
+                                v = adjacentEdges.head.node,
+                                //nodeToCheck = Some(adjacentEdges.head),
+                                exploredNodesPre =
+                                  /*same value for 'preOrder'*/
+                                  preExploredNodes,
+                                //exploredNodes :+ adjacentEdges.head
+                                //exploredNodes :+ starNode.node
+                                exploredNodesPost =
+                                  postExploredNodes,
+                                nodesValuesZeroBased = nodesValuesZeroBased
+                              )
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges = adjacentEdges.tail,
+                   preExploredNodes = preExploredNodesUpdated,
+                   postExploredNodes =
+                     postExploredNodesUpdated
+                 )
+      }
+    }
+
+    /*side effect*/
+    /*must be added to output only once*/
+    starNode.node.isExplored = true
+    /*for all edges from v to w in G.adjacentEdges(v) do
+        if vertex w is not labeled as discovered then
+              recursively call DFS(G,w)*/
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 starNode.adjustedNodes,
+               /*for `postOrder` be added later within 'innerLoop' check*/
+               preExploredNodes =
+                 exploredNodesPre :+ starNode.node,
+               postExploredNodes =
+                 exploredNodesPost
+             )
+  }
+
+  /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  def DepthFirstOrder(
+                       /*for lookUp*/
+                       graph: Vector[ExplorableNodeWithAdjusted],
+                       resultAccum: DepthFirstSearchResult =
+                       DepthFirstSearchResult(List.empty, List.empty),
+                       graphLength: Int,
+                       indexCounter: Int = 0,
+                       nodesValuesZeroBased: Boolean = false
+                       ): DepthFirstSearchResult = {
+    if (indexCounter >= graphLength) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNode =
+        graph(indexCounter)
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      val DepthFirstSearchResult(
+      //addedToResultAccumPreOrder,
+      //addedToResultAccumPostOrder
+      resultAccumPreOrderUpdated,
+      resultAccumPostOrderUpdated
+                                ) =
+        if (!currentNode.node.isExplored) {
+          preAndPostOrderDFS(
+                              graph = graph,
+                              v = currentNode.node.node,
+                              exploredNodesPre =
+                                resultAccum.preOrder,
+                              exploredNodesPost =
+                                resultAccum.postOrder,
+                              nodesValuesZeroBased = nodesValuesZeroBased
+                            )
+        } else {
+          DepthFirstSearchResult(
+                                  resultAccum.preOrder,
+                                  resultAccum.postOrder)
+        }
+      /*recursion*/
+      DepthFirstOrder(
+                       /*for lookUp*/
+                       graph: Vector[ExplorableNodeWithAdjusted],
+                       resultAccum =
+                         DepthFirstSearchResult(
+                                                 resultAccumPreOrderUpdated,
+                                                 resultAccumPostOrderUpdated),
+                       graphLength = graphLength,
+                       indexCounter = indexCounter + 1
+                     )
+    }
+    /*for {
+      node <- graph
+    } yield if (!node.node.isExplored) {
+      preAndPostOrderDFS(
+                          graph = graph,
+                          v = node.node.node
+                        )
+    } else {
+      DepthFirstSearchResult(List.empty, List.empty)
+    }*/
   }
 
   //input: graph G = (V, E)
