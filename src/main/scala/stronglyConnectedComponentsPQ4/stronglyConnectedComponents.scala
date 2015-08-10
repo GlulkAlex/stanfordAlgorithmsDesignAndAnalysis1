@@ -103,8 +103,10 @@ object stronglyConnectedComponents {
   }
 
   case class DepthFirstSearchResult(
-                                     preOrder: List[IsExploredNode],
-                                     postOrder: List[IsExploredNode]
+                                     /*preOrder: List[IsExploredNode],
+                                     postOrder: List[IsExploredNode]*/
+                                     preOrder: Stream[IsExploredNode],
+                                     postOrder: Stream[IsExploredNode]
                                      )
 
   /*node's 'rank' or 'layer'*/
@@ -171,7 +173,8 @@ object stronglyConnectedComponents {
 
   case class ExplorableNodeWithAdjusted(
                                          node: IsExploredNode,
-                                         adjustedNodes: List[IsExploredNode]
+                                         //adjustedNodes: List[IsExploredNode]
+                                         adjustedNodes: Stream[IsExploredNode]
                                          )
 
   case class SCC_Result(
@@ -1020,10 +1023,11 @@ object stronglyConnectedComponents {
         }
       /*val nodeToAddValue =
         nodeToAdd.get*/
-      val newNodeToAdd =
+      val newNodeToAdd: ExplorableNodeWithAdjusted =
         ExplorableNodeWithAdjusted(
                                     nodes(arcsRemains.head.arcTail - 1),
-                                    List(nodes(arcsRemains.head.arcHead - 1))
+                                    //List(nodes(arcsRemains.head.arcHead - 1))
+                                    Stream(nodes(arcsRemains.head.arcHead - 1))
                                   )
       val newCurrentNodeVal =
         currentNodeVal + 1
@@ -1059,12 +1063,13 @@ object stronglyConnectedComponents {
         } else {
           adjustedNodes :+ nodeToAdd.get
         }
-      val newNodeToAdd =
+      val newNodeToAdd: ExplorableNodeWithAdjusted =
         ExplorableNodeWithAdjusted(
                                     nodes(currentNodeVal),
                                     //nodes(currentNodeVal + nodeIndexShift),
                                     //nodes(nodesRemains.head.node),
-                                    List()
+                                    //List()
+                                    Stream.empty
                                   )
       val newCurrentNodeVal =
         currentNodeVal + 1
@@ -1962,19 +1967,27 @@ object stronglyConnectedComponents {
                    /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
                    None,*/
                    /*accum*/
-                   exploredNodes: List[IsExploredNode] =
+                   /*exploredNodes: List[IsExploredNode] =
                    List.empty
-                   ): List[IsExploredNode] = {
+                   ): List[IsExploredNode] = {*/
+                   exploredNodes: Stream[IsExploredNode] =
+                   Stream.empty,
+                   nodeIndexShift: Int = -1
+                   ): Stream[IsExploredNode] = {
     @scala.annotation.tailrec
     def innerLoop(
-                   adjacentEdges: List[IsExploredNode],
+                   /*adjacentEdges: List[IsExploredNode],
                    exploredNodes: List[IsExploredNode]
-                   ): List[IsExploredNode] = {
+                   ): List[IsExploredNode] = {*/
+                   adjacentEdges: Stream[IsExploredNode],
+                   exploredNodes: Stream[IsExploredNode]
+                   ): Stream[IsExploredNode] = {
       if (adjacentEdges.isEmpty) {
         /*return value*/
         exploredNodes
       } else {
-        val exploredNodesUpdated: List[IsExploredNode] =
+        //val exploredNodesUpdated: List[IsExploredNode] =
+        val exploredNodesUpdated: Stream[IsExploredNode] =
           if (adjacentEdges.head.isExplored) {
             /*skip current 'node', check next*/
             /*same value*/
@@ -1998,7 +2011,7 @@ object stronglyConnectedComponents {
     }
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
-      graph(v - 1)
+      graph(v + nodeIndexShift)
     /*side effect*/
     /*must be added to output only once*/
     starNode.node.isExplored = true
@@ -2018,6 +2031,7 @@ object stronglyConnectedComponents {
   //A recursive implementation of DFS
   //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
   //Output: All `vertices` reachable from 'v', labeled as discovered
+  /*how to refactor this as 'tailrec' ?*/
   def postOrderDFS(
                     /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
                     /*start node*/
@@ -2025,25 +2039,33 @@ object stronglyConnectedComponents {
                     /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
                     None,*/
                     /*accum*/
-                    exploredNodes: List[IsExploredNode] =
-                    List.empty
-                    ): List[IsExploredNode] = {
+                    /*exploredNodes: List[IsExploredNode] =
+                    List.empty*/
+                    exploredNodes: Stream[IsExploredNode] =
+                    Stream.empty,
+                    nodeIndexShift: Int = -1
+                    ): Stream[IsExploredNode] = {
+    //): List[IsExploredNode] = {
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
-      graph(v - 1)
+      graph(v + nodeIndexShift)
 
     @scala.annotation.tailrec
     def innerLoop(
-                   adjacentEdges: List[IsExploredNode],
+                   /*adjacentEdges: List[IsExploredNode],
                    exploredNodes: List[IsExploredNode]
-                   ): List[IsExploredNode] = {
+                   ): List[IsExploredNode] = {*/
+                   adjacentEdges: Stream[IsExploredNode],
+                   exploredNodes: Stream[IsExploredNode]
+                   ): Stream[IsExploredNode] = {
       if (adjacentEdges.isEmpty) {
         /*return value*/
         /*same value for 'preOrder'*/
         //exploredNodes
         exploredNodes :+ starNode.node
       } else {
-        val exploredNodesUpdated: List[IsExploredNode] =
+        //val exploredNodesUpdated: List[IsExploredNode] =
+        val exploredNodesUpdated: Stream[IsExploredNode] =
           if (adjacentEdges.head.isExplored) {
             /*skip current 'node', check next*/
             /*same value for 'preOrder'*/
@@ -2104,7 +2126,8 @@ object stronglyConnectedComponents {
 
     @scala.annotation.tailrec
     def innerLoop(
-                   adjacentEdges: List[IsExploredNode],
+                   //adjacentEdges: List[IsExploredNode],
+                   adjacentEdges: Stream[IsExploredNode],
                    /*accum*/
                    exploredNodesResult: Int
                    ): Int = {
@@ -2156,29 +2179,37 @@ object stronglyConnectedComponents {
                           /*start node*/
                           v: Int,
                           /*accum*/
-                          exploredNodesPre: List[IsExploredNode] =
+                          /*exploredNodesPre: List[IsExploredNode] =
                           List.empty,
                           exploredNodesPost: List[IsExploredNode] =
-                          List.empty,
-                          nodesValuesZeroBased: Boolean = false
+                          List.empty,*/
+                          exploredNodesPre: Stream[IsExploredNode] =
+                          Stream.empty,
+                          exploredNodesPost: Stream[IsExploredNode] =
+                          Stream.empty,
+                          //nodesValuesZeroBased: Boolean = false
+                            nodeIndexShift: Int = -1
                           ): DepthFirstSearchResult = {
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
     /*may be out of bound
     when nodes values zero based and,
     so equal to indices*/
-      if (nodesValuesZeroBased) {
+      //if (nodesValuesZeroBased) {
         //graph(v)
+        graph(v + nodeIndexShift)
+      /*} else {
         graph(v - 1)
-      } else {
-        graph(v - 1)
-      }
+      }*/
 
     @scala.annotation.tailrec
     def innerLoop(
-                   adjacentEdges: List[IsExploredNode],
+                   /*adjacentEdges: List[IsExploredNode],
                    preExploredNodes: List[IsExploredNode],
-                   postExploredNodes: List[IsExploredNode]
+                   postExploredNodes: List[IsExploredNode]*/
+                   adjacentEdges: Stream[IsExploredNode],
+                   preExploredNodes: Stream[IsExploredNode],
+                   postExploredNodes: Stream[IsExploredNode]
                    ): DepthFirstSearchResult = {
       if (adjacentEdges.isEmpty) {
         /*return value*/
@@ -2210,8 +2241,8 @@ object stronglyConnectedComponents {
                                 //exploredNodes :+ adjacentEdges.head
                                 //exploredNodes :+ starNode.node
                                 exploredNodesPost =
-                                  postExploredNodes,
-                                nodesValuesZeroBased = nodesValuesZeroBased
+                                  postExploredNodes//,
+                                //nodesValuesZeroBased = nodesValuesZeroBased
                               )
           }
         /*recursion*/
@@ -2247,7 +2278,8 @@ object stronglyConnectedComponents {
                        /*for lookUp*/
                        graph: Vector[ExplorableNodeWithAdjusted],
                        resultAccum: DepthFirstSearchResult =
-                       DepthFirstSearchResult(List.empty, List.empty),
+                       //DepthFirstSearchResult(List.empty, List.empty),
+                       DepthFirstSearchResult(Stream.empty, Stream.empty),
                        graphLength: Int,
                        indexCounter: Int = 0,
                        nodesValuesZeroBased: Boolean = false
@@ -2274,8 +2306,8 @@ object stronglyConnectedComponents {
                               exploredNodesPre =
                                 resultAccum.preOrder,
                               exploredNodesPost =
-                                resultAccum.postOrder,
-                              nodesValuesZeroBased = nodesValuesZeroBased
+                                resultAccum.postOrder//,
+                              //nodesValuesZeroBased = nodesValuesZeroBased
                             )
         } else {
           DepthFirstSearchResult(
@@ -2310,12 +2342,15 @@ object stronglyConnectedComponents {
   def DepthFirstPostOrder(
                            /*for lookUp*/
                            graph: Vector[ExplorableNodeWithAdjusted],
-                           resultAccum: List[IsExploredNode] =
-                           List.empty,
+                           /*resultAccum: List[IsExploredNode] =
+                           List.empty,*/
+                           resultAccum: Stream[IsExploredNode] =
+                           Stream.empty,
                            graphLength: Int,
                            indexCounter: Int = 0,
                            nodeIndexShift: Int = -1
-                           ): List[IsExploredNode] = {
+                           ): Stream[IsExploredNode] = {
+                           //): List[IsExploredNode] = {
     if (indexCounter >= graphLength) {
       /*return value*/
       resultAccum
@@ -2325,7 +2360,8 @@ object stronglyConnectedComponents {
       /*cases:
       * either new 'nodes' added or not (same `explored` list)*/
       /*?no 'concat' / 'union'?*/
-      val resultAccumPostOrderUpdated: List[IsExploredNode] =
+      //val resultAccumPostOrderUpdated: List[IsExploredNode] =
+      val resultAccumPostOrderUpdated: Stream[IsExploredNode] =
         if (!currentNode.node.isExplored) {
           /*new*/
           postOrderDFS(
@@ -2353,21 +2389,26 @@ object stronglyConnectedComponents {
 
   /*check `nodes` in Reverse `postOrder` (needed) of
    the `transpose` `graph` and find & extract / create all SCCs*/
+  @scala.annotation.tailrec
   def transposeDepthFirstOrderSCCs(
                                     /*for lookUp*/
                                     /*must be reset as `unExplored`*/
                                     graph: Vector[ExplorableNodeWithAdjusted],
                                     /*check order and termination condition*/
                                     /*must be reset as `unExplored`*/
-                                    preOrderRemains: List[IsExploredNode],
+                                    /*preOrderRemains: List[IsExploredNode],
                                     resultAccum: List[List[IsExploredNode]] =
-                                    List.empty,
+                                    List.empty,*/
+                                    preOrderRemains: Stream[IsExploredNode],
+                                    resultAccum: Stream[Stream[IsExploredNode]] =
+                                    Stream.empty,
                                     graphLength: Int,
                                     indexCounter: Int = 0,
                                     nodesValuesZeroBased: Boolean = false,
                                     minNodeVal: Int = 1,
                                     nodeIndexShift: Int = -1
-                                    ): List[List[IsExploredNode]] = {
+                                    ): Stream[Stream[IsExploredNode]] = {
+                                    //): List[List[IsExploredNode]] = {
     if (
     //indexCounter >= graphLength
       preOrderRemains.isEmpty
@@ -2382,7 +2423,8 @@ object stronglyConnectedComponents {
       * either new 'nodes' added or not (same `explored` list)*/
       /*?no 'concat' / 'union'?*/
       //val newSCC: List[IsExploredNode] =
-      val updatedSCCsResult: List[List[IsExploredNode]] =
+      //val updatedSCCsResult: List[List[IsExploredNode]] =
+      val updatedSCCsResult: Stream[Stream[IsExploredNode]] =
         if (!currentNode.node.isExplored) {
           /*? order does not matter ?*/
           /*prePend*/
@@ -2411,6 +2453,7 @@ object stronglyConnectedComponents {
 
   /*check `nodes` in Reverse `postOrder` (needed) of
    the `transpose` `graph` and find all SCCs sizes*/
+  @scala.annotation.tailrec
   def transposeDepthFirstOrderSCCsSize(
                                         /*for lookUp*/
                                         /*must be reset as `unExplored`*/
@@ -2419,30 +2462,35 @@ object stronglyConnectedComponents {
                                         /*check order and termination
                                         condition*/
                                         /*must be reset as `unExplored`*/
-                                        preOrderRemains: List[IsExploredNode],
-                                        resultAccum: List[Int] =
-                                        List.empty,
+                                        //postOrderRemains:
+                                        // List[IsExploredNode],
+                                        postOrderRemains:
+                                        Stream[IsExploredNode],
+                                        /*resultAccum: List[Int] =
+                                        List.empty,*/
+                                        resultAccum: Stream[Int] =
+                                        Stream.empty,
                                         graphLength: Int,
                                         indexCounter: Int = 0,
                                         nodesValuesZeroBased: Boolean = false,
                                         minNodeVal: Int = 1,
                                         nodeIndexShift: Int = -1
-                                        ): List[Int] = {
+                                        ): Stream[Int] = {
     if (
     //indexCounter >= graphLength
-      preOrderRemains.isEmpty
+      postOrderRemains.isEmpty
     ) {
       /*return value*/
       resultAccum
     } else {
       val currentNode: ExplorableNodeWithAdjusted =
       //graph(indexCounter)
-        graph(preOrderRemains.head.node + nodeIndexShift)
+        graph(postOrderRemains.head.node + nodeIndexShift)
       /*cases:
       * either new 'nodes' added or not (same `explored` list)*/
       /*?no 'concat' / 'union'?*/
       //val newSCC: List[IsExploredNode] =
-      val updatedSCCsResult: List[Int] =
+      val updatedSCCsResult: Stream[Int] =
         if (!currentNode.node.isExplored) {
           /*new*/
           /*? order does not matter ?*/
@@ -2461,8 +2509,8 @@ object stronglyConnectedComponents {
                                         /*for lookUp*/
                                         graph:
                                           Vector[ExplorableNodeWithAdjusted],
-                                        preOrderRemains =
-                                          preOrderRemains.tail,
+                                        postOrderRemains =
+                                          postOrderRemains.tail,
                                         resultAccum =
                                           updatedSCCsResult,
                                         graphLength = graphLength,
