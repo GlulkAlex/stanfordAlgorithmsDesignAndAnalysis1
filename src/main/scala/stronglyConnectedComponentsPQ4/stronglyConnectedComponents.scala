@@ -913,7 +913,7 @@ object stronglyConnectedComponents {
                                            /*counter of added 'nodes'*/
                                            /*must exceed 'maxNodeVal'
                                            eventually*/
-                                         /*may be redundant*/
+                                           /*may be redundant*/
                                            currentNodeVal: Int,
                                            /*must be empty eventually*/
                                            arcsRemains: List[Arc],
@@ -929,27 +929,31 @@ object stronglyConnectedComponents {
                                            nodeToAdd:
                                            Option[ExplorableNodeWithAdjusted] =
                                            None,
-                                         /*used to start 'nodes' range
-                                         * also to define shift vs. nodes index
-                                         * if > 0 then
-                                         * index =(currentNodeVal - minNodeVal)
-                                         * if == 0 then
-                                         * index = currentNodeVal
-                                         * if < 0 then
-                                         * index =(currentNodeVal + minNodeVal)
-                                         * */
-                                         minNodeVal: Int = 1,
-                                         /*used to stop execution
-                                         *and add missing `sink` 'nodes'
-                                         * with empty adjusted list
-                                         * maxNodeVal = rangeSize - 1
-                                         * or computed within method calls
-                                         * provided that input 'arc's
-                                         * sorted by 'arcTail'
-                                         * */
-                                         maxNodeVal: Int = Int.MaxValue,
-                                         /*rangeSize*/
-                                         nodesAmount: Int = 1
+                                           /*used to start 'nodes' range
+                                           * also to define shift vs. nodes
+                                           * index
+                                           * if > 0 then
+                                           * index =(currentNodeVal -
+                                           * minNodeVal)
+                                           * if == 0 then
+                                           * index = currentNodeVal
+                                           * if < 0 then
+                                           * index =(currentNodeVal +
+                                           * minNodeVal)
+                                           * */
+                                           minNodeVal: Int = 1,
+                                           /*used to stop execution
+                                           *and add missing `sink` 'nodes'
+                                           * with empty adjusted list
+                                           * maxNodeVal = rangeSize - 1
+                                           * or computed within method calls
+                                           * provided that input 'arc's
+                                           * sorted by 'arcTail'
+                                           * */
+                                           maxNodeVal: Int = Int.MaxValue,
+                                           /*rangeSize*/
+                                           nodesAmount: Int = 1,
+                                           nodeIndexShift: Int = -1
                                            ):
   Vector[ExplorableNodeWithAdjusted] = {
     if (
@@ -995,7 +999,8 @@ object stronglyConnectedComponents {
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
-                                             Some(newNodeToAdd)
+                                             Some(newNodeToAdd),
+                                           nodeIndexShift=nodeIndexShift
                                          )
     } else if (
            //currentNodeVal < maxNodeVal &&
@@ -1038,7 +1043,8 @@ object stronglyConnectedComponents {
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
-                                             Some(newNodeToAdd)
+                                             Some(newNodeToAdd),
+                                           nodeIndexShift=nodeIndexShift
                                          )
     } else /*if (
              currentNodeVal < maxNodeVal &&
@@ -1056,6 +1062,7 @@ object stronglyConnectedComponents {
       val newNodeToAdd =
         ExplorableNodeWithAdjusted(
                                     nodes(currentNodeVal),
+                                    //nodes(currentNodeVal + nodeIndexShift),
                                     //nodes(nodesRemains.head.node),
                                     List()
                                   )
@@ -1076,7 +1083,8 @@ object stronglyConnectedComponents {
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
-                                             Some(newNodeToAdd)
+                                             Some(newNodeToAdd),
+                                           nodeIndexShift=nodeIndexShift
                                          )
     }
   }
@@ -2095,12 +2103,12 @@ object stronglyConnectedComponents {
     /*may be out of bound
     when nodes values zero based and,
     so equal to indices*/
-    if (nodesValuesZeroBased) {
-      //graph(v)
-      graph(v - 1)
-    } else {
-      graph(v - 1)
-    }
+      if (nodesValuesZeroBased) {
+        //graph(v)
+        graph(v - 1)
+      } else {
+        graph(v - 1)
+      }
 
     @scala.annotation.tailrec
     def innerLoop(
@@ -2117,7 +2125,8 @@ object stronglyConnectedComponents {
                               )
       } else {
         val DepthFirstSearchResult(preExploredNodesUpdated,
-        postExploredNodesUpdated): DepthFirstSearchResult =
+                                   postExploredNodesUpdated):
+        DepthFirstSearchResult =
           if (adjacentEdges.head.isExplored) {
             /*skip current 'node', check next*/
             DepthFirstSearchResult(
@@ -2231,6 +2240,64 @@ object stronglyConnectedComponents {
     } else {
       DepthFirstSearchResult(List.empty, List.empty)
     }*/
+  }
+
+  /*check `nodes` in preOrder of
+   the `transpose` `graph` and extract / create SCCs*/
+  def transposeDepthFirstOrderSCCs(
+                                    /*for lookUp*/
+                                    /*must be reset as `unExplored`*/
+                                    graph: Vector[ExplorableNodeWithAdjusted],
+                                    /*check order and termination condition*/
+                                    /*must be reset as `unExplored`*/
+                                    preOrderRemains: List[IsExploredNode],
+                                    resultAccum: List[List[IsExploredNode]] =
+                                    List.empty,
+                                    graphLength: Int,
+                                    indexCounter: Int = 0,
+                                    nodesValuesZeroBased: Boolean = false,
+                                    minNodeVal: Int = 1,
+                                    nodeIndexShift: Int = -1
+                                    ): List[List[IsExploredNode]] = {
+    if (
+    //indexCounter >= graphLength
+      preOrderRemains.isEmpty
+    ) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNode: ExplorableNodeWithAdjusted =
+      //graph(indexCounter)
+        graph(preOrderRemains.head.node + nodeIndexShift)
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      //val newSCC: List[IsExploredNode] =
+      val updatedSCCsResult: List[List[IsExploredNode]] =
+        if (!currentNode.node.isExplored) {
+          /*? order does not matter ?*/
+          /*prePend*/
+          preOrderDFS(
+                       graph = graph,
+                       v = currentNode.node.node
+                     ) +: resultAccum
+        } else {
+
+          resultAccum
+        }
+      /*recursion*/
+      transposeDepthFirstOrderSCCs(
+                                    /*for lookUp*/
+                                    graph: Vector[ExplorableNodeWithAdjusted],
+                                    preOrderRemains =
+                                      preOrderRemains.tail,
+                                    resultAccum =
+                                      updatedSCCsResult,
+                                    graphLength = graphLength,
+                                    indexCounter = indexCounter + 1,
+                                    nodeIndexShift = nodeIndexShift
+                                  )
+    }
   }
 
   //input: graph G = (V, E)
