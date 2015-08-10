@@ -1294,18 +1294,22 @@ class stronglyConnectedComponentsSuit
             val explorableAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
-                                                     correspondingNodes,
-                                                   nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toVector,
+                                                   /*nodesRemains =
+                                                     correspondingNodes
+                                                     //.toList,
+                                                     .toStream,*/
                                                    currentNodeVal =
                                                      if (minNodeVal == 0) {
                                                        minNodeVal
                                                      } else {
                                                        minNodeVal - 1
                                                      },
-                                                   arcsRemains = arcs
-                                                                 .toList
+                                                   arcsRemains =
+                                                     arcs
+                                                     //.toList
+                                                     .toStream
                                                  )
             //val reachableNodes: List[IsExploredNode] =
             val reachableNodes: Stream[IsExploredNode] =
@@ -1525,18 +1529,22 @@ class stronglyConnectedComponentsSuit
             val explorableAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
-                                                     correspondingNodes,
-                                                   nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toVector,
+                                                   /*nodesRemains =
+                                                     correspondingNodes
+                                                     .toStream,*/
+                                                   //.toList,
                                                    currentNodeVal =
                                                      if (minNodeVal == 0) {
                                                        minNodeVal
                                                      } else {
                                                        minNodeVal - 1
                                                      },
-                                                   arcsRemains = arcs
-                                                                 .toList
+                                                   arcsRemains =
+                                                     arcs
+                                                     .toStream
+                                                   //.toList
                                                  )
             //val depthFirstOrder: DepthFirstSearchResult =
             val DepthFirstSearchResult(
@@ -1685,13 +1693,16 @@ class stronglyConnectedComponentsSuit
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
                                                      correspondingNodes,
-                                                   nodesRemains =
+                                                   /*nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toStream,*/
+                                                   //.toList,
                                                    currentNodeVal =
                                                      minNodeVal - 1,
-                                                   arcsRemains = arcs
-                                                                 .toList,
+                                                   arcsRemains =
+                                                     arcs
+                                                     .toStream,
+                                                   //.toList,
                                                    minNodeVal = minNodeVal,
                                                    nodeIndexShift = -1
                                                  )
@@ -1751,14 +1762,16 @@ class stronglyConnectedComponentsSuit
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
                                                      correspondingNodes,
-                                                   nodesRemains =
+                                                   /*nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toStream,*/
+                                                   //.toList,
                                                    currentNodeVal =
                                                      minNodeVal - 1,
                                                    arcsRemains =
                                                      transposeSCCwith4PartsArcs
-                                                     .toList,
+                                                     .toStream,
+                                                   //.toList,
                                                    minNodeVal = minNodeVal,
                                                    nodeIndexShift = -1
                                                  )
@@ -1783,7 +1796,7 @@ class stronglyConnectedComponentsSuit
   ignore(
           "38: 'transposeDepthFirstOrderSCCs' " +
             "should return " +
-            "all SCCs thai it find " +
+            "all SCCs that it find " +
             "from `transpose` `graph`" +
             "when search in 'preOrderDFS'"
         ) {
@@ -1884,16 +1897,19 @@ class stronglyConnectedComponentsSuit
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
                                                      correspondingNodes,
-                                                   nodesRemains =
+                                                   /*nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toStream,*/
+                                                   //.toList,
                                                    currentNodeVal =
                                                      minNodeVal - 1,
                                                    arcsRemains =
                                                      //arcs
                                                      transposedArcs
+                                                     .view
                                                      .take(inputTakeNumber)
-                                                     .toList,
+                                                     .toStream,
+                                                   //.toList,
                                                    minNodeVal = minNodeVal,
                                                    nodeIndexShift = -1
                                                  )
@@ -1969,17 +1985,20 @@ class stronglyConnectedComponentsSuit
               makeExplorableAdjacencyListFromArcs(
                                                    nodes =
                                                      correspondingNodes,
-                                                   nodesRemains =
+                                                   /*nodesRemains =
                                                      correspondingNodes
-                                                     .toList,
+                                                     .toStream,*/
+                                                   //.toList,
                                                    currentNodeVal =
                                                      minNodeVal - 1,
                                                    arcsRemains =
                                                      arcs
+                                                     .view
                                                      //*mockUpSCCwith4PartsArcs
                                                      //transposeSCCwith4PartsArcs
                                                      .take(inputTakeNumber)
-                                                     .toList,
+                                                     .toStream,
+                                                   //.toList,
                                                    minNodeVal = minNodeVal,
                                                    nodeIndexShift = -1
                                                  )
@@ -2027,7 +2046,7 @@ class stronglyConnectedComponentsSuit
   test(
         "39: 'transposeDepthFirstOrderSCCsSize' " +
           "should return " +
-          "sizes of all SCCs thai it find " +
+          "sizes of all SCCs that it find " +
           "from `transpose` `graph`" +
           "when search in 'preOrderDFS'"
       ) {
@@ -2054,14 +2073,18 @@ class stronglyConnectedComponentsSuit
                   )
           val transposeSCCwith4PartsArcs: Vector[Arc] =
             mockUpSCCwith4PartsArcs
+            .view
             .map(a => Arc(a.arcHead, a.arcTail))
             .sortBy(_.arcTail)
+            .toVector
+          //seq.view.map(f).flatMap(g).filter(p).toList
           val nodesInGraph: Int = 8
           val sourceSize: Int = 5105043
           val expectedNodesSize: Int = 875714
           val expectedArcsSize: Int = 5105043
           /*all 'nodes', but only few / some 'arcs'*/
-          val inputTakeNumber: Int = 100
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int = 20
           val expectedNodesInSCC: Int = 3
           val expectedSize: Int = 4
           val filePath: String =
@@ -2081,25 +2104,30 @@ class stronglyConnectedComponentsSuit
           val arcs: Vector[Arc] =
           //transposeSCCwith4PartsArcs
             mockUpSCCwith4PartsArcs //*
-          extractSortedArcs(actualFileContent)
-          /*reduce / control input size*/
-          .take(inputTakeNumber)
+            //extractSortedArcs(actualFileContent)
+            .view
+            /*reduce / control input size*/
+            .take(inputTakeNumber)
+            .toVector
 
           println(
                    s"\n'arcs.head` is:${arcs.head}" +
-                     s"\n'arcs.tail.head' is ${
+                     s"\n'arcs.tail.head' is: ${
                        arcs.tail.head
                      }"
                  )
 
+          /*reversed directions*/
           val transposedArcs: Vector[Arc] =
             arcs
+            .view
             .map(a => Arc(a.arcHead, a.arcTail))
             .sortBy(_.arcTail)
+            .toVector
 
           println(
                    s"\n'transposedArcs.head` is:${transposedArcs.head}" +
-                     s"\n'transposedArcs.tail.head' is ${
+                     s"\n'transposedArcs.tail.head' is: ${
                        transposedArcs.tail.head
                      }"
                  )
@@ -2108,16 +2136,22 @@ class stronglyConnectedComponentsSuit
           val maxNodeVal: Int =
           //expectedNodesSize
             arcs
+            .view
             .maxBy(_.arcHead)
             .arcHead
-            .max(arcs
-                 .maxBy(_.arcTail)
-                 .arcHead)
+            .max(
+                arcs
+                .view
+                .maxBy(_.arcTail)
+                .arcHead)
 
           println(s"\n'maxNodeVal' is $maxNodeVal")
 
           val correspondingNodes: Vector[IsExploredNode] =
+          /*create new collection as `unexplored`*/
+          //def correspondingNodes: IndexedSeq[IsExploredNode] =
             (minNodeVal to maxNodeVal)
+            .view
             .map(
                 IsExploredNode(_, false)
                 )
@@ -2144,27 +2178,32 @@ class stronglyConnectedComponentsSuit
           val explorableAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
             makeExplorableAdjacencyListFromArcs(
                                                  nodes =
-                                                   correspondingNodes,
-                                                 nodesRemains =
                                                    correspondingNodes
-                                                   .toList,
+                                                   .toVector,
+                                                 /*nodesRemains =
+                                                   correspondingNodes
+                                                   //.toList,
+                                                   .toStream,*/
                                                  currentNodeVal =
                                                    minNodeVal - 1,
                                                  arcsRemains =
-                                                   //arcs
-                                                   transposedArcs
+                                                   arcs
+                                                   //*transposedArcs
                                                    //.take(inputTakeNumber)
-                                                   .toList,
+                                                   //.toList,
+                                                   .toStream,
                                                  minNodeVal = minNodeVal,
+                                                 maxNodeVal = maxNodeVal,
+                                                 //nodesAmount = maxNodeVal,
                                                  nodeIndexShift = -1
                                                )
           println(
-                   s"\n'explorableAdjacencyList.head' is ${
-                     explorableAdjacencyList.head
-                   }" +
+                   s"\n'explorableAdjacencyList.head' is:" //+
+                   //explorableAdjacencyList.head
+                   /*+
                      s"\n'explorableAdjacencyList.tail.head' is ${
                        explorableAdjacencyList.tail.head
-                     }"
+                     }"*/
                  )
           /*println(
                    s"\n'explorableAdjacencyList` is:" +
@@ -2190,13 +2229,23 @@ class stronglyConnectedComponentsSuit
                                minNodeVal == 0
                            )*/
           //val postOrd: List[IsExploredNode] =
-          val postOrd: Stream[IsExploredNode] =
+          //val postOrd: Stream[IsExploredNode] =
+          /*used / evaluated once*/
+          //def postOrdReversed: Stream[IsExploredNode] =
+          val postOrdReversed: Stream[IsExploredNode] =
             DepthFirstPostOrder(
                                  graph = explorableAdjacencyList,
                                  graphLength =
                                    explorableAdjacencyList
                                    .length
                                )
+            .view
+            //.reverse
+            .toStream
+
+          println(
+                   s"\n'postOrdReversed' defined")
+
           //first 15 'nodes' in 'preOrd` are:
           //1[e],7[e],5[e],10[e],13[e],11[e],12[e],2[e],6[e],3[e],4[e],8[e],9[e]
           //5[e],13[e],11[e],12[e],10[e],7[e],2[e],6[e],1[e],4[e],3[e],8[e],9[e]
@@ -2212,41 +2261,52 @@ class stronglyConnectedComponentsSuit
                        .mkString(",")
                      }"
                  )*/
-          println(
+          /*println(
                    s"\n'postOrd.head` is:${
                      postOrd.head
-                   }"
-                   /*s"\n'postOrd.length` is:${
-                     postOrd.length
-                   }" +
-                     s"\nfirst $takeNumber 'nodes' in 'postOrd` are:" +
-                     s"\n${
-                       postOrd
-                       .take(takeNumber)
-                       .mkString(",")
-                     }"*/
-                 )
+                   }"*/
+          /*s"\n'postOrd.length` is:${
+            postOrd.length
+          }" +
+            s"\nfirst $takeNumber 'nodes' in 'postOrd` are:" +
+            s"\n${
+              postOrd
+              .take(takeNumber)
+              .mkString(",")
+            }"*/
+          //)
 
           /*reset 'nodes' as `unExplored`*/
+          /*can mutate existing collection or create new with 'def'*/
+          //val reSetedNodes: Vector[IsExploredNode] =
           correspondingNodes
           .map(_.isExplored = false)
+
           /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
           val transposeAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
             makeExplorableAdjacencyListFromArcs(
                                                  nodes =
-                                                   correspondingNodes,
-                                                 nodesRemains =
                                                    correspondingNodes
-                                                   .toList,
+                                                   .toVector,
+                                                 /*?memory leak ?*/
+                                                 /*nodesRemains =
+                                                   correspondingNodes
+                                                   .toStream,*/
+                                                 //.toList,
                                                  currentNodeVal =
                                                    minNodeVal - 1,
                                                  arcsRemains =
-                                                   arcs
+                                                   //*arcs
+                                                   transposedArcs
+                                                   .view
                                                    //*mockUpSCCwith4PartsArcs
                                                    //transposeSCCwith4PartsArcs
                                                    //.take(inputTakeNumber)
-                                                   .toList,
+                                                   .toStream,
+                                                 //.toList,
                                                  minNodeVal = minNodeVal,
+                                                 maxNodeVal = maxNodeVal,
+                                                 //nodesAmount = maxNodeVal,
                                                  nodeIndexShift = -1
                                                )
 
@@ -2254,10 +2314,10 @@ class stronglyConnectedComponentsSuit
                    s"\n'transposeAdjacencyList` became:" +
                      s"\n'transposeAdjacencyList.head` is:${
                        transposeAdjacencyList.head
-                     }" +
+                     }" /*+
                      s"\n'explorableAdjacencyList.tail.head' is ${
                        transposeAdjacencyList.tail.head
-                     }"
+                     }"*/
                    /*+
                    s"\nfirst $takeNumber in 'transposeAdjacencyList` are:" +
                    s"\n${
@@ -2275,16 +2335,19 @@ class stronglyConnectedComponentsSuit
                                               graph =
                                                 transposeAdjacencyList,
                                               postOrderRemains =
-                                                postOrd
-                                                //preOrd
-                                                .reverse,
+                                                postOrdReversed,
+                                              //postOrd
+                                              //preOrd
+                                              //.reverse,
                                               graphLength =
                                                 transposeAdjacencyList.length
                                             )
             //.sorted
             //.reverse
+            .view
             .sorted(Ordering[Int].reverse)
             .take(5)
+            .toStream
 
           /*println(
                    s"\n'graphSCCsSizes.length` is:${graphSCCsSizes.length}" +

@@ -195,6 +195,10 @@ object stronglyConnectedComponents {
     None
   }
 
+  /*?may be this
+  'seq.view.map(f).flatMap(g).filter(p).toList'
+  can speedUp computation ?
+  * */
   def collectInducedArcs(
                           arcs: Vector[ArcFromNodes],
                           tailValue: Int
@@ -904,22 +908,29 @@ object stronglyConnectedComponents {
                                            /*for look up
                                            * may be created dynamically
                                            * from scratch*/
-                                           nodes: Vector[IsExploredNode] =
+                                           nodes: => Vector[IsExploredNode] =
                                            Vector.empty,
                                            /*for use 'head','tail'*/
                                            /*may be redundant*/
-                                           nodesRemains:
-                                           List[IsExploredNode] =
-                                           List.empty,
-                                           /*at start equal 'minNodeVal'
-                                            - '1'*/
+                                           //nodesRemains: =>
+                                           /*List[IsExploredNode] =
+                                           List.empty,*/
+                                           /*Stream[IsExploredNode] =
+                                           Stream.empty,*/
+                                           /*at start equal
+                                           'minNodeVal' - '1'
+                                           or some outOfBound value
+                                           */
                                            /*counter of added 'nodes'*/
                                            /*must exceed 'maxNodeVal'
                                            eventually*/
                                            /*may be redundant*/
                                            currentNodeVal: Int,
                                            /*must be empty eventually*/
-                                           arcsRemains: List[Arc],
+                                           //arcsRemains: List[Arc],
+                                         /*must be 'val' not 'def' as
+                                         it used in comparisons */
+                                           arcsRemains: => Stream[Arc],
                                            /*resulting 'Vector'*/
                                            adjustedNodes:
                                            Vector[ExplorableNodeWithAdjusted] =
@@ -954,13 +965,18 @@ object stronglyConnectedComponents {
                                            * sorted by 'arcTail'
                                            * */
                                            maxNodeVal: Int = Int.MaxValue,
+                                           //nodesCount: Int = 0,
                                            /*rangeSize*/
-                                           nodesAmount: Int = 1,
+                                           //nodesAmount: Int = 1,
                                            nodeIndexShift: Int = -1
                                            ):
   Vector[ExplorableNodeWithAdjusted] = {
+    /*cases:
+    * */
     if (
-      nodesRemains.isEmpty
+      //nodesRemains.isEmpty
+      //nodesCount >= maxNodeVal
+        currentNodeVal >= maxNodeVal
     ) {
       /*return value*/
       if (nodeToAdd.isEmpty) {
@@ -983,26 +999,35 @@ object stronglyConnectedComponents {
         ExplorableNodeWithAdjusted(
                                     nodeToAddValue.node,
                                     nodeToAddValue.adjustedNodes :+
-                                      nodes(arcsRemains.head.arcHead - 1)
+                                      nodes(
+                                             arcsRemains
+                                             .head
+                                             .arcHead + nodeIndexShift)
                                   )
-      val newCurrentNodeVal =
+      val newCurrentNodeVal: Int =
         currentNodeVal
       //nodesRemains.head.node
-      val newArcsRemains = arcsRemains.tail
-      val newAdjustedNodes = adjustedNodes
+      //def newArcsRemains = arcsRemains.tail
+      //val nodesCountUpdated: Int = nodesCount + 1
+      //val newAdjustedNodes = adjustedNodes
 
       /*recursion*/
       makeExplorableAdjacencyListFromArcs(
                                            nodes = nodes,
-                                           nodesRemains = nodesRemains,
+                                           //nodesRemains = nodesRemains,
                                            currentNodeVal =
-                                             newCurrentNodeVal,
+                                           /*same*/
+                                             currentNodeVal,
                                            arcsRemains =
-                                             newArcsRemains,
+                                             arcsRemains.tail,
+                                             //newArcsRemains,
                                            adjustedNodes =
-                                             newAdjustedNodes,
+                                             adjustedNodes,
+                                             //newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
+                                           maxNodeVal = maxNodeVal,
+                                           //nodesCount = nodesCountUpdated,
                                            nodeIndexShift = nodeIndexShift
                                          )
     } else if (
@@ -1015,7 +1040,7 @@ object stronglyConnectedComponents {
            ) {
       //new 'arcTail'
       //=>add 'nodeToAdd' if any to 'adjustedNodes'
-      val newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
+      def newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
         if (nodeToAdd.isEmpty) {
           adjustedNodes
         } else /*if (nodeToAdd.isDefined)*/ {
@@ -1023,31 +1048,45 @@ object stronglyConnectedComponents {
         }
       /*val nodeToAddValue =
         nodeToAdd.get*/
-      val newNodeToAdd: ExplorableNodeWithAdjusted =
+      def newNodeToAdd: ExplorableNodeWithAdjusted =
         ExplorableNodeWithAdjusted(
-                                    nodes(arcsRemains.head.arcTail - 1),
+                                    nodes(
+                                           arcsRemains
+                                           .head
+                                           .arcTail + nodeIndexShift),
                                     //List(nodes(arcsRemains.head.arcHead - 1))
-                                    Stream(nodes(arcsRemains.head.arcHead - 1))
+                                    Stream(
+                                            nodes(
+                                                   arcsRemains
+                                                   .head
+                                                   .arcHead + nodeIndexShift))
                                   )
-      val newCurrentNodeVal =
+      val newCurrentNodeVal: Int =
+      /*incremented*/
         currentNodeVal + 1
       //nodesRemains.head.node
       //nodesRemains.head.nodeVal
-      val newArcsRemains = arcsRemains.tail
+      //def newArcsRemains: Stream[Arc] = arcsRemains.tail
+      //val nodesCountUpdated: Int = nodesCount + 1
 
       /*recursion*/
       makeExplorableAdjacencyListFromArcs(
                                            nodes = nodes,
-                                           nodesRemains = nodesRemains
-                                                          .tail,
+                                           /*nodesRemains =
+                                             nodesRemains
+                                                          .tail,*/
                                            currentNodeVal =
-                                             newCurrentNodeVal,
+                                             currentNodeVal + 1,
+                                             //newCurrentNodeVal,
                                            arcsRemains =
-                                             newArcsRemains,
+                                             arcsRemains.tail,
+                                             //newArcsRemains,
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
+                                           maxNodeVal = maxNodeVal,
+                                           //nodesCount = nodesCountUpdated,
                                            nodeIndexShift = nodeIndexShift
                                          )
     } else /*if (
@@ -1057,7 +1096,7 @@ object stronglyConnectedComponents {
            )*/ {
       //next 'nodeVal'
       //=>add 'nodeToAdd' if any to 'adjustedNodes'
-      val newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
+      def newAdjustedNodes: Vector[ExplorableNodeWithAdjusted] =
         if (nodeToAdd.isEmpty) {
           adjustedNodes
         } else {
@@ -1065,30 +1104,35 @@ object stronglyConnectedComponents {
         }
       val newNodeToAdd: ExplorableNodeWithAdjusted =
         ExplorableNodeWithAdjusted(
-                                    nodes(currentNodeVal),
-                                    //nodes(currentNodeVal + nodeIndexShift),
+                                    //nodes(currentNodeVal),
+                                    nodes(currentNodeVal + nodeIndexShift),
                                     //nodes(nodesRemains.head.node),
                                     //List()
                                     Stream.empty
                                   )
-      val newCurrentNodeVal =
+      val newCurrentNodeVal: Int =
         currentNodeVal + 1
       //nodesRemains.head.node
-      val newArcsRemains = arcsRemains
+      //def newArcsRemains = arcsRemains
 
       /*recursion*/
       makeExplorableAdjacencyListFromArcs(
                                            nodes = nodes,
-                                           nodesRemains = nodesRemains
-                                                          .tail,
+                                           /*nodesRemains =
+                                             nodesRemains
+                                                          .tail,*/
                                            currentNodeVal =
-                                             newCurrentNodeVal,
+                                             currentNodeVal + 1,
+                                             //newCurrentNodeVal,
                                            arcsRemains =
-                                             newArcsRemains,
+                                             arcsRemains,
+                                             //newArcsRemains,
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
+                                           maxNodeVal = maxNodeVal,
+                                           //nodesCount = nodesCount + 1,
                                            nodeIndexShift = nodeIndexShift
                                          )
     }
@@ -2033,7 +2077,7 @@ object stronglyConnectedComponents {
   //Output: All `vertices` reachable from 'v', labeled as discovered
   /*how to refactor this as 'tailrec' ?*/
   def postOrderDFS(
-                    /*G*/ graph: Vector[ExplorableNodeWithAdjusted],
+                    /*G*/ graph: => Vector[ExplorableNodeWithAdjusted],
                     /*start node*/
                     v: Int,
                     /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
@@ -2041,11 +2085,12 @@ object stronglyConnectedComponents {
                     /*accum*/
                     /*exploredNodes: List[IsExploredNode] =
                     List.empty*/
-                    exploredNodes: Stream[IsExploredNode] =
+                    exploredNodes: => Stream[IsExploredNode] =
                     Stream.empty,
                     nodeIndexShift: Int = -1
                     ): Stream[IsExploredNode] = {
     //): List[IsExploredNode] = {
+    assume(graph.nonEmpty,s"graph must be '.nonEmpty'")
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -2055,17 +2100,19 @@ object stronglyConnectedComponents {
                    /*adjacentEdges: List[IsExploredNode],
                    exploredNodes: List[IsExploredNode]
                    ): List[IsExploredNode] = {*/
-                   adjacentEdges: Stream[IsExploredNode],
-                   exploredNodes: Stream[IsExploredNode]
+                   adjacentEdges: => Stream[IsExploredNode],
+                   exploredNodes: => Stream[IsExploredNode]
                    ): Stream[IsExploredNode] = {
       if (adjacentEdges.isEmpty) {
         /*return value*/
         /*same value for 'preOrder'*/
         //exploredNodes
+        /*?prepend? or 'append' then reverse ?*/
         exploredNodes :+ starNode.node
       } else {
         //val exploredNodesUpdated: List[IsExploredNode] =
-        val exploredNodesUpdated: Stream[IsExploredNode] =
+        /*because 'val' ensures that `memorizaion` occurs*/
+        def exploredNodesUpdated: Stream[IsExploredNode] =
           if (adjacentEdges.head.isExplored) {
             /*skip current 'node', check next*/
             /*same value for 'preOrder'*/
@@ -2127,7 +2174,7 @@ object stronglyConnectedComponents {
     @scala.annotation.tailrec
     def innerLoop(
                    //adjacentEdges: List[IsExploredNode],
-                   adjacentEdges: Stream[IsExploredNode],
+                   adjacentEdges: => Stream[IsExploredNode],
                    /*accum*/
                    exploredNodesResult: Int
                    ): Int = {
@@ -2137,7 +2184,7 @@ object stronglyConnectedComponents {
         //exploredNodesResult
         exploredNodesResult + 1
       } else {
-        val exploredNodesUpdated: Int =
+        def exploredNodesUpdated: Int =
           if (adjacentEdges.head.isExplored) {
             /*skip current 'node', check next*/
             /*same value for 'preOrder'*/
@@ -2355,13 +2402,13 @@ object stronglyConnectedComponents {
       /*return value*/
       resultAccum
     } else {
-      val currentNode =
+      val currentNode: ExplorableNodeWithAdjusted =
         graph(indexCounter)
       /*cases:
       * either new 'nodes' added or not (same `explored` list)*/
       /*?no 'concat' / 'union'?*/
       //val resultAccumPostOrderUpdated: List[IsExploredNode] =
-      val resultAccumPostOrderUpdated: Stream[IsExploredNode] =
+      def resultAccumPostOrderUpdated: Stream[IsExploredNode] =
         if (!currentNode.node.isExplored) {
           /*new*/
           postOrderDFS(
@@ -2399,8 +2446,8 @@ object stronglyConnectedComponents {
                                     /*preOrderRemains: List[IsExploredNode],
                                     resultAccum: List[List[IsExploredNode]] =
                                     List.empty,*/
-                                    preOrderRemains: Stream[IsExploredNode],
-                                    resultAccum: Stream[Stream[IsExploredNode]] =
+                                    preOrderRemains: => Stream[IsExploredNode],
+                                    resultAccum: => Stream[Stream[IsExploredNode]] =
                                     Stream.empty,
                                     graphLength: Int,
                                     indexCounter: Int = 0,
@@ -2424,7 +2471,7 @@ object stronglyConnectedComponents {
       /*?no 'concat' / 'union'?*/
       //val newSCC: List[IsExploredNode] =
       //val updatedSCCsResult: List[List[IsExploredNode]] =
-      val updatedSCCsResult: Stream[Stream[IsExploredNode]] =
+      def updatedSCCsResult: Stream[Stream[IsExploredNode]] =
         if (!currentNode.node.isExplored) {
           /*? order does not matter ?*/
           /*prePend*/
@@ -2464,11 +2511,13 @@ object stronglyConnectedComponents {
                                         /*must be reset as `unExplored`*/
                                         //postOrderRemains:
                                         // List[IsExploredNode],
-                                        postOrderRemains:
+                                        /*Pass streams around via
+                                        `by-name` parameters*/
+                                        postOrderRemains: =>
                                         Stream[IsExploredNode],
                                         /*resultAccum: List[Int] =
                                         List.empty,*/
-                                        resultAccum: Stream[Int] =
+                                        resultAccum: => Stream[Int] =
                                         Stream.empty,
                                         graphLength: Int,
                                         indexCounter: Int = 0,
@@ -2482,7 +2531,9 @@ object stronglyConnectedComponents {
     ) {
       /*return value*/
       resultAccum
-    } else {
+    } else /*if (
+      postOrderRemains.nonEmpty
+    )*/ {
       val currentNode: ExplorableNodeWithAdjusted =
       //graph(indexCounter)
         graph(postOrderRemains.head.node + nodeIndexShift)
@@ -2490,7 +2541,7 @@ object stronglyConnectedComponents {
       * either new 'nodes' added or not (same `explored` list)*/
       /*?no 'concat' / 'union'?*/
       //val newSCC: List[IsExploredNode] =
-      val updatedSCCsResult: Stream[Int] =
+      def updatedSCCsResult: Stream[Int] =
         if (!currentNode.node.isExplored) {
           /*new*/
           /*? order does not matter ?*/
