@@ -1000,7 +1000,7 @@ object stronglyConnectedComponents {
                                              newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
-                                           nodeIndexShift=nodeIndexShift
+                                           nodeIndexShift = nodeIndexShift
                                          )
     } else if (
            //currentNodeVal < maxNodeVal &&
@@ -1044,7 +1044,7 @@ object stronglyConnectedComponents {
                                              newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
-                                           nodeIndexShift=nodeIndexShift
+                                           nodeIndexShift = nodeIndexShift
                                          )
     } else /*if (
              currentNodeVal < maxNodeVal &&
@@ -1084,7 +1084,7 @@ object stronglyConnectedComponents {
                                              newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
-                                           nodeIndexShift=nodeIndexShift
+                                           nodeIndexShift = nodeIndexShift
                                          )
     }
   }
@@ -2087,6 +2087,70 @@ object stronglyConnectedComponents {
   }
 
   /*Depth-first search (DFS)*/
+  //A recursive implementation of DFS
+  //Input: A graph 'G' and a (starting) vertex (node) 'v' of 'G'
+  //Output: number of `nodes` reachable from 'v', labeled as discovered
+  def maxPostOrderDFS(
+                       graph: Vector[ExplorableNodeWithAdjusted],
+                       /*start node*/
+                       v: Int,
+                       exploredNodes: Int =
+                       0,
+                       nodeIndexShift: Int = -1
+                       ): Int = {
+    //label 'v' as `discovered`
+    val starNode: ExplorableNodeWithAdjusted =
+      graph(v + nodeIndexShift)
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: List[IsExploredNode],
+                   /*accum*/
+                   exploredNodesResult: Int
+                   ): Int = {
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        /*same value for 'preOrder'*/
+        //exploredNodesResult
+        exploredNodesResult + 1
+      } else {
+        val exploredNodesUpdated: Int =
+          if (adjacentEdges.head.isExplored) {
+            /*skip current 'node', check next*/
+            /*same value for 'preOrder'*/
+            exploredNodesResult
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            maxPostOrderDFS(
+                             graph = graph,
+                             v = adjacentEdges.head.node,
+                             exploredNodes =
+                               /*same value for 'preOrder'*/
+                               exploredNodesResult
+                           )
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges = adjacentEdges.tail,
+                   exploredNodesResult = exploredNodesUpdated
+                 )
+      }
+    }
+
+    /*side effect*/
+    /*must be added to output only once*/
+    starNode.node.isExplored = true
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 starNode.adjustedNodes,
+               /*for postOrder be added later within 'innerLoop' check*/
+               exploredNodesResult =
+                 exploredNodes
+             )
+  }
+
+  /*Depth-first search (DFS)*/
   def preAndPostOrderDFS(
                           graph: Vector[ExplorableNodeWithAdjusted],
                           /*start node*/
@@ -2242,8 +2306,53 @@ object stronglyConnectedComponents {
     }*/
   }
 
-  /*check `nodes` in preOrder of
-   the `transpose` `graph` and extract / create SCCs*/
+  /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  def DepthFirstPostOrder(
+                           /*for lookUp*/
+                           graph: Vector[ExplorableNodeWithAdjusted],
+                           resultAccum: List[IsExploredNode] =
+                           List.empty,
+                           graphLength: Int,
+                           indexCounter: Int = 0,
+                           nodeIndexShift: Int = -1
+                           ): List[IsExploredNode] = {
+    if (indexCounter >= graphLength) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNode =
+        graph(indexCounter)
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      val resultAccumPostOrderUpdated: List[IsExploredNode] =
+        if (!currentNode.node.isExplored) {
+          /*new*/
+          postOrderDFS(
+                        graph = graph,
+                        v = currentNode.node.node,
+                        exploredNodes =
+                          resultAccum //,
+                        //nodeIndexShift = nodeIndexShift
+                      )
+        } else {
+          /*same*/
+          resultAccum
+        }
+      /*recursion*/
+      DepthFirstPostOrder(
+                           /*for lookUp*/
+                           graph: Vector[ExplorableNodeWithAdjusted],
+                           resultAccum =
+                             resultAccumPostOrderUpdated,
+                           graphLength = graphLength,
+                           indexCounter = indexCounter + 1
+                         )
+    }
+  }
+
+  /*check `nodes` in Reverse `postOrder` (needed) of
+   the `transpose` `graph` and find & extract / create all SCCs*/
   def transposeDepthFirstOrderSCCs(
                                     /*for lookUp*/
                                     /*must be reset as `unExplored`*/
@@ -2297,6 +2406,69 @@ object stronglyConnectedComponents {
                                     indexCounter = indexCounter + 1,
                                     nodeIndexShift = nodeIndexShift
                                   )
+    }
+  }
+
+  /*check `nodes` in Reverse `postOrder` (needed) of
+   the `transpose` `graph` and find all SCCs sizes*/
+  def transposeDepthFirstOrderSCCsSize(
+                                        /*for lookUp*/
+                                        /*must be reset as `unExplored`*/
+                                        graph:
+                                        Vector[ExplorableNodeWithAdjusted],
+                                        /*check order and termination
+                                        condition*/
+                                        /*must be reset as `unExplored`*/
+                                        preOrderRemains: List[IsExploredNode],
+                                        resultAccum: List[Int] =
+                                        List.empty,
+                                        graphLength: Int,
+                                        indexCounter: Int = 0,
+                                        nodesValuesZeroBased: Boolean = false,
+                                        minNodeVal: Int = 1,
+                                        nodeIndexShift: Int = -1
+                                        ): List[Int] = {
+    if (
+    //indexCounter >= graphLength
+      preOrderRemains.isEmpty
+    ) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNode: ExplorableNodeWithAdjusted =
+      //graph(indexCounter)
+        graph(preOrderRemains.head.node + nodeIndexShift)
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      //val newSCC: List[IsExploredNode] =
+      val updatedSCCsResult: List[Int] =
+        if (!currentNode.node.isExplored) {
+          /*new*/
+          /*? order does not matter ?*/
+          /*prePend*/
+          /*only 'nodes' amount in SCC needed / interested */
+          maxPostOrderDFS(
+                           graph = graph,
+                           v = currentNode.node.node
+                         ) +: resultAccum
+        } else {
+          /*same*/
+          resultAccum
+        }
+      /*recursion*/
+      transposeDepthFirstOrderSCCsSize(
+                                        /*for lookUp*/
+                                        graph:
+                                          Vector[ExplorableNodeWithAdjusted],
+                                        preOrderRemains =
+                                          preOrderRemains.tail,
+                                        resultAccum =
+                                          updatedSCCsResult,
+                                        graphLength = graphLength,
+                                        indexCounter = indexCounter + 1,
+                                        nodeIndexShift = nodeIndexShift
+                                      )
     }
   }
 
