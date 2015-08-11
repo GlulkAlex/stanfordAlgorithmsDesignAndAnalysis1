@@ -122,6 +122,16 @@ object stronglyConnectedComponents {
       s"""$node[${if (isExplored) "e" else "u"}]"""
   }
 
+  case class DFSResults(
+                         preOrder:
+                         List[Int],
+                         //Stream[Int],
+                         postOrder:
+                         List[Int],
+                         //Stream[Int],
+                         reachable: Int
+                         )
+
   case class DFSResultInt(
                            preOrder:
                            List[Int],
@@ -155,7 +165,11 @@ object stronglyConnectedComponents {
                                      doneOrder: Option[Int],
                                      //var groupLeader: Int
                                      adjustedNodes: Set[Int]
-                                     )
+                                     ){
+    override def toString =
+      s"""[${if (isExplored) "e" else "u"}|$doneOrder(${
+        adjustedNodes.mkString(",")})]"""
+  }
 
   case class NodeMapValFieldsDynamic(
                                       var isExplored: Boolean,
@@ -609,7 +623,9 @@ object stronglyConnectedComponents {
                                       NodeMapValFieldsStatic] =
                                     Map.empty,
                                     pattern: Regex =
-                                    """\d+""".r
+                                    """\d+""".r,
+                                    //isArcsReversed: Boolean = false
+                                    nonReversedArcs: Boolean = true
                                     ): Map[Int, NodeMapValFieldsStatic] = {
     /*
       cases:
@@ -624,12 +640,19 @@ object stronglyConnectedComponents {
     } else /*if (adjacencyList.hasNext)*/ {
       /*may be leading 'space' then
       * delimiter one or double 'space'*/
-      val List(arcTail, arcHead): List[Int] =
+      val List(first, second): List[Int] =
         pattern
         .findAllIn(fileContentIter
                    .next())
         .map(_.toInt)
         .toList
+      val List(arcTail, arcHead): List[Int] =
+      if (nonReversedArcs) {
+        List(first, second)
+      } else {
+        /*return value*/
+        List(second, first)
+      }
       val arcTailGet: Option[NodeMapValFieldsStatic] =
         resultMap
         .get(key = arcTail)
@@ -682,7 +705,8 @@ object stronglyConnectedComponents {
       makeAdjacencyListMapFromArcs(
                                     fileContentIter: Iterator[String],
                                     resultMap =
-                                      resultMapUpdated
+                                      resultMapUpdated,
+                                    nonReversedArcs = nonReversedArcs
                                   )
     }
   }
@@ -2691,7 +2715,7 @@ object stronglyConnectedComponents {
   }
 
   /*Depth-first search (DFS)*/
-  /*must skip not existed starting 'node'*/
+  /*must skip not existing starting 'node' values*/
   def pre_PostOrderDFS_ver2(
                              graph: Map[Int, NodeMapValFieldsStatic],
                              /*start node*/
@@ -2763,7 +2787,7 @@ object stronglyConnectedComponents {
           /*side effect*/
           /*actual result*/
           exploredNodesSet =
-          exploredNodesSet + nextNodeFromStackKey
+            exploredNodesSet + nextNodeFromStackKey
 
           val nextNodeFromStackGetVal: Option[NodeMapValFieldsStatic] =
             graph
@@ -2776,7 +2800,7 @@ object stronglyConnectedComponents {
             .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
             /*recursion*/
             innerLoop()
-          } else /*if (nextNodeFromStackGetVal.isEmpty)*/{
+          } else /*if (nextNodeFromStackGetVal.isEmpty)*/ {
             /*'startNode' not in 'graph'*/
             /*return value*/
             BitSet.empty
@@ -2791,6 +2815,377 @@ object stronglyConnectedComponents {
 
     /*initialization*/
     innerLoop()
+  }
+
+  /*Depth-first search (DFS)*/
+  /*must skip not existing starting 'node' values*/
+  def nodesCounterDFS(
+                       graph: Map[Int, NodeMapValFieldsStatic],
+                       /*start node*/
+                       startNode: Int,
+                       explored:
+                       BitSet =
+                       BitSet.empty
+                       ): Int = {
+    /*state*/
+    var exploredNodesSet:
+    BitSet =
+      explored
+    //BitSet.empty
+    /*accum*/
+    var nodesStackList: List[Int] =
+      List(startNode)
+    var nodesCounter: Int = 0
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: Set[Int] =
+                   Set.empty
+                   ): Int = {
+      if (nodesStackList.isEmpty) {
+        /*return value*/
+        //exploredNodesSet
+        nodesCounter
+      } else /*if (nodesStackList.nonEmpty)*/ {
+        val nextNodeFromStackKey: Int =
+          nodesStackList.head
+
+        /*side effect*/
+        /*reduce loop condition to converge*/
+        nodesStackList = nodesStackList.tail
+
+        if (
+        //nextNodeFromStack.isExplored
+          exploredNodesSet
+          .contains(nextNodeFromStackKey)
+        ) {
+          /*to recursion*/
+          /*skip current 'node', check next*/
+          /*recursion*/
+          innerLoop()
+        } else /*if (nextNodeFromStack.notExplored)*/ {
+          /*side effect*/
+          /*actual result*/
+          exploredNodesSet =
+            exploredNodesSet + nextNodeFromStackKey
+          /*must be equal to exploredNodesSet.size*/
+          nodesCounter += 1
+
+          val nextNodeFromStackGetVal: Option[NodeMapValFieldsStatic] =
+            graph
+            .get(nextNodeFromStackKey)
+          /*side effect*/
+          if (nextNodeFromStackGetVal.isDefined) {
+            nextNodeFromStackGetVal
+            .get
+            .adjustedNodes
+            .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
+            /*recursion*/
+            innerLoop()
+          } else /*if (nextNodeFromStackGetVal.isEmpty)*/ {
+            /*'startNode' not in 'graph'*/
+            /*return value*/
+            //BitSet.empty
+            nodesCounter
+          }
+          /*recursion*/
+          //innerLoop()
+        }
+        /*recursion*/
+        //innerLoop()
+      }
+    }
+
+    /*initialization*/
+    innerLoop()
+  }
+
+  /*Depth-first search (DFS)*/
+  /*must skip not existing starting 'node' values*/
+  def pre_PostOrderDFS_ver3(
+                             graph: Map[Int, NodeMapValFieldsStatic],
+                             /*start node*/
+                             startNode: Int,
+                             /*passed from 'DFS_Ordering'*/
+                             explored:
+                             BitSet =
+                             BitSet.empty,
+                             preOrd:
+                             List[Int] =
+                             List.empty,
+                             postOrd:
+                             List[Int] =
+                             List.empty,
+                             counted: Int = 0
+                             //): BitSet = {
+                             ): DFSResults = {
+    /*state*/
+    var exploredNodesSet:
+    BitSet =
+      explored
+    //BitSet.empty
+    /*accum*/
+    var exploredNodesPre:
+    List[Int] =
+      preOrd
+    //List.empty
+    /*Stream[Int] =
+    Stream.empty,*/
+    var exploredNodesPost:
+    /*Stream[Int] =
+    Stream.empty,*/
+    List[Int] =
+    //List.empty
+      postOrd
+    //List(startNode)
+    var nodesStackList: List[Int] =
+      List(startNode)
+    var nodesCounter: Int =
+      counted
+    //0
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   /*adjacentEdges: Set[Int] =
+                   Set.empty*/
+                   doneNode: Option[Int] = None
+                   ): DFSResults = {
+      //): BitSet = {
+      if (nodesStackList.isEmpty) {
+        /*side effect*/
+        /*exploredNodesPost =
+          //startNode +: exploredNodesPost
+          if (doneNode.isDefined) {
+            if (
+              exploredNodesSet
+              .contains(
+                  startNode
+                       )
+            ) {
+              /*'append', then 'reverse' somewhere later*/
+              doneNode.get +: exploredNodesPost
+            } else {
+              //startNodeGet.isEmpty
+              exploredNodesPost
+            }
+          } else {
+            /*return value*/
+            exploredNodesPost
+          }*/
+        /*return value*/
+        DFSResults(
+                    /*same value for 'preOrder'*/
+                    preOrder = exploredNodesPre,
+                    postOrder = exploredNodesPost,
+                    reachable = nodesCounter
+                  )
+        //exploredNodesSet
+      } else /*if (nodesStackList.nonEmpty)*/ {
+        val nextNodeFromStackKey: Int =
+          nodesStackList.head
+
+        /*side effect*/
+        /*reduce loop condition to converge*/
+        nodesStackList = nodesStackList.tail
+
+        exploredNodesPost =
+          if (doneNode.isDefined) {
+            /*if (
+              exploredNodesSet
+              .contains(
+                  startNode
+                       )
+            ) {*/
+            /*'append', then 'reverse' somewhere later*/
+            doneNode.get +: exploredNodesPost
+            /*} else {
+              //startNodeGet.isEmpty
+              exploredNodesPost
+            }*/
+          } else {
+            /*return value*/
+            exploredNodesPost
+          }
+
+        if (
+        //nextNodeFromStack.isExplored
+          exploredNodesSet
+          .contains(nextNodeFromStackKey)
+        ) {
+          /*exploredNodesPost =
+          nextNodeFromStackKey +: exploredNodesPost*/
+          /*to recursion*/
+          /*skip current 'node', check next*/
+          /*recursion*/
+          innerLoop()
+        } else /*if (nextNodeFromStack.notExplored)*/ {
+          /*side effect*/
+          /*actual result*/
+          exploredNodesSet =
+            exploredNodesSet + nextNodeFromStackKey
+          exploredNodesPre =
+            nextNodeFromStackKey +: exploredNodesPre
+          nodesCounter += 1
+          //nodesCounter + 1
+
+          val nextNodeFromStackGetVal: Option[NodeMapValFieldsStatic] =
+            graph
+            .get(nextNodeFromStackKey)
+          /*side effect*/
+          if (nextNodeFromStackGetVal.isDefined) {
+            nextNodeFromStackGetVal
+            .get
+            .adjustedNodes
+            .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
+            /*recursion*/
+            //innerLoop()
+            innerLoop(doneNode = Some(nextNodeFromStackKey))
+          } else /*if (nextNodeFromStackGetVal.isEmpty)*/ {
+            /*?may be check it outside the 'innerLoop()'?*/
+            /*'startNode' not in 'graph'*/
+            /*return value*/
+            //BitSet.empty
+            DFSResults(
+                        /*same value for 'preOrder'*/
+                        preOrder = exploredNodesPre,
+                        postOrder = exploredNodesPost,
+                        reachable = nodesCounter
+                      )
+          }
+          /*recursion*/
+          //innerLoop()
+        }
+        /*recursion*/
+        //innerLoop()
+      }
+    }
+
+    /*initialization*/
+    innerLoop()
+  }
+
+  /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  @scala.annotation.tailrec
+  def DFS_Ordering(
+                    /*for lookUp*/
+                    graph: Map[Int, NodeMapValFieldsStatic],
+                    resultAccum: DFSResults =
+                    DFSResults(List.empty, List.empty, 0),
+                    //graphLength: Int,
+                    //indexCounter: Int = 0,
+                    mapKeyIter: Iterator[Int],
+                    exploredNodesSet:
+                    BitSet =
+                    BitSet.empty
+                    ): DFSResults = {
+    if (mapKeyIter.isEmpty) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNodeKey: Int =
+        mapKeyIter
+        /*implied / suggested that 'key' exist in map*/
+        .next()
+      //val currentNode: Option[NodeMapValFieldsStatic] =
+      /*val currentNode: NodeMapValFieldsStatic =
+        graph
+        .get(currentNodeKey            )
+      .get*/
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      val DFSResults(
+      resultAccumPreOrderUpdated,
+      resultAccumPostOrderUpdated,
+      totalNodes
+                    ) =
+        if (
+        //!currentNode.node.isExplored
+          !exploredNodesSet
+           .contains(currentNodeKey)
+        ) {
+          pre_PostOrderDFS_ver3(
+                                 graph = graph,
+                                 startNode = currentNodeKey,
+                                 explored = exploredNodesSet,
+                                 preOrd =
+                                   resultAccum.preOrder,
+                                 postOrd =
+                                   resultAccum.postOrder,
+                                 counted = resultAccum.reachable
+                               )
+        } else {
+          /*return value*/
+          DFSResults(
+                      resultAccum.preOrder,
+                      resultAccum.postOrder,
+                      resultAccum.reachable
+                    )
+        }
+      /*recursion*/
+      DFS_Ordering(
+                    graph = graph,
+                    resultAccum =
+                      DFSResults(
+                                  resultAccumPreOrderUpdated,
+                                  resultAccumPostOrderUpdated,
+                                  totalNodes
+                                ),
+                    mapKeyIter = mapKeyIter,
+                    exploredNodesSet = exploredNodesSet
+                  )
+    }
+  }
+
+  /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  @scala.annotation.tailrec
+  def DFS_SCCs_Size(
+                     /*for lookUp*/
+                     graph: Map[Int, NodeMapValFieldsStatic],
+                     resultAccum: Stream[Int] =
+                     Stream.empty,
+                     /*must be post order of a `transpose` `graph`*/
+                     mapKeyIter: Iterator[Int],
+                     exploredNodesSet:
+                     BitSet =
+                     BitSet.empty
+                     ): Stream[Int] = {
+    if (mapKeyIter.isEmpty) {
+      /*return value*/
+      resultAccum
+    } else {
+      val currentNodeKey: Int =
+        mapKeyIter
+        /*implied / suggested that 'key' exist in map*/
+        .next()
+      /*cases:
+      * either new 'nodes' added or not (same `explored` list)*/
+      /*?no 'concat' / 'union'?*/
+      val resultsUpdated: Stream[Int] =
+        if (
+        //!currentNode.node.isExplored
+          !exploredNodesSet
+           .contains(currentNodeKey)
+        ) {
+          /*prepend*/
+          nodesCounterDFS(
+                           graph = graph,
+                           startNode = currentNodeKey,
+                           explored = exploredNodesSet
+                         ) +: resultAccum
+        } else {
+          /*return value*/
+          resultAccum
+        }
+      /*recursion*/
+      DFS_SCCs_Size(
+                     graph = graph,
+                     resultAccum =
+                       resultsUpdated,
+                     mapKeyIter = mapKeyIter,
+                     exploredNodesSet = exploredNodesSet
+                   )
+    }
   }
 
   /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/

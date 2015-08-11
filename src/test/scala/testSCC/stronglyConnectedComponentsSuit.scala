@@ -2799,10 +2799,173 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'expectedSize'"
                   )
           }
-  test(
-        "61: 'pre_PostOrderDFS_Map' " +
+  ignore(
+          "61: 'pre_PostOrderDFS_Map' " +
+            "should return " +
+            "right reachable 'nodes' ordering"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 2000
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String =
+              "tinyDG.txt"
+            //"SCC.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+            println(
+                     s"\n'actualFileContent` is:$actualFileContent"
+                   )
+
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              //.take(inputTakeNumber)
+              .toVector
+
+            println(
+                     s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                   )
+
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int =
+            //1
+            //6
+              7 //sink
+    // 8
+    //0
+    val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
+
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+              makeAdjacencyListMapFromArcs(
+                                            fileContentIter =
+                                              actualFileContent
+                                            /*.take(inputTakeNumber)*/ ,
+                                            pattern =
+                                              """\d+""".r
+                                          )
+            println(
+                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                       mapWithAdjacencyList.isEmpty +
+                       s"\n'mapWithAdjacencyList.size' is:" +
+                       mapWithAdjacencyList.size +
+                       s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                       mapWithAdjacencyList.get(startingNode) /*+
+                     s"\n'mapWithAdjacencyList.head' is:" +
+                     mapWithAdjacencyList.headOption +
+                     s"\n'mapWithAdjacencyList.tail.head' is ${
+                       mapWithAdjacencyList.tail.head
+                     }" +
+                     s"\n'mapWithAdjacencyList` is:" +
+                     s"\nfirst $takeNumber elements in 'mapWithAdjacencyList`" +
+                     s" are:" +
+                     s"\n${
+                       mapWithAdjacencyList
+                       .take(takeNumber)
+                       .mkString("\n")
+                     }"*/
+                   )
+            val DFSResults(
+            preExplored,
+            postExplored,
+            totalNodesFound):
+            DFSResults =
+              pre_PostOrderDFS_ver3(
+                                     graph = mapWithAdjacencyList,
+                                     startNode = startingNode
+                                   )
+            /*val resultSetDFS: BitSet =
+              pre_PostOrderDFS_ver2(
+                                     graph = mapWithAdjacencyList,
+                                     startNode = startingNode
+                                   )*/
+            println(
+                     s"\n'totalNodesFound`:" + totalNodesFound +
+                       s"\nfirst $takeNumber elements in 'preExplored`" +
+                       s" are:" +
+                       s"\n${
+                         preExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }" +
+                       s"\n'postExplored` is:" +
+                       s"\nfirst $takeNumber elements in 'postExplored`" +
+                       s" are:" +
+                       s"\n${
+                         postExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+            /*println(
+                     s"\nis 'resultSetDFS.nonEmpty`:${resultSetDFS.nonEmpty}" +
+                     s"\n'resultSetDFS.size` is:${resultSetDFS.size}" /*+
+                       s"\nfirst $takeNumber elements in 'resultSetDFS`" +
+                       s" are:" +
+                       s"\n${
+                         resultSetDFS
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"*/
+                   )*/
+
+            assume(
+                    //true == true,
+                    //postExplored.nonEmpty &&
+                    totalNodesFound > 0
+                    /*resultSetDFS.nonEmpty &&
+                      resultSetDFS.size == nodesInGraph*/ ,
+                    s"\n'postExplored' must be 'nonEmpty' " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
+  ignore(
+        "62: 'nodesCounterDFS' " +
           "should return " +
-          "right reachable 'nodes' ordering"
+          "right reachable number of 'nodes' in graph"
       ) {
           val sourceSize: Int = 5105043
           val expectedNodesSize: Int = 875714
@@ -2820,27 +2983,29 @@ class stronglyConnectedComponentsSuit
               "testSCC/"
           //SCC.txt
           val fileName: String =
-            //"tinyDG.txt"
-            "SCC.txt"
+            "tinyDG.txt"
+          //"SCC.txt"
           val actualFileContent: Iterator[String] =
           //Iterator.empty
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
                         )
-            /*reduce / control input size*/
-            //.take(inputTakeNumber)
-                println(
-                         s"\n'actualFileContent` is:$actualFileContent"
-                       )
-          /*val nodesInGraph: Int =
+          /*reduce / control input size*/
+          //.take(inputTakeNumber)
+          println(
+                   s"\n'actualFileContent` is:$actualFileContent"
+                 )
+
+          val nodesInGraph: Int =
             actualFileContent.next().toInt
           val edgesInGraph: Int =
             actualFileContent.next().toInt
           println(
                    s"\ntotal 'nodesInGraph`:$nodesInGraph" +
                      s"\ntotal 'edgesInGraph`:$edgesInGraph"
-                 )*/
+                 )
+
           val arcs: Vector[Arc] =
           //extractSortedArcs(actualFileContent)
             Vector.empty
@@ -2868,10 +3033,11 @@ class stronglyConnectedComponentsSuit
           /*create new collection as `unexplored`*/
             Vector.empty
           val startingNode: Int =
-          1
-            //6
-            //7//8
-            //0
+          //1
+          //6
+            //7 //sink
+          // 8
+          0
           val takeNumber: Int = 15
           val nodesLimit: Int = Int.MinValue
 
@@ -2880,17 +3046,152 @@ class stronglyConnectedComponentsSuit
             makeAdjacencyListMapFromArcs(
                                           fileContentIter =
                                             actualFileContent
-                                            /*.take(inputTakeNumber)*/,
+                                          /*.take(inputTakeNumber)*/ ,
                                           pattern =
-                                            """\d+""".r
+                                            """\d+""".r,
+                                          nonReversedArcs = false
                                         )
           println(
                    s"\n'mapWithAdjacencyList.isEmpty' is:" +
                      mapWithAdjacencyList.isEmpty +
                      s"\n'mapWithAdjacencyList.size' is:" +
                      mapWithAdjacencyList.size +
-      s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                     s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
                      mapWithAdjacencyList.get(startingNode) /*+
+                     s"\n'mapWithAdjacencyList.head' is:" +
+                     mapWithAdjacencyList.headOption +
+                     s"\n'mapWithAdjacencyList.tail.head' is ${
+                       mapWithAdjacencyList.tail.head
+                     }" +
+                     s"\n'mapWithAdjacencyList` is:"*/ +
+                     s"\nfirst $takeNumber elements in 'mapWithAdjacencyList`" +
+                     s" are:" +
+                     s"\n${
+                       mapWithAdjacencyList
+                       .take(takeNumber)
+                       .mkString(",")
+                     }"
+                 )
+          val totalNodesFound:
+          Int =
+            nodesCounterDFS(
+                             graph = mapWithAdjacencyList,
+                             startNode = startingNode
+                           )
+          /*val resultSetDFS: BitSet =
+            pre_PostOrderDFS_ver2(
+                                   graph = mapWithAdjacencyList,
+                                   startNode = startingNode
+                                 )*/
+          println(
+                   s"\n'totalNodesFound`:" + totalNodesFound
+                 )
+
+          assume(
+                  //true == true,
+                  //postExplored.nonEmpty &&
+                  //totalNodesFound > 0
+                  totalNodesFound == nodesInGraph,
+                  s"\n'totalNodesFound' must be > 0 " +
+                    s"& equal to 'nodesInGraph'"
+                )
+        }
+  test(
+          "63: 'DFS_Ordering' " +
+            "should return " +
+            "right ?topological? ordering of all graph 'nodes'"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 2000
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String =
+              "tinyDG.txt"
+            //"SCC.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+            println(
+                     s"\n'actualFileContent` is:$actualFileContent"
+                   )
+
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              //.take(inputTakeNumber)
+              .toVector
+
+            println(
+                     s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                   )
+
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int =
+            //1
+            //6
+              7 //sink
+    // 8
+    //0
+    val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
+
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+              makeAdjacencyListMapFromArcs(
+                                            fileContentIter =
+                                              actualFileContent
+                                            /*.take(inputTakeNumber)*/ ,
+                                            pattern =
+                                              """\d+""".r,
+                                            nonReversedArcs = false
+                                          )
+            println(
+                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                       mapWithAdjacencyList.isEmpty +
+                       s"\n'mapWithAdjacencyList.size' is:" +
+                       mapWithAdjacencyList.size +
+                       s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                       mapWithAdjacencyList.get(startingNode) /*+
                      s"\n'mapWithAdjacencyList.head' is:" +
                      mapWithAdjacencyList.headOption +
                      s"\n'mapWithAdjacencyList.tail.head' is ${
@@ -2904,59 +3205,237 @@ class stronglyConnectedComponentsSuit
                        .take(takeNumber)
                        .mkString("\n")
                      }"*/
-                 )
-          /*val DFSResultInt(
-          preExplored,
-          postExplored):
-          DFSResultInt =
-            pre_PostOrderDFS_Map(
-                                  graph = mapWithAdjacencyList,
-                                  startNode = startingNode
-                                )*/
-          val resultSetDFS: BitSet =
-            pre_PostOrderDFS_ver2(
-                                   graph = mapWithAdjacencyList,
-                                   startNode = startingNode
-                                 )
-          /*println(
-                   s"\n'preExplored` is:" +
-                     s"\nfirst $takeNumber elements in 'preExplored`" +
-                     s" are:" +
-                     s"\n${
-                       preExplored
-                       .take(takeNumber)
-                       .mkString("\n")
-                     }" +
-                     s"\n'postExplored` is:" +
-                     s"\nfirst $takeNumber elements in 'postExplored`" +
-                     s" are:" +
-                     s"\n${
-                       postExplored
-                       .take(takeNumber)
-                       .mkString("\n")
-                     }"
-                 )*/
-          println(
-                   s"\nis 'resultSetDFS.nonEmpty`:${resultSetDFS.nonEmpty}" +
-                   s"\n'resultSetDFS.size` is:${resultSetDFS.size}" /*+
-                     s"\nfirst $takeNumber elements in 'resultSetDFS`" +
-                     s" are:" +
-                     s"\n${
-                       resultSetDFS
-                       .take(takeNumber)
-                       .mkString(",")
-                     }"*/
-                 )
+                   )
+            val DFSResults(
+            preExplored,
+            postExplored,
+            totalNodesFound):
+            DFSResults =
+              DFS_Ordering(
+                            graph = mapWithAdjacencyList,
+                            mapKeyIter =
+                              mapWithAdjacencyList
+                              .keysIterator
+                          )
+            /*val resultSetDFS: BitSet =
+              pre_PostOrderDFS_ver2(
+                                     graph = mapWithAdjacencyList,
+                                     startNode = startingNode
+                                   )*/
+            println(
+                     s"\n'totalNodesFound`:" + totalNodesFound +
+                       s"\nfirst $takeNumber elements in 'preExplored`" +
+                       s" are:" +
+                       s"\n${
+                         preExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }" +
+                       s"\n'postExplored` is:" +
+                       s"\nfirst $takeNumber elements in 'postExplored`" +
+                       s" are:" +
+                       s"\n${
+                         postExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+            /*println(
+                     s"\nis 'resultSetDFS.nonEmpty`:${resultSetDFS.nonEmpty}" +
+                     s"\n'resultSetDFS.size` is:${resultSetDFS.size}" /*+
+                       s"\nfirst $takeNumber elements in 'resultSetDFS`" +
+                       s" are:" +
+                       s"\n${
+                         resultSetDFS
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"*/
+                   )*/
 
-          assume(
-                  //true == true,
-                  //postExplored.nonEmpty &&
-                  resultSetDFS.nonEmpty /*&&
-                    resultSetDFS.size == nodesInGraph*/,
-                  s"\n'postExplored' must be 'nonEmpty' " +
-                    s"& equal to 'nodesInGraph'"
-                )
-        }
+            assume(
+                    //true == true,
+                    //postExplored.nonEmpty &&
+                    totalNodesFound > 0
+                    /*resultSetDFS.nonEmpty &&
+                      resultSetDFS.size == nodesInGraph*/ ,
+                    s"\n'postExplored' must be 'nonEmpty' " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
+  ignore(
+          "64: 'DFS_SCCs_Size' " +
+            "should return " +
+            "amount equal to number of all graph 'nodes'"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 2000
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String =
+              "tinyDG.txt"
+            //"SCC.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+            println(
+                     s"\n'actualFileContent` is:$actualFileContent"
+                   )
+
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              //.take(inputTakeNumber)
+              .toVector
+
+            println(
+                     s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                   )
+
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int =
+            //1
+            //6
+              7 //sink
+    // 8
+    //0
+    val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
+
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+              makeAdjacencyListMapFromArcs(
+                                            fileContentIter =
+                                              actualFileContent
+                                            /*.take(inputTakeNumber)*/ ,
+                                            pattern =
+                                              """\d+""".r
+                                          )
+            println(
+                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                       mapWithAdjacencyList.isEmpty +
+                       s"\n'mapWithAdjacencyList.size' is:" +
+                       mapWithAdjacencyList.size +
+                       s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                       mapWithAdjacencyList.get(startingNode) /*+
+                     s"\n'mapWithAdjacencyList.head' is:" +
+                     mapWithAdjacencyList.headOption +
+                     s"\n'mapWithAdjacencyList.tail.head' is ${
+                       mapWithAdjacencyList.tail.head
+                     }" +
+                     s"\n'mapWithAdjacencyList` is:" +
+                     s"\nfirst $takeNumber elements in 'mapWithAdjacencyList`" +
+                     s" are:" +
+                     s"\n${
+                       mapWithAdjacencyList
+                       .take(takeNumber)
+                       .mkString("\n")
+                     }"*/
+                   )
+            val DFSResults(
+            preExplored,
+            postExplored,
+            totalNodesFound):
+            DFSResults =
+              DFS_Ordering(
+                            graph = mapWithAdjacencyList,
+                            mapKeyIter =
+                              mapWithAdjacencyList
+                              .keysIterator
+                          )
+            /*val resultSetDFS: BitSet =
+              pre_PostOrderDFS_ver2(
+                                     graph = mapWithAdjacencyList,
+                                     startNode = startingNode
+                                   )*/
+            println(
+                     s"\n'totalNodesFound`:" + totalNodesFound +
+                       s"\nfirst $takeNumber elements in 'preExplored`" +
+                       s" are:" +
+                       s"\n${
+                         preExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }" +
+                       s"\n'postExplored` is:" +
+                       s"\nfirst $takeNumber elements in 'postExplored`" +
+                       s" are:" +
+                       s"\n${
+                         postExplored
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+            val graphSCCs_Sizes: Stream[Int] =
+              DFS_SCCs_Size(
+                             graph = mapWithAdjacencyList,
+                             mapKeyIter =
+                               preExplored
+                               .toIterator
+                           )
+            println(
+                     s"\nis 'graphSCCs_Sizes.nonEmpty`:${
+                       graphSCCs_Sizes.nonEmpty
+                     }" +
+                       s"\n'graphSCCs_Sizes.size` is:${graphSCCs_Sizes.size}" +
+                       s"\nfirst $takeNumber elements in 'graphSCCs_Sizes`" +
+                       s" are:" +
+                       s"\n${
+                         graphSCCs_Sizes
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+
+            assume(
+                    //true == true,
+                    //postExplored.nonEmpty &&
+                    //totalNodesFound > 0
+                    graphSCCs_Sizes.nonEmpty &&
+                      graphSCCs_Sizes.size == nodesInGraph,
+                    s"\n'postExplored' must be 'nonEmpty' " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
 
 
 }

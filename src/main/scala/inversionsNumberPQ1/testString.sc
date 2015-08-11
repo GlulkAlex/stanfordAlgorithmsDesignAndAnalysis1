@@ -61,14 +61,33 @@ extractX(expr = """ 7  9""")
 extractX(expr = arcStr2)
 pattern1.findAllIn(arcStr2).mkString(",")
 pattern1.findAllIn(arcStr2).toList
+val nonReversedArcs:Boolean =
+  true
+//false
 val List(arcTail, arcHead) =
-pattern1
-.findAllIn(
-    arcStr
-    //arcStr3
-          )
-  .map(_.toInt)
-.toList
+  if (nonReversedArcs) {
+    //val List(arcTail, arcHead): List[Int] =
+    pattern1
+    .findAllIn(
+        arcStr
+        //arcStr3
+              )
+    .map(_.toInt)
+    .toList
+  } else {
+    val List(arcHead, arcTail): List[Int] =
+      pattern1
+      .findAllIn(
+          arcStr
+          //arcStr3
+                )
+      .map(_.toInt)
+      .toList
+    /*return value*/
+    List(arcTail, arcHead)
+  }
+arcTail
+arcHead
 val digitsIter =
 for (
   digits <- pattern1.findAllIn(arcStr3)
