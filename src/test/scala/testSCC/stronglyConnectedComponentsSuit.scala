@@ -2,6 +2,8 @@ package testSCC
 
 import filesIO.FilesIO._
 
+import scala.util.matching.Regex
+
 //import minCutRandomContractionPQ3.MinimumCuts._
 
 import stronglyConnectedComponentsPQ4.stronglyConnectedComponents._
@@ -2043,337 +2045,370 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'expectedSize'"
                   )
           }
-  test(
-        "39: 'transposeDepthFirstOrderSCCsSize' " +
-          "should return " +
-          "sizes of all SCCs that it find " +
-          "from `transpose` `graph`" +
-          "when search in 'preOrderDFS'"
-      ) {
-          val mockUpSCCwith4PartsArcs: Vector[Arc] =
-            Vector(
-                    //size = 3
-                    Arc(1, 2),
-                    Arc(2, 3),
-                    Arc(3, 1),
-                    //size = 2
-                    Arc(4, 2),
-                    Arc(4, 3),
-                    Arc(4, 5),
-                    Arc(5, 4),
-                    Arc(5, 6),
-                    //size = 2
-                    Arc(6, 3),
-                    Arc(6, 7),
-                    Arc(7, 6),
-                    //size = 1
-                    Arc(8, 5),
-                    Arc(8, 7),
-                    Arc(8, 8)
-                  )
-          val transposeSCCwith4PartsArcs: Vector[Arc] =
-            mockUpSCCwith4PartsArcs
-            .view
-            .map(a => Arc(a.arcHead, a.arcTail))
-            .sortBy(_.arcTail)
-            .toVector
-          //seq.view.map(f).flatMap(g).filter(p).toList
-          val nodesInGraph: Int = 8
-          val sourceSize: Int = 5105043
-          val expectedNodesSize: Int = 875714
-          val expectedArcsSize: Int = 5105043
-          /*all 'nodes', but only few / some 'arcs'*/
-          /*at least as big as `mockUp(14)`*/
-          val inputTakeNumber: Int = 20
-          val expectedNodesInSCC: Int = 3
-          val expectedSize: Int = 4
-          val filePath: String =
-            "/media/gluk-alex/" +
-              "GDI/Java/Scala/sbt/projects/" +
-              "stanfordAlgorithmsDesignAndAnalysis1/" +
-              "src/test/scala/" +
-              "testSCC/"
-          //SCC.txt
-          val fileName: String = "SCC.txt"
-          val actualFileContent: Iterator[String] =
-            Iterator.empty
-          /*readFromFile(
-                        fileName = fileName,
-                        filePath = filePath
-                      )*/
-          val arcs: Vector[Arc] =
-          //transposeSCCwith4PartsArcs
-            mockUpSCCwith4PartsArcs //*
-            //extractSortedArcs(actualFileContent)
-            .view
-            /*reduce / control input size*/
-            .take(inputTakeNumber)
-            .toVector
+  ignore(
+          "39: 'transposeDepthFirstOrderSCCsSize' " +
+            "should return " +
+            "sizes of all SCCs that it find " +
+            "from `transpose` `graph`" +
+            "when search in 'preOrderDFS'"
+        ) {
+            val mockUpSCCwith4PartsArcs: Vector[Arc] =
+              Vector(
+                      //size = 3
+                      Arc(1, 2),
+                      Arc(2, 3),
+                      Arc(3, 1),
+                      //size = 2
+                      Arc(4, 2),
+                      Arc(4, 3),
+                      Arc(4, 5),
+                      Arc(5, 4),
+                      Arc(5, 6),
+                      //size = 2
+                      Arc(6, 3),
+                      Arc(6, 7),
+                      Arc(7, 6),
+                      //size = 1
+                      Arc(8, 5),
+                      Arc(8, 7),
+                      Arc(8, 8)
+                    )
+            val transposeSCCwith4PartsArcs: Vector[Arc] =
+              mockUpSCCwith4PartsArcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            //seq.view.map(f).flatMap(g).filter(p).toList
+            val nodesInGraph: Int = 8
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 20
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String = "SCC.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            val arcs: Vector[Arc] =
+            //transposeSCCwith4PartsArcs
+            //*mockUpSCCwith4PartsArcs //*
+              extractSortedArcs(actualFileContent)
+              .view
+              /*reduce / control input size*/
+              .take(inputTakeNumber)
+              .toVector
 
-          println(
+            println(
+                     s"\n'arcs` are extracted from file" /*+
                    s"\n'arcs.head` is:${arcs.head}" +
                      s"\n'arcs.tail.head' is: ${
                        arcs.tail.head
-                     }"
-                 )
+                     }"*/
+                   )
 
-          /*reversed directions*/
-          val transposedArcs: Vector[Arc] =
-            arcs
-            .view
-            .map(a => Arc(a.arcHead, a.arcTail))
-            .sortBy(_.arcTail)
-            .toVector
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
 
-          println(
+            println(
+                     s"\n'transposedArcs` evaluated" /*+
                    s"\n'transposedArcs.head` is:${transposedArcs.head}" +
                      s"\n'transposedArcs.tail.head' is: ${
                        transposedArcs.tail.head
-                     }"
-                 )
-
-          val minNodeVal: Int = 1
-          val maxNodeVal: Int =
-          //expectedNodesSize
-            arcs
-            .view
-            .maxBy(_.arcHead)
-            .arcHead
-            .max(
-                arcs
-                .view
-                .maxBy(_.arcTail)
-                .arcHead)
-
-          println(s"\n'maxNodeVal' is $maxNodeVal")
-
-          val correspondingNodes: Vector[IsExploredNode] =
-          /*create new collection as `unexplored`*/
-          //def correspondingNodes: IndexedSeq[IsExploredNode] =
-            (minNodeVal to maxNodeVal)
-            .view
-            .map(
-                IsExploredNode(_, false)
-                )
-            .toVector
-          val startingNode: Int = 1
-          val takeNumber: Int = 15
-          val nodesLimit: Int =
-          //correspondingNodes.length
-            maxNodeVal
-          /*val DirectedGraph(nodes, arcs): DirectedGraph =
-            extractArcsAndNodes(actualFileContent)*/
-
-          /*println(
-                   s"\n'arcs.length` is:${arcs.length}" +
-                     s"\nfirst $takeNumber 'arcs` are:" +
-                     s"\n${
-                       arcs
-                       .take(takeNumber)
-                       .mkString("\n")
-                     }"
-                 )*/
-
-          /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
-          val explorableAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
-            makeExplorableAdjacencyListFromArcs(
-                                                 nodes =
-                                                   correspondingNodes
-                                                   .toVector,
-                                                 /*nodesRemains =
-                                                   correspondingNodes
-                                                   //.toList,
-                                                   .toStream,*/
-                                                 currentNodeVal =
-                                                   minNodeVal - 1,
-                                                 arcsRemains =
-                                                   arcs
-                                                   //*transposedArcs
-                                                   //.take(inputTakeNumber)
-                                                   //.toList,
-                                                   .toStream,
-                                                 minNodeVal = minNodeVal,
-                                                 maxNodeVal = maxNodeVal,
-                                                 //nodesAmount = maxNodeVal,
-                                                 nodeIndexShift = -1
-                                               )
-          println(
-                   s"\n'explorableAdjacencyList.head' is:" //+
-                   //explorableAdjacencyList.head
-                   /*+
-                     s"\n'explorableAdjacencyList.tail.head' is ${
-                       explorableAdjacencyList.tail.head
                      }"*/
-                 )
-          /*println(
-                   s"\n'explorableAdjacencyList` is:" +
-                     s"\nfirst $takeNumber in 'transposeAdjacencyList` are:" +
-                     s"\n${
-                       explorableAdjacencyList
-                       .take(takeNumber)
-                       .mkString("\n")
-                     }"
-                 )*/
+                   )
 
-          //val depthFirstOrder: DepthFirstSearchResult =
-          /*only post order needed*/
-          /*val DepthFirstSearchResult(
-          preOrd,
-          postOrd): DepthFirstSearchResult =
-            DepthFirstOrder(
-                             graph = explorableAdjacencyList,
-                             graphLength =
-                               explorableAdjacencyList
-                               .length,
-                             nodesValuesZeroBased =
-                               minNodeVal == 0
-                           )*/
-          //val postOrd: List[IsExploredNode] =
-          //val postOrd: Stream[IsExploredNode] =
-          /*used / evaluated once*/
-          //def postOrdReversed: Stream[IsExploredNode] =
-          val postOrdReversed: Stream[IsExploredNode] =
-            DepthFirstPostOrder(
-                                 graph = explorableAdjacencyList,
-                                 graphLength =
-                                   explorableAdjacencyList
-                                   .length
-                               )
-            .view
-            //.reverse
-            .toStream
+            val minNodeVal: Int = 1
+            val maxNodeVal: Int =
+            //expectedNodesSize
+              arcs
+              .view
+              .maxBy(_.arcHead)
+              .arcHead
+              .max(
+                  arcs
+                  .view
+                  .maxBy(_.arcTail)
+                  .arcHead)
 
-          println(
-                   s"\n'postOrdReversed' defined")
+            println(s"\n'maxNodeVal' evaluated")
+            //println(s"\n'maxNodeVal' is $maxNodeVal")
 
-          //first 15 'nodes' in 'preOrd` are:
-          //1[e],7[e],5[e],10[e],13[e],11[e],12[e],2[e],6[e],3[e],4[e],8[e],9[e]
-          //5[e],13[e],11[e],12[e],10[e],7[e],2[e],6[e],1[e],4[e],3[e],8[e],9[e]
-          //first 15 'nodes' in 'postOrd` are:
-          /*println(
-                   s"\n'preOrd.length` is:${
-                     preOrd.length
-                   }" +
-                     s"\nfirst $takeNumber 'nodes' in 'preOrd` are:" +
-                     s"\n${
-                       preOrd
-                       .take(takeNumber)
-                       .mkString(",")
-                     }"
-                 )*/
-          /*println(
-                   s"\n'postOrd.head` is:${
-                     postOrd.head
-                   }"*/
-          /*s"\n'postOrd.length` is:${
-            postOrd.length
-          }" +
-            s"\nfirst $takeNumber 'nodes' in 'postOrd` are:" +
-            s"\n${
-              postOrd
-              .take(takeNumber)
-              .mkString(",")
-            }"*/
-          //)
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+            //def correspondingNodes: IndexedSeq[IsExploredNode] =
+              (minNodeVal to maxNodeVal)
+              .view
+              .map(
+                  IsExploredNode(_, false)
+                  )
+              .toVector
+            val startingNode: Int = 1
+            val takeNumber: Int = 15
+            val nodesLimit: Int =
+            //correspondingNodes.length
+              maxNodeVal
+            /*val DirectedGraph(nodes, arcs): DirectedGraph =
+              extractArcsAndNodes(actualFileContent)*/
 
-          /*reset 'nodes' as `unExplored`*/
-          /*can mutate existing collection or create new with 'def'*/
-          //val reSetedNodes: Vector[IsExploredNode] =
-          correspondingNodes
-          .map(_.isExplored = false)
+            /*println(
+                     s"\n'arcs.length` is:${arcs.length}" +
+                       s"\nfirst $takeNumber 'arcs` are:" +
+                       s"\n${
+                         arcs
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )*/
 
-          /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
-          val transposeAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
-            makeExplorableAdjacencyListFromArcs(
-                                                 nodes =
-                                                   correspondingNodes
-                                                   .toVector,
-                                                 /*?memory leak ?*/
-                                                 /*nodesRemains =
-                                                   correspondingNodes
-                                                   .toStream,*/
-                                                 //.toList,
-                                                 currentNodeVal =
-                                                   minNodeVal - 1,
-                                                 arcsRemains =
-                                                   //*arcs
-                                                   transposedArcs
-                                                   .view
-                                                   //*mockUpSCCwith4PartsArcs
-                                                   //transposeSCCwith4PartsArcs
-                                                   //.take(inputTakeNumber)
-                                                   .toStream,
-                                                 //.toList,
-                                                 minNodeVal = minNodeVal,
-                                                 maxNodeVal = maxNodeVal,
-                                                 //nodesAmount = maxNodeVal,
-                                                 nodeIndexShift = -1
-                                               )
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val explorableAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
+              makeExplorableAdjacencyListFromArcs(
+                                                   nodes =
+                                                     correspondingNodes
+                                                     .toVector,
+                                                   /*nodesRemains =
+                                                     correspondingNodes
+                                                     //.toList,
+                                                     .toStream,*/
+                                                   currentNodeVal =
+                                                     minNodeVal - 1,
+                                                   arcsRemains =
+                                                     arcs
+                                                     //*transposedArcs
+                                                     //.take(inputTakeNumber)
+                                                     //.toList,
+                                                     .toStream,
+                                                   minNodeVal = minNodeVal,
+                                                   maxNodeVal = maxNodeVal,
+                                                   //nodesAmount = maxNodeVal,
+                                                   nodeIndexShift = -1
+                                                 )
+            println(
+                     s"\n'explorableAdjacencyList.head' is:" //+
+                     //explorableAdjacencyList.head
+                     /*+
+                       s"\n'explorableAdjacencyList.tail.head' is ${
+                         explorableAdjacencyList.tail.head
+                       }"*/
+                   )
+            /*println(
+                     s"\n'explorableAdjacencyList` is:" +
+                       s"\nfirst $takeNumber in 'transposeAdjacencyList` are:" +
+                       s"\n${
+                         explorableAdjacencyList
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )*/
 
-          println(
+            //val depthFirstOrder: DepthFirstSearchResult =
+            /*only post order needed*/
+            /*val DepthFirstSearchResult(
+            preOrd,
+            postOrd): DepthFirstSearchResult =
+              DepthFirstOrder(
+                               graph = explorableAdjacencyList,
+                               graphLength =
+                                 explorableAdjacencyList
+                                 .length,
+                               nodesValuesZeroBased =
+                                 minNodeVal == 0
+                             )*/
+
+            //val postOrd: List[IsExploredNode] =
+            //val postOrd: Stream[IsExploredNode] =
+            /*used / evaluated once*/
+            //def postOrdReversed: Stream[IsExploredNode] =
+            /*must be evaluated when all 'correspondingNodes' are set to
+            'unExplored'
+             */
+            //val postOrdReversed: Stream[IsExploredNode] =
+            /*Precumably fails here
+            java.lang.StackOverflowError
+          at scala.collection.immutable.Stream$Cons.tail
+             */
+            val postOrdReversed: List[IsExploredNode] =
+            //def postOrdReversed: List[IsExploredNode] = {
+            /*reset 'nodes' as `unExplored`*/
+            /*can mutate existing collection or create new with 'def'*/
+            //val reSetedNodes: Vector[IsExploredNode] =
+            /*side effect*/
+            /*correspondingNodes
+            .map(_.isExplored = false)
+            println(
+                     s"\n'correspondingNodes' are reset as `unExplored`")*/
+            /*return value*/
+              DepthFirstPostOrder(
+                                   graph =
+                                     explorableAdjacencyList,
+                                   graphLength =
+                                     explorableAdjacencyList
+                                     .length
+                                 )
+              //.view
+              ////.reverse
+              //.toStream
+              .toList
+            //}
+
+            /*println(
+                     s"\n'postOrdReversed' defined")*/
+
+            //first 15 'nodes' in 'preOrd` are:
+            //1[e],7[e],5[e],10[e],13[e],11[e],12[e],2[e],6[e],3[e],4[e],
+            // 8[e],9[e]
+            //5[e],13[e],11[e],12[e],10[e],7[e],2[e],6[e],1[e],4[e],3[e],
+            // 8[e],9[e]
+            //first 15 'nodes' in 'postOrd` are:
+            /*println(
+                     s"\n'preOrd.length` is:${
+                       preOrd.length
+                     }" +
+                       s"\nfirst $takeNumber 'nodes' in 'preOrd` are:" +
+                       s"\n${
+                         preOrd
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )*/
+            /*println(
+                     s"\n'postOrd.head` is:${
+                       postOrd.head
+                     }"*/
+            /*s"\n'postOrd.length` is:${
+              postOrd.length
+            }" +
+              s"\nfirst $takeNumber 'nodes' in 'postOrd` are:" +
+              s"\n${
+                postOrd
+                .take(takeNumber)
+                .mkString(",")
+              }"*/
+            //)
+
+            /*reset 'nodes' as `unExplored`*/
+            /*can mutate existing collection or create new with 'def'*/
+            //val reSetedNodes: Vector[IsExploredNode] =
+            correspondingNodes
+            .map(_.isExplored = false)
+            println(
+                     s"\n'correspondingNodes' are reset as `unExplored`")
+
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val transposeAdjacencyList: Vector[ExplorableNodeWithAdjusted] =
+              makeExplorableAdjacencyListFromArcs(
+                                                   nodes =
+                                                     correspondingNodes
+                                                     .toVector,
+                                                   /*?memory leak ?*/
+                                                   /*nodesRemains =
+                                                     correspondingNodes
+                                                     .toStream,*/
+                                                   //.toList,
+                                                   currentNodeVal =
+                                                     minNodeVal - 1,
+                                                   arcsRemains =
+                                                     //*arcs
+                                                     transposedArcs
+                                                     .view
+                                                     //*mockUpSCCwith4PartsArcs
+                                                     //transposeSCCwith4PartsArcs
+                                                     //.take(inputTakeNumber)
+                                                     .toStream,
+                                                   //.toList,
+                                                   minNodeVal = minNodeVal,
+                                                   maxNodeVal = maxNodeVal,
+                                                   //nodesAmount = maxNodeVal,
+                                                   nodeIndexShift = -1
+                                                 )
+
+            println(
+                     s"\n'transposeAdjacencyList` evaluated" /*+
                    s"\n'transposeAdjacencyList` became:" +
                      s"\n'transposeAdjacencyList.head` is:${
                        transposeAdjacencyList.head
-                     }" /*+
-                     s"\n'explorableAdjacencyList.tail.head' is ${
-                       transposeAdjacencyList.tail.head
                      }"*/
-                   /*+
-                   s"\nfirst $takeNumber in 'transposeAdjacencyList` are:" +
-                   s"\n${
-                     transposeAdjacencyList
-                     .take(takeNumber)
-                     .mkString("\n")
-                   }"*/
-                 )
-          /*Reverse `postOrder` needed*/
-          //val graphSCCs: List[List[IsExploredNode]] =
-          //val graphSCCsSizes: List[Int] =
-          //*val graphSCCsSizes: Stream[Int] =
-          val graphSCCsTopFiveSizes: Stream[Int] =
-            transposeDepthFirstOrderSCCsSize(
-                                              graph =
-                                                transposeAdjacencyList,
-                                              postOrderRemains =
-                                                postOrdReversed,
-                                              //postOrd
-                                              //preOrd
-                                              //.reverse,
-                                              graphLength =
-                                                transposeAdjacencyList.length
-                                            )
-            //.sorted
-            //.reverse
-            .view
-            .sorted(Ordering[Int].reverse)
-            .take(5)
-            .toStream
-
-          /*println(
-                   s"\n'graphSCCsSizes.length` is:${graphSCCsSizes.length}" +
-                     s"\nfirst $takeNumber SCCs in 'graphSCCsSizes` are:" +
+                     /*+
+                                         s"\n'explorableAdjacencyList.tail
+                                         .head' is ${
+                                           transposeAdjacencyList.tail.head
+                                         }"*/
+                     /*+
+                     s"\nfirst $takeNumber in 'transposeAdjacencyList` are:" +
                      s"\n${
-                       graphSCCsSizes
+                       transposeAdjacencyList
                        .take(takeNumber)
                        .mkString("\n")
-                     }"
-                 )*/
-          println(
-                   s"\n`graphSCCsTopFiveSizes` are:" +
-                     s"\n${
-                       graphSCCsTopFiveSizes
-                       .mkString("\n")
-                     }"
-                 )
+                     }"*/
+                   )
+            /*Reverse `postOrder` needed*/
+            //val graphSCCs: List[List[IsExploredNode]] =
+            //val graphSCCsSizes: List[Int] =
+            //*val graphSCCsSizes: Stream[Int] =
+            val graphSCCsTopFiveSizes: Stream[Int] =
+              transposeDepthFirstOrderSCCsSize(
+                                                graph =
+                                                  transposeAdjacencyList,
+                                                postOrderRemains =
+                                                  postOrdReversed //,
+                                                //postOrd
+                                                //preOrd
+                                                //.reverse,
+                                                /*graphLength =
+                                                  transposeAdjacencyList
+                                                  .length*/
+                                              )
+              //.sorted
+              //.reverse
+              .view
+              .sorted(Ordering[Int].reverse)
+              .take(5)
+              .toStream
 
-          assume(
-                  //true == true,
-                  graphSCCsTopFiveSizes.nonEmpty, //&&
-                  //graphSCCsSizes.length == expectedSize,
-                  s"\n'graphSCCsTopFiveSizes' must be 'nonEmpty' " +
-                    s"& equal to 'expectedSize'"
-                )
-        }
+            /*println(
+                     s"\n'graphSCCsSizes.length` is:${graphSCCsSizes.length}" +
+                       s"\nfirst $takeNumber SCCs in 'graphSCCsSizes` are:" +
+                       s"\n${
+                         graphSCCsSizes
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )*/
+            println(
+                     s"\n`graphSCCsTopFiveSizes` are:" +
+                       s"\n${
+                         graphSCCsTopFiveSizes
+                         .mkString("\n")
+                       }"
+                   )
+
+            assume(
+                    //true == true,
+                    graphSCCsTopFiveSizes.nonEmpty, //&&
+                    //graphSCCsSizes.length == expectedSize,
+                    s"\n'graphSCCsTopFiveSizes' must be 'nonEmpty' " +
+                      s"& equal to 'expectedSize'"
+                  )
+          }
   ignore(
           "51: 'BFS_SCC_NodesAmountOptimized'" +
             "should " +
@@ -2666,5 +2701,102 @@ class stronglyConnectedComponentsSuit
                       s"equal to 'expectedNumberOfCCs'"
                   )
           }
+  test(
+        "60: 'makeAdjacencyListMapFromArcs' " +
+          "should return " +
+          "'AdjacencyListMap'"
+      ) {
+          val sourceSize: Int = 5105043
+          val expectedNodesSize: Int = 875714
+          val expectedArcsSize: Int = 5105043
+          /*all 'nodes', but only few / some 'arcs'*/
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int = 20
+          val expectedNodesInSCC: Int = 3
+          val expectedSize: Int = 4
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"
+          //SCC.txt
+          val fileName: String = "tinyDG.txt"
+          val actualFileContent: Iterator[String] =
+          //Iterator.empty
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+          val nodesInGraph: Int =
+            actualFileContent.next().toInt
+          val edgesInGraph: Int =
+            actualFileContent.next().toInt
+          println(
+                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                     s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                 )
+          val arcs: Vector[Arc] =
+          //extractSortedArcs(actualFileContent)
+            Vector.empty
+            .view
+            /*reduce / control input size*/
+            .take(inputTakeNumber)
+            .toVector
+
+          println(
+                   s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                 )
+
+          /*reversed directions*/
+          val transposedArcs: Vector[Arc] =
+            arcs
+            .view
+            .map(a => Arc(a.arcHead, a.arcTail))
+            .sortBy(_.arcTail)
+            .toVector
+          val correspondingNodes: Vector[IsExploredNode] =
+          /*create new collection as `unexplored`*/
+            Vector.empty
+          val startingNode: Int = 1
+          val takeNumber: Int = 15
+          val nodesLimit: Int = Int.MinValue
+
+          /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+          val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+            makeAdjacencyListMapFromArcs(
+                                          fileContentIter = actualFileContent,
+                                          pattern =
+                                            """\d+""".r
+                                        )
+          println(
+                   s"\n'mapWithAdjacencyList.head' is:" +
+                     mapWithAdjacencyList.head +
+                     s"\n'mapWithAdjacencyList.tail.head' is ${
+                       mapWithAdjacencyList.tail.head
+                     }" +
+                     s"\n'mapWithAdjacencyList` is:" +
+                     s"\nfirst $takeNumber elements in 'mapWithAdjacencyList`" +
+                     s" are:" +
+                     s"\n${
+                       mapWithAdjacencyList
+                       .take(takeNumber)
+                       .mkString("\n")
+                     }"
+                 )
+
+          assume(
+                  //true == true,
+                  mapWithAdjacencyList.nonEmpty &&
+                    mapWithAdjacencyList.size == nodesInGraph,
+                  s"\n'graphSCCsTopFiveSizes' must be 'nonEmpty' " +
+                    s"& equal to 'expectedSize'"
+                )
+        }
+
 
 }

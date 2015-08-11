@@ -18,11 +18,15 @@ val yExtractor =
   """y.:.(\d+\.\d{2})""".r
 val xyExtractor =
   """\D+(\d+\.\d{2})\D+(\d+\.\d{2}).+""".r
+//val arcTailHeadExtractor =
+  //"""\D+(\d+)\D+(\d+).+""".r
 val digitsExtractor =
   """.+(\d+\.\d{2}).+""".r
 
 def extractX(expr: String): String =
   expr match {
+  //case (arcTailHeadExtractor(arcTail,arcHead)) =>
+    //s"'arcTail' = $arcTail, 'arcHead' = $arcHead"
   case (xyExtractor(x,y)) =>
     s"'x' = $x, 'y' = $y"
   case (xExtractor(x)) =>
@@ -34,6 +38,7 @@ def extractX(expr: String): String =
   case _ => "no digits Nor 'x' nor 'y' found"
 }
 
+//extractX(expr = """ 7  9""")
 extractX(expr = """{"x":"6.18", "y":"969.61"},""")
 extractX(expr = """{"x":"235.79", "y":"295.24"}""")
 extractX(expr = """{"coordinates":[""")
@@ -67,7 +72,6 @@ case class Coordinates(
                         x: Coordinate,
                         y: Coordinate
                         )
-
 List("US$", "CAN$")
 .map(scala.util.matching.Regex.quote)
 .mkString("|").r

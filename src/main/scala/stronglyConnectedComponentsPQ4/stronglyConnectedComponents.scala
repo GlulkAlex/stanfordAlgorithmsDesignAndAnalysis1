@@ -7,6 +7,8 @@ import scala.collection.immutable.Queue
 import scala.collection.immutable.Stack
 import randomGenerators.RandomGenerators.randomIntWithinInterval
 
+import scala.util.matching.Regex
+
 /**
  * Created by gluk-alex on 7/30/15.
  */
@@ -83,6 +85,23 @@ object stronglyConnectedComponents {
   you exchange tips for doing this on the discussion forums.
    */
 
+  /*
+  `Bitsets` are
+  hence more compact than other `sets`
+  if
+  they contain many small elements.
+  Another advantage of `bitsets` is that
+  operations such as
+  `membership` 'test' with 'contains', or
+  element `addition` and
+  `removal`
+  with '+=' and
+  '-=' are
+  all `extremely efficient`.
+  ---
+  So,
+  may be use it as 'isExplored' check ?
+   */
   trait TraverseDirection
 
   case object Up extends TraverseDirection
@@ -116,6 +135,28 @@ object stronglyConnectedComponents {
                           var nodeLowLink: Int,
                           var inStack: Boolean
                           )
+
+  case class NodeMapValFieldsStatic(
+                                     isExplored: Boolean,
+                                     //nodeIndex: Option[Int],
+                                     /*default is 'Int.MaxValue'*/
+                                     //nodeLowLink: Int,
+                                     //inStack: Boolean,
+                                     doneOrder: Option[Int],
+                                     //var groupLeader: Int
+                                     adjustedNodes: Set[Int]
+                                     )
+
+  case class NodeMapValFieldsDynamic(
+                                      var isExplored: Boolean,
+                                      var nodeIndex: Option[Int],
+                                      /*default is 'Int.MaxValue'*/
+                                      var nodeLowLink: Int,
+                                      var inStack: Boolean,
+                                      var doneOrder: Int,
+                                      var groupLeader: Int,
+                                      var adjustedNodes: Set[Int]
+                                      )
 
   case class RankedNode(node: Int, rank: Int)
 
@@ -163,7 +204,7 @@ object stronglyConnectedComponents {
                                 adjustedNodes: List[Int]
                                 ) {
     override def toString =
-      s"""${node}>to>${adjustedNodes.mkString("", ">", "")}"""
+      s"""$node>to>${adjustedNodes.mkString("", ">", "")}"""
   }
 
   case class IndexedNodeWithAdjacencyList(
@@ -548,6 +589,94 @@ object stronglyConnectedComponents {
     nodes
   }
 
+  /*order of 'arcs' does not matter*/
+  /*assume that 'nodes.value' unique*/
+  /*assume that 'Iterator' contains only pair Int in String*/
+  @scala.annotation.tailrec
+  def makeAdjacencyListMapFromArcs(
+                                    fileContentIter: Iterator[String],
+                                    resultMap: Map[Int,
+                                      NodeMapValFieldsStatic] =
+                                    Map.empty,
+                                    pattern: Regex =
+                                    """\d+""".r
+                                    ): Map[Int, NodeMapValFieldsStatic] = {
+    /*
+      cases:
+      `arcTail` new => add to Map
+      `arcHead` new =>
+      add to Map
+      add to existing key.adjustedNodes
+       */
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      resultMap
+    } else /*if (adjacencyList.hasNext)*/ {
+      /*may be leading 'space' then
+      * delimiter one or double 'space'*/
+      val List(arcTail, arcHead): List[Int] =
+        pattern
+        .findAllIn(fileContentIter
+                   .next())
+        .map(_.toInt)
+        .toList
+      val arcTailGet: Option[NodeMapValFieldsStatic] =
+        resultMap
+        .get(key = arcTail)
+      val arcHeadlGet: Option[NodeMapValFieldsStatic] =
+        resultMap
+        .get(key = arcHead)
+      val addArcHead: Map[Int, NodeMapValFieldsStatic] =
+        if (arcHeadlGet.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          resultMap
+          .updated(
+              key = arcHead,
+              value =
+                NodeMapValFieldsStatic(
+                                        isExplored = false,
+                                        doneOrder = None,
+                                        adjustedNodes = Set.empty))
+        } else /*if (arcTailGet.isDefined)*/ {
+          /*same value*/
+          resultMap
+        }
+      val resultMapUpdated: Map[Int, NodeMapValFieldsStatic] =
+        if (arcTailGet.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          addArcHead
+          .updated(
+              key = arcTail,
+              value =
+                NodeMapValFieldsStatic(
+                                        isExplored = false,
+                                        doneOrder = None,
+                                        adjustedNodes = Set(arcHead)))
+        } else /*if (arcTailGet.isDefined)*/ {
+          /*add new adjusted 'node' to existed 'node'*/
+          addArcHead
+          .updated(
+              key = arcTail,
+              value =
+                NodeMapValFieldsStatic(
+                                        isExplored = false,
+                                        doneOrder = None,
+                                        adjustedNodes =
+                                          arcTailGet
+                                          .get
+                                          .adjustedNodes + arcHead
+                                      )
+                  )
+        }
+      /*recursion*/
+      makeAdjacencyListMapFromArcs(
+                                    fileContentIter: Iterator[String],
+                                    resultMap =
+                                      resultMapUpdated
+                                  )
+    }
+  }
+
   /*assume that 'arcsRemains.sorted' by 'tail'*/
   /*'sink' nodes must be included with empty 'AdjacencyList',
   * so
@@ -690,7 +819,8 @@ object stronglyConnectedComponents {
         nodeToAdd.get*/
       val newNodeToAdd =
         AdjacencyListElem(
-                           IsExploredNode(arcsRemains.head.arcTail, false),
+                           IsExploredNode(arcsRemains.head.arcTail,
+                                          isExplored = false),
                            List(arcsRemains.head.arcHead)
                          )
       val newCurrentNodeVal = currentNodeVal + 1
@@ -723,7 +853,8 @@ object stronglyConnectedComponents {
         }
       val newNodeToAdd =
         AdjacencyListElem(
-                           IsExploredNode(currentNodeVal + 1, false),
+                           IsExploredNode(currentNodeVal + 1,
+                                          isExplored = false),
                            List()
                          )
       val newCurrentNodeVal = currentNodeVal + 1
@@ -928,8 +1059,8 @@ object stronglyConnectedComponents {
                                            currentNodeVal: Int,
                                            /*must be empty eventually*/
                                            //arcsRemains: List[Arc],
-                                         /*must be 'val' not 'def' as
-                                         it used in comparisons */
+                                           /*must be 'val' not 'def' as
+                                           it used in comparisons */
                                            arcsRemains: => Stream[Arc],
                                            /*resulting 'Vector'*/
                                            adjustedNodes:
@@ -974,9 +1105,9 @@ object stronglyConnectedComponents {
     /*cases:
     * */
     if (
-      //nodesRemains.isEmpty
-      //nodesCount >= maxNodeVal
-        currentNodeVal >= maxNodeVal
+    //nodesRemains.isEmpty
+    //nodesCount >= maxNodeVal
+      currentNodeVal >= maxNodeVal
     ) {
       /*return value*/
       if (nodeToAdd.isEmpty) {
@@ -1016,14 +1147,14 @@ object stronglyConnectedComponents {
                                            nodes = nodes,
                                            //nodesRemains = nodesRemains,
                                            currentNodeVal =
-                                           /*same*/
+                                             /*same*/
                                              currentNodeVal,
                                            arcsRemains =
                                              arcsRemains.tail,
-                                             //newArcsRemains,
+                                           //newArcsRemains,
                                            adjustedNodes =
                                              adjustedNodes,
-                                             //newAdjustedNodes,
+                                           //newAdjustedNodes,
                                            nodeToAdd =
                                              Some(newNodeToAdd),
                                            maxNodeVal = maxNodeVal,
@@ -1077,10 +1208,10 @@ object stronglyConnectedComponents {
                                                           .tail,*/
                                            currentNodeVal =
                                              currentNodeVal + 1,
-                                             //newCurrentNodeVal,
+                                           //newCurrentNodeVal,
                                            arcsRemains =
                                              arcsRemains.tail,
-                                             //newArcsRemains,
+                                           //newArcsRemains,
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
@@ -1123,10 +1254,10 @@ object stronglyConnectedComponents {
                                                           .tail,*/
                                            currentNodeVal =
                                              currentNodeVal + 1,
-                                             //newCurrentNodeVal,
+                                           //newCurrentNodeVal,
                                            arcsRemains =
                                              arcsRemains,
-                                             //newArcsRemains,
+                                           //newArcsRemains,
                                            adjustedNodes =
                                              newAdjustedNodes,
                                            nodeToAdd =
@@ -1144,7 +1275,7 @@ object stronglyConnectedComponents {
                           maxValue: Int
                           ): Array[IsExploredNode] =
     (minValue to maxValue)
-    .map(IsExploredNode(_, false))
+    .map(IsExploredNode(_, isExplored = false))
     .toArray
 
   /*return 'arcs' from 'nodes' with mutable `explored` state*/
@@ -2071,26 +2202,28 @@ object stronglyConnectedComponents {
              )
   }
 
+  /*TODO obviously it must be done in nonFunctional JAVA way with 'Array'*/
   /*Depth-first search (DFS)*/
   //A recursive implementation of DFS
   //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
   //Output: All `vertices` reachable from 'v', labeled as discovered
+  /*up to graph 'nodes' size*/
   /*how to refactor this as 'tailrec' ?*/
-  def postOrderDFS(
-                    /*G*/ graph: => Vector[ExplorableNodeWithAdjusted],
-                    /*start node*/
-                    v: Int,
-                    /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
-                    None,*/
-                    /*accum*/
-                    /*exploredNodes: List[IsExploredNode] =
-                    List.empty*/
-                    exploredNodes: => Stream[IsExploredNode] =
-                    Stream.empty,
-                    nodeIndexShift: Int = -1
-                    ): Stream[IsExploredNode] = {
+  def postOrderDFS_Nodes(
+                          /*G*/ graph: => Vector[ExplorableNodeWithAdjusted],
+                          /*start node*/
+                          v: Int,
+                          /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
+                          None,*/
+                          /*accum*/
+                          /*exploredNodes: List[IsExploredNode] =
+                          List.empty*/
+                          exploredNodes: => Stream[IsExploredNode] =
+                          Stream.empty,
+                          nodeIndexShift: Int = -1
+                          ): Stream[IsExploredNode] = {
     //): List[IsExploredNode] = {
-    assume(graph.nonEmpty,s"graph must be '.nonEmpty'")
+    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -2108,7 +2241,13 @@ object stronglyConnectedComponents {
         /*same value for 'preOrder'*/
         //exploredNodes
         /*?prepend? or 'append' then reverse ?*/
+        /*return right order, but
+        possible cause of 'StackOverflowError'
+         */
         exploredNodes :+ starNode.node
+        /*affect program flow in a strange way
+        * and still throws 'StackOverflowError'*/
+        ////starNode.node +: exploredNodes
       } else {
         //val exploredNodesUpdated: List[IsExploredNode] =
         /*because 'val' ensures that `memorizaion` occurs*/
@@ -2119,16 +2258,16 @@ object stronglyConnectedComponents {
             exploredNodes
           } else /*if (!adjacentEdges.head.isExplored)*/ {
             /*outer recursion*/
-            postOrderDFS(
-                          graph = graph,
-                          v = adjacentEdges.head.node,
-                          //nodeToCheck = Some(adjacentEdges.head),
-                          exploredNodes =
-                            /*same value for 'preOrder'*/
-                            exploredNodes
-                          //exploredNodes :+ adjacentEdges.head
-                          //exploredNodes :+ starNode.node
-                        )
+            postOrderDFS_Nodes(
+                                graph = graph,
+                                v = adjacentEdges.head.node,
+                                //nodeToCheck = Some(adjacentEdges.head),
+                                exploredNodes =
+                                  /*same value for 'preOrder'*/
+                                  exploredNodes
+                                //exploredNodes :+ adjacentEdges.head
+                                //exploredNodes :+ starNode.node
+                              )
           }
         /*recursion*/
         innerLoop(
@@ -2157,16 +2296,105 @@ object stronglyConnectedComponents {
 
   /*Depth-first search (DFS)*/
   //A recursive implementation of DFS
+  //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
+  //Output: All `nodes.values` reachable from 'v', labeled as discovered
+  /*how to refactor this as 'tailrec' ?*/
+  def postOrderDFS_ValOnly(
+                            /*G*/ graph: => Vector[ExplorableNodeWithAdjusted],
+                            /*start node*/
+                            v: Int,
+                            /*nodeToCheck: Option[ExplorableNodeWithAdjusted] =
+                            None,*/
+                            /*accum*/
+                            exploredNodes: => List[Int] =
+                            List.empty,
+                            /*exploredNodes: => Stream[IsExploredNode] =
+                            Stream.empty,*/
+                            nodeIndexShift: Int = -1
+                            //): Stream[Int] = {
+                            ): List[Int] = {
+    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+    //label 'v' as `discovered`
+    val starNode: ExplorableNodeWithAdjusted =
+      graph(v + nodeIndexShift)
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: => List[IsExploredNode],
+                   exploredNodes: => List[Int]
+                   ): List[Int] = {
+      /*adjacentEdges: => Stream[IsExploredNode],
+      exploredNodes: => Stream[Int]
+      ): Stream[Int] = {*/
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        /*same value for 'preOrder'*/
+        //exploredNodes
+        /*?prepend? or 'append' then reverse ?*/
+        exploredNodes :+ starNode.node.node
+      } else {
+        //val exploredNodesUpdated: List[Int] =
+        def exploredNodesUpdated: List[Int] =
+        /*because 'val' ensures that `memorization` occurs*/
+        //def exploredNodesUpdated: Stream[Int] =
+          if (adjacentEdges.head.isExplored) {
+            /*skip current 'node', check next*/
+            /*same value for 'preOrder'*/
+            exploredNodes
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            postOrderDFS_ValOnly(
+                                  graph = graph,
+                                  v = adjacentEdges.head.node,
+                                  //nodeToCheck = Some(adjacentEdges.head),
+                                  exploredNodes =
+                                    /*same value for 'preOrder'*/
+                                    exploredNodes
+                                  //exploredNodes :+ adjacentEdges.head
+                                  //exploredNodes :+ starNode.node
+                                )
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges = adjacentEdges.tail,
+                   exploredNodes = exploredNodesUpdated
+                 )
+      }
+    }
+
+    /*side effect*/
+    /*must be added to output only once*/
+    starNode.node.isExplored = true
+    /*for all edges from v to w in G.adjacentEdges(v) do
+        if vertex w is not labeled as discovered then
+              recursively call DFS(G,w)*/
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 starNode
+                 .adjustedNodes
+                 .view
+                 .toList,
+               /*for postOrder be added later within 'innerLoop' check*/
+               exploredNodes =
+                 exploredNodes
+               //exploredNodes :+ starNode.node
+             )
+  }
+
+  /*Depth-first search (DFS)*/
+  //A recursive implementation of DFS
   //Input: A graph 'G' and a (starting) vertex (node) 'v' of 'G'
   //Output: number of `nodes` reachable from 'v', labeled as discovered
   def maxPostOrderDFS(
-                       graph: Vector[ExplorableNodeWithAdjusted],
+                       graph: => Vector[ExplorableNodeWithAdjusted],
                        /*start node*/
                        v: Int,
                        exploredNodes: Int =
                        0,
                        nodeIndexShift: Int = -1
                        ): Int = {
+    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -2235,19 +2463,19 @@ object stronglyConnectedComponents {
                           exploredNodesPost: Stream[IsExploredNode] =
                           Stream.empty,
                           //nodesValuesZeroBased: Boolean = false
-                            nodeIndexShift: Int = -1
+                          nodeIndexShift: Int = -1
                           ): DepthFirstSearchResult = {
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
     /*may be out of bound
     when nodes values zero based and,
     so equal to indices*/
-      //if (nodesValuesZeroBased) {
-        //graph(v)
-        graph(v + nodeIndexShift)
-      /*} else {
-        graph(v - 1)
-      }*/
+    //if (nodesValuesZeroBased) {
+    //graph(v)
+      graph(v + nodeIndexShift)
+    /*} else {
+      graph(v - 1)
+    }*/
 
     @scala.annotation.tailrec
     def innerLoop(
@@ -2288,7 +2516,7 @@ object stronglyConnectedComponents {
                                 //exploredNodes :+ adjacentEdges.head
                                 //exploredNodes :+ starNode.node
                                 exploredNodesPost =
-                                  postExploredNodes//,
+                                  postExploredNodes //,
                                 //nodesValuesZeroBased = nodesValuesZeroBased
                               )
           }
@@ -2321,6 +2549,7 @@ object stronglyConnectedComponents {
   }
 
   /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  @scala.annotation.tailrec
   def DepthFirstOrder(
                        /*for lookUp*/
                        graph: Vector[ExplorableNodeWithAdjusted],
@@ -2353,7 +2582,7 @@ object stronglyConnectedComponents {
                               exploredNodesPre =
                                 resultAccum.preOrder,
                               exploredNodesPost =
-                                resultAccum.postOrder//,
+                                resultAccum.postOrder //,
                               //nodesValuesZeroBased = nodesValuesZeroBased
                             )
         } else {
@@ -2386,6 +2615,7 @@ object stronglyConnectedComponents {
   }
 
   /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
+  @scala.annotation.tailrec
   def DepthFirstPostOrder(
                            /*for lookUp*/
                            graph: Vector[ExplorableNodeWithAdjusted],
@@ -2397,7 +2627,7 @@ object stronglyConnectedComponents {
                            indexCounter: Int = 0,
                            nodeIndexShift: Int = -1
                            ): Stream[IsExploredNode] = {
-                           //): List[IsExploredNode] = {
+    //): List[IsExploredNode] = {
     if (indexCounter >= graphLength) {
       /*return value*/
       resultAccum
@@ -2411,13 +2641,13 @@ object stronglyConnectedComponents {
       def resultAccumPostOrderUpdated: Stream[IsExploredNode] =
         if (!currentNode.node.isExplored) {
           /*new*/
-          postOrderDFS(
-                        graph = graph,
-                        v = currentNode.node.node,
-                        exploredNodes =
-                          resultAccum //,
-                        //nodeIndexShift = nodeIndexShift
-                      )
+          postOrderDFS_Nodes(
+                              graph = graph,
+                              v = currentNode.node.node,
+                              exploredNodes =
+                                resultAccum //,
+                              //nodeIndexShift = nodeIndexShift
+                            )
         } else {
           /*same*/
           resultAccum
@@ -2447,7 +2677,8 @@ object stronglyConnectedComponents {
                                     resultAccum: List[List[IsExploredNode]] =
                                     List.empty,*/
                                     preOrderRemains: => Stream[IsExploredNode],
-                                    resultAccum: => Stream[Stream[IsExploredNode]] =
+                                    resultAccum: =>
+                                    Stream[Stream[IsExploredNode]] =
                                     Stream.empty,
                                     graphLength: Int,
                                     indexCounter: Int = 0,
@@ -2455,7 +2686,7 @@ object stronglyConnectedComponents {
                                     minNodeVal: Int = 1,
                                     nodeIndexShift: Int = -1
                                     ): Stream[Stream[IsExploredNode]] = {
-                                    //): List[List[IsExploredNode]] = {
+    //): List[List[IsExploredNode]] = {
     if (
     //indexCounter >= graphLength
       preOrderRemains.isEmpty
@@ -2504,24 +2735,24 @@ object stronglyConnectedComponents {
   def transposeDepthFirstOrderSCCsSize(
                                         /*for lookUp*/
                                         /*must be reset as `unExplored`*/
-                                        graph:
+                                        graph: =>
                                         Vector[ExplorableNodeWithAdjusted],
                                         /*check order and termination
                                         condition*/
                                         /*must be reset as `unExplored`*/
-                                        //postOrderRemains:
-                                        // List[IsExploredNode],
+                                        postOrderRemains: =>
+                                        List[IsExploredNode],
                                         /*Pass streams around via
                                         `by-name` parameters*/
-                                        postOrderRemains: =>
-                                        Stream[IsExploredNode],
+                                        /*postOrderRemains: =>
+                                        Stream[IsExploredNode],*/
                                         /*resultAccum: List[Int] =
                                         List.empty,*/
                                         resultAccum: => Stream[Int] =
                                         Stream.empty,
-                                        graphLength: Int,
-                                        indexCounter: Int = 0,
-                                        nodesValuesZeroBased: Boolean = false,
+                                        //graphLength: Int,
+                                        //indexCounter: Int = 0,
+                                        //nodesValuesZeroBased: Boolean = false,
                                         minNodeVal: Int = 1,
                                         nodeIndexShift: Int = -1
                                         ): Stream[Int] = {
@@ -2542,6 +2773,7 @@ object stronglyConnectedComponents {
       /*?no 'concat' / 'union'?*/
       //val newSCC: List[IsExploredNode] =
       def updatedSCCsResult: Stream[Int] =
+      //val updatedSCCsResult: Stream[Int] =
         if (!currentNode.node.isExplored) {
           /*new*/
           /*? order does not matter ?*/
@@ -2564,8 +2796,8 @@ object stronglyConnectedComponents {
                                           postOrderRemains.tail,
                                         resultAccum =
                                           updatedSCCsResult,
-                                        graphLength = graphLength,
-                                        indexCounter = indexCounter + 1,
+                                        //graphLength = graphLength,
+                                        //indexCounter = indexCounter + 1,
                                         nodeIndexShift = nodeIndexShift
                                       )
     }
@@ -2834,7 +3066,7 @@ object stronglyConnectedComponents {
       v <- adjacencyList //G.V
       /*guard*/
       //if (v.index is undefined)
-      if (v.node.nodeIndex.isEmpty)
+      if v.node.nodeIndex.isEmpty
     } yield strongConnect(
                            v.node,
                            /*incremented every iteration within method call*/
