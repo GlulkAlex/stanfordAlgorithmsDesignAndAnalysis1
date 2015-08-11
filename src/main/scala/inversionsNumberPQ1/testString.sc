@@ -63,7 +63,10 @@ pattern1.findAllIn(arcStr2).mkString(",")
 pattern1.findAllIn(arcStr2).toList
 val List(arcTail, arcHead) =
 pattern1
-.findAllIn(arcStr3)
+.findAllIn(
+    arcStr
+    //arcStr3
+          )
   .map(_.toInt)
 .toList
 val digitsIter =

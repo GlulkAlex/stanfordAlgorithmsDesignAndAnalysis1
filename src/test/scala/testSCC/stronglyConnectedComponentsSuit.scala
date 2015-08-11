@@ -2809,7 +2809,7 @@ class stronglyConnectedComponentsSuit
           val expectedArcsSize: Int = 5105043
           /*all 'nodes', but only few / some 'arcs'*/
           /*at least as big as `mockUp(14)`*/
-          val inputTakeNumber: Int = 20
+          val inputTakeNumber: Int = 2000
           val expectedNodesInSCC: Int = 3
           val expectedSize: Int = 4
           val filePath: String =
@@ -2819,27 +2819,34 @@ class stronglyConnectedComponentsSuit
               "src/test/scala/" +
               "testSCC/"
           //SCC.txt
-          val fileName: String = "tinyDG.txt"
+          val fileName: String =
+            //"tinyDG.txt"
+            "SCC.txt"
           val actualFileContent: Iterator[String] =
           //Iterator.empty
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
                         )
-          val nodesInGraph: Int =
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+                println(
+                         s"\n'actualFileContent` is:$actualFileContent"
+                       )
+          /*val nodesInGraph: Int =
             actualFileContent.next().toInt
           val edgesInGraph: Int =
             actualFileContent.next().toInt
           println(
                    s"\ntotal 'nodesInGraph`:$nodesInGraph" +
                      s"\ntotal 'edgesInGraph`:$edgesInGraph"
-                 )
+                 )*/
           val arcs: Vector[Arc] =
           //extractSortedArcs(actualFileContent)
             Vector.empty
             .view
             /*reduce / control input size*/
-            .take(inputTakeNumber)
+            //.take(inputTakeNumber)
             .toVector
 
           println(
@@ -2861,21 +2868,31 @@ class stronglyConnectedComponentsSuit
           /*create new collection as `unexplored`*/
             Vector.empty
           val startingNode: Int =
+          1
             //6
-            7//8//0
+            //7//8
+            //0
           val takeNumber: Int = 15
           val nodesLimit: Int = Int.MinValue
 
           /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
           val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
             makeAdjacencyListMapFromArcs(
-                                          fileContentIter = actualFileContent,
+                                          fileContentIter =
+                                            actualFileContent
+                                            /*.take(inputTakeNumber)*/,
                                           pattern =
                                             """\d+""".r
                                         )
           println(
-                   s"\n'mapWithAdjacencyList.head' is:" +
-                     mapWithAdjacencyList.head /*+
+                   s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                     mapWithAdjacencyList.isEmpty +
+                     s"\n'mapWithAdjacencyList.size' is:" +
+                     mapWithAdjacencyList.size +
+      s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                     mapWithAdjacencyList.get(startingNode) /*+
+                     s"\n'mapWithAdjacencyList.head' is:" +
+                     mapWithAdjacencyList.headOption +
                      s"\n'mapWithAdjacencyList.tail.head' is ${
                        mapWithAdjacencyList.tail.head
                      }" +
@@ -2920,21 +2937,22 @@ class stronglyConnectedComponentsSuit
                      }"
                  )*/
           println(
-                   s"\n'resultSetDFS` is:" +
+                   s"\nis 'resultSetDFS.nonEmpty`:${resultSetDFS.nonEmpty}" +
+                   s"\n'resultSetDFS.size` is:${resultSetDFS.size}" /*+
                      s"\nfirst $takeNumber elements in 'resultSetDFS`" +
                      s" are:" +
                      s"\n${
                        resultSetDFS
                        .take(takeNumber)
-                       .mkString("\n")
-                     }"
+                       .mkString(",")
+                     }"*/
                  )
 
           assume(
                   //true == true,
                   //postExplored.nonEmpty &&
-                  resultSetDFS.nonEmpty &&
-                    resultSetDFS.size == nodesInGraph,
+                  resultSetDFS.nonEmpty /*&&
+                    resultSetDFS.size == nodesInGraph*/,
                   s"\n'postExplored' must be 'nonEmpty' " +
                     s"& equal to 'nodesInGraph'"
                 )

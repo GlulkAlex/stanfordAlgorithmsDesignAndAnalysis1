@@ -2691,6 +2691,7 @@ object stronglyConnectedComponents {
   }
 
   /*Depth-first search (DFS)*/
+  /*must skip not existed starting 'node'*/
   def pre_PostOrderDFS_ver2(
                              graph: Map[Int, NodeMapValFieldsStatic],
                              /*start node*/
@@ -2773,9 +2774,15 @@ object stronglyConnectedComponents {
             .get
             .adjustedNodes
             .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
+            /*recursion*/
+            innerLoop()
+          } else /*if (nextNodeFromStackGetVal.isEmpty)*/{
+            /*'startNode' not in 'graph'*/
+            /*return value*/
+            BitSet.empty
           }
           /*recursion*/
-          innerLoop()
+          //innerLoop()
         }
         /*recursion*/
         //innerLoop()
