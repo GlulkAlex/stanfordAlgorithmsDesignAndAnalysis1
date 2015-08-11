@@ -1,5 +1,6 @@
 package stronglyConnectedComponentsPQ4
 
+import scala.collection.BitSet
 import scala.math.log
 import scala.math.min
 import scala.math.max
@@ -120,6 +121,15 @@ object stronglyConnectedComponents {
     override def toString =
       s"""$node[${if (isExplored) "e" else "u"}]"""
   }
+
+  case class DFSResultInt(
+                           preOrder:
+                           List[Int],
+                           //Stream[Int],
+                           postOrder:
+                           List[Int]
+                           //Stream[Int]
+                           )
 
   case class DepthFirstSearchResult(
                                      /*preOrder: List[IsExploredNode],
@@ -2546,6 +2556,234 @@ object stronglyConnectedComponents {
                postExploredNodes =
                  exploredNodesPost
              )
+  }
+
+  /*Depth-first search (DFS)*/
+  def pre_PostOrderDFS_Map(
+                            graph: Map[Int, NodeMapValFieldsStatic],
+                            /*start node*/
+                            startNode: Int,
+                            /*accum*/
+                            exploredNodesPre:
+                            List[Int] =
+                            List.empty,
+                            /*Stream[Int] =
+                            Stream.empty,*/
+                            exploredNodesPost:
+                            /*Stream[Int] =
+                            Stream.empty,*/
+                            List[Int] =
+                            List.empty,
+                            /*may be redundant*/
+                            exploredNodesSet:
+                            Set[Int] =
+                            Set.empty
+                            /*BitSet =
+                          BitSet.empty*/
+                            ): DFSResultInt = {
+    //label 'v' as `discovered`
+    val startNodeGet: Option[NodeMapValFieldsStatic] =
+      graph
+      /*?fails?*/
+      .get(startNode)
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: Set[Int],
+                   preExploredNodes:
+                   List[Int],
+                   //Stream[Int],
+                   postExploredNodes:
+                   List[Int],
+                   //Stream[Int],
+                   exploredNodesSet:
+                   Set[Int]
+                   //BitSet
+                   //exploredNodesSet: => BitSet
+                   ): DFSResultInt = {
+      if (adjacentEdges.isEmpty) {
+        /*return value*/
+        DFSResultInt(
+                      /*same value for 'preOrder'*/
+                      preExploredNodes,
+                      /*'append', then 'reverse' somewhere later*/
+                      if (startNodeGet.isEmpty) {
+                        postExploredNodes
+                      } else {
+                        startNode +: postExploredNodes
+                      }
+                    )
+      } else /*if (adjacentEdges.nonEmpty)*/ {
+        /*must have 'head'*/
+        /*?fails?*/
+        val adjacentEdgesHead: Int =
+        //def adjacentEdgesHead: Int =
+          adjacentEdges
+          //.toStream
+          //.toList
+          //.toTraversable
+          //.toIterable
+          .head
+        /*.toIterator
+        .next()*/
+        //adjacentEdges.take(1)
+        val DFSResultInt(
+        preExploredNodesUpdated,
+        postExploredNodesUpdated):
+        DFSResultInt =
+          if (
+          //adjacentEdges.head.isExplored
+            exploredNodesSet.contains(adjacentEdgesHead)
+          ) {
+            /*skip current 'node', check next*/
+            DFSResultInt(
+                          /*same value for 'preOrder'*/
+                          preExploredNodes,
+                          postExploredNodes
+                        )
+          } else /*if (!adjacentEdges.head.isExplored)*/ {
+            /*outer recursion*/
+            pre_PostOrderDFS_Map(
+                                  graph = graph,
+                                  startNode = adjacentEdgesHead,
+                                  exploredNodesPre =
+                                    /*same value for 'preOrder'*/
+                                    preExploredNodes,
+                                  exploredNodesPost =
+                                    postExploredNodes
+                                )
+          }
+        /*recursion*/
+        innerLoop(
+                   adjacentEdges =
+                     adjacentEdges - adjacentEdgesHead,
+                   //adjacentEdges.tail,
+                   preExploredNodes = preExploredNodesUpdated,
+                   postExploredNodes =
+                     postExploredNodesUpdated,
+                   exploredNodesSet
+                 )
+      }
+    }
+
+    /*?side effect?*/
+    /*must be added to output only once*/
+    val adjustedNodesForStarted: Set[Int] =
+      if (startNodeGet.isEmpty) {
+        /*!something does wrong!*/
+        Set.empty
+      } else {
+        //startNodeGet.get.isExplored = true
+        startNodeGet.get.adjustedNodes
+      }
+    /*initialization*/
+    innerLoop(
+               adjacentEdges =
+                 adjustedNodesForStarted,
+               /*for `postOrder` be added later within 'innerLoop' check*/
+               preExploredNodes =
+                 /*'append', then 'reverse' somewhere later*/
+                 startNode +: exploredNodesPre,
+               postExploredNodes =
+                 exploredNodesPost,
+               exploredNodesSet
+             )
+  }
+
+  /*Depth-first search (DFS)*/
+  def pre_PostOrderDFS_ver2(
+                             graph: Map[Int, NodeMapValFieldsStatic],
+                             /*start node*/
+                             startNode: Int
+                             ): BitSet = {
+    //): DFSResultInt = {
+    /*state*/
+    var exploredNodesSet:
+    /*Set[Int] =
+      Set.empty*/
+    BitSet =
+      BitSet.empty
+    /*accum*/
+    var exploredNodesPre:
+    List[Int] =
+      List.empty
+    /*Stream[Int] =
+    Stream.empty,*/
+    var exploredNodesPost:
+    /*Stream[Int] =
+    Stream.empty,*/
+    List[Int] =
+      List.empty
+    var nodesStackList: List[Int] =
+      List(startNode)
+    /*val startNodeGet: Option[NodeMapValFieldsStatic] =
+      graph
+        /*?fails?*/
+      .get(startNode)*/
+
+    /*infinite loop*/
+    @scala.annotation.tailrec
+    def innerLoop(
+                   adjacentEdges: Set[Int] =
+                   Set.empty
+                   ): BitSet = {
+      //): Unit = {
+      if (nodesStackList.isEmpty) {
+        /*return value*/
+        /*DFSResultInt(
+                      /*same value for 'preOrder'*/
+                      preExploredNodes,
+                      /*'append', then 'reverse' somewhere later*/
+                      if (startNodeGet.isEmpty) {
+                        postExploredNodes
+                      } else {
+                        startNode +: postExploredNodes
+                      }
+                    )*/
+        exploredNodesSet
+      } else /*if (nodesStackList.nonEmpty)*/ {
+        val nextNodeFromStackKey: Int =
+          nodesStackList.head
+
+        /*side effect*/
+        /*reduce loop condition to converge*/
+        nodesStackList = nodesStackList.tail
+
+        if (
+        //nextNodeFromStack.isExplored
+          exploredNodesSet
+          .contains(nextNodeFromStackKey)
+        ) {
+          /*to recursion*/
+          /*skip current 'node', check next*/
+          /*recursion*/
+          innerLoop()
+        } else /*if (nextNodeFromStack.notExplored)*/ {
+          /*side effect*/
+          /*actual result*/
+          exploredNodesSet =
+          exploredNodesSet + nextNodeFromStackKey
+
+          val nextNodeFromStackGetVal: Option[NodeMapValFieldsStatic] =
+            graph
+            .get(nextNodeFromStackKey)
+          /*side effect*/
+          if (nextNodeFromStackGetVal.isDefined) {
+            nextNodeFromStackGetVal
+            .get
+            .adjustedNodes
+            .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
+          }
+          /*recursion*/
+          innerLoop()
+        }
+        /*recursion*/
+        //innerLoop()
+      }
+    }
+
+    /*initialization*/
+    innerLoop()
   }
 
   /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
