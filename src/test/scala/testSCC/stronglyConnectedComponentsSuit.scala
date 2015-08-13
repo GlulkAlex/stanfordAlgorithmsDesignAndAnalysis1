@@ -2799,8 +2799,115 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'expectedSize'"
                   )
           }
+  test(
+          "61: 'fillDirectedGraphDynamicFromArcs' " +
+            "should return " +
+            "'new DirectedGraphDynamic'"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 20
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String = "tinyDG.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              .take(inputTakeNumber)
+              .toVector
+
+            println(
+                     s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                   )
+
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int = 1
+            val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
+
+            val directedGraphDynamic: DirectedGraphDynamic =
+              fillDirectedGraphDynamicFromArcs(
+                                            fileContentIter = actualFileContent,
+                                            pattern =
+                                              """\d+""".r
+                                          )
+            println(
+                     s"\n'directedGraphDynamic.nodesWithAdjusted.size' is:" +
+                       directedGraphDynamic.nodesWithAdjusted.size +
+                     /*s"\n'mapWithAdjacencyList.head' is:" +
+                       directedGraphDynamic
+                         .nodesWithAdjusted
+                       .head +
+                       s"\n'mapWithAdjacencyList.tail.head' is ${
+                         directedGraphDynamic
+                         .nodesWithAdjusted
+                         .tail.head
+                       }" +*/
+                       //s"\n'nodesWithAdjusted` is:" +
+                       s"\nfirst $takeNumber elements in " +
+                       s"'nodesWithAdjusted`" +
+                       s" are:" +
+                       s"\n${
+                         directedGraphDynamic
+                         .nodesWithAdjusted
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )
+
+            assume(
+                    //true == true,
+                    directedGraphDynamic
+                    .nodesWithAdjusted
+                    .nonEmpty &&
+                      directedGraphDynamic
+                      .nodesWithAdjusted
+                      .size == nodesInGraph,
+                    s"\n'directedGraphDynamic' must be 'nonEmpty' " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
   ignore(
-          "61: 'pre_PostOrderDFS_Map' " +
+          "62: 'pre_PostOrderDFS_Map' " +
             "should return " +
             "right reachable 'nodes' ordering"
         ) {
@@ -2870,12 +2977,14 @@ class stronglyConnectedComponentsSuit
             /*create new collection as `unexplored`*/
               Vector.empty
             val startingNode: Int =
-            //1
+            //9
+            //1 //*sink
+            //12
             //6
-              7 //sink
-    // 8
-    //0
-    val takeNumber: Int = 15
+              //7
+            // 8
+            0
+            val takeNumber: Int = 15
             val nodesLimit: Int = Int.MinValue
 
             /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
@@ -2892,7 +3001,7 @@ class stronglyConnectedComponentsSuit
                        mapWithAdjacencyList.isEmpty +
                        s"\n'mapWithAdjacencyList.size' is:" +
                        mapWithAdjacencyList.size +
-                       s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                       s"\n'mapWithAdjacencyList.get($startingNode)' is:" +
                        mapWithAdjacencyList.get(startingNode) /*+
                      s"\n'mapWithAdjacencyList.head' is:" +
                      mapWithAdjacencyList.headOption +
@@ -2913,9 +3022,11 @@ class stronglyConnectedComponentsSuit
             postExplored,
             totalNodesFound):
             DFSResults =
-              pre_PostOrderDFS_ver3(
+              //pre_PostOrderDFS_ver3(
+            /*TODO DeBug*/
+              pre_PostOrderDFS_ver4(
                                      graph = mapWithAdjacencyList,
-                                     startNode = startingNode
+                                     startNodeKey = startingNode
                                    )
             /*val resultSetDFS: BitSet =
               pre_PostOrderDFS_ver2(
@@ -2963,7 +3074,7 @@ class stronglyConnectedComponentsSuit
                   )
           }
   ignore(
-        "62: 'nodesCounterDFS' " +
+        "63: 'nodesCounterDFS' " +
           "should return " +
           "right reachable number of 'nodes' in graph"
       ) {
@@ -3096,8 +3207,8 @@ class stronglyConnectedComponentsSuit
                     s"& equal to 'nodesInGraph'"
                 )
         }
-  test(
-          "63: 'DFS_Ordering' " +
+  ignore(
+          "64: 'DFS_Ordering' " +
             "should return " +
             "right ?topological? ordering of all graph 'nodes'"
         ) {
@@ -3263,7 +3374,7 @@ class stronglyConnectedComponentsSuit
                   )
           }
   ignore(
-          "64: 'DFS_SCCs_Size' " +
+          "65: 'DFS_SCCs_Size' " +
             "should return " +
             "amount equal to number of all graph 'nodes'"
         ) {
@@ -3336,29 +3447,45 @@ class stronglyConnectedComponentsSuit
             //1
             //6
               7 //sink
-    // 8
-    //0
-    val takeNumber: Int = 15
+            // 8
+            //0
+            val takeNumber: Int = 15
             val nodesLimit: Int = Int.MinValue
 
-            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
             val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
               makeAdjacencyListMapFromArcs(
                                             fileContentIter =
                                               actualFileContent
                                             /*.take(inputTakeNumber)*/ ,
                                             pattern =
-                                              """\d+""".r
+                                              """\d+""".r,
+              nonReversedArcs = true
+                                          )
+                  println(
+                           s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                             mapWithAdjacencyList.isEmpty )
+            val transposedMapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+              makeAdjacencyListMapFromArcs(
+                                            fileContentIter =
+                                              readFromFile(
+                                                            fileName = fileName,
+                                                            filePath = filePath
+                                                          )
+                                                /*skip redundant*/
+                                                .drop(2),
+                                            pattern =
+                                              """\d+""".r,
+                                            nonReversedArcs = false
                                           )
             println(
-                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
-                       mapWithAdjacencyList.isEmpty +
-                       s"\n'mapWithAdjacencyList.size' is:" +
-                       mapWithAdjacencyList.size +
+                     s"\n'transposedMapWithAdjacencyList.isEmpty' is:" +
+                       transposedMapWithAdjacencyList.isEmpty +
+                       s"\n'transposedMapWithAdjacencyList.size' is:" +
+                       transposedMapWithAdjacencyList.size /*+
                        s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
-                       mapWithAdjacencyList.get(startingNode) /*+
-                     s"\n'mapWithAdjacencyList.head' is:" +
-                     mapWithAdjacencyList.headOption +
+                       transposedMapWithAdjacencyList.get(startingNode) */+
+                     s"\n'transposedMapWithAdjacencyList.head' is:" +
+                       transposedMapWithAdjacencyList.headOption /*+
                      s"\n'mapWithAdjacencyList.tail.head' is ${
                        mapWithAdjacencyList.tail.head
                      }" +
@@ -3377,9 +3504,10 @@ class stronglyConnectedComponentsSuit
             totalNodesFound):
             DFSResults =
               DFS_Ordering(
-                            graph = mapWithAdjacencyList,
+                            graph =
+                              transposedMapWithAdjacencyList,
                             mapKeyIter =
-                              mapWithAdjacencyList
+                              transposedMapWithAdjacencyList
                               .keysIterator
                           )
             /*val resultSetDFS: BitSet =
@@ -3407,7 +3535,8 @@ class stronglyConnectedComponentsSuit
                    )
             val graphSCCs_Sizes: Stream[Int] =
               DFS_SCCs_Size(
-                             graph = mapWithAdjacencyList,
+                             graph =
+                               mapWithAdjacencyList,
                              mapKeyIter =
                                preExplored
                                .toIterator

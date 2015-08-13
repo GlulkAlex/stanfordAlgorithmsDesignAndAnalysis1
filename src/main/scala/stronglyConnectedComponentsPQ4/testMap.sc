@@ -6,3 +6,17 @@ val mapKeyIter3 =  map3.keysIterator
 mapKeyIter3.next
 mapKeyIter3.next
 mapKeyIter3.next
+map1.head._1
+map1.head.x
+map1.head.swap
+val (key,vaLue) =
+map1.head
+var varMap4: Map[Int, String] =
+  map2 + (1->"1", 2->"2", 3->"3")
+val mapElemWithKey1 = varMap4.get(1).get
+varMap4.updated(1,"one")
+varMap4
+varMap4 =
+varMap4.updated(1,"one")
+varMap4
+mapElemWithKey1

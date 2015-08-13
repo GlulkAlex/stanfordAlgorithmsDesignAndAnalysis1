@@ -109,6 +109,12 @@ object stronglyConnectedComponents {
 
   case object Down extends TraverseDirection
 
+  case class StackLeader(
+                          leaderKey: Int,
+                          nodeKey: Int
+                          //adjustedNodeKey: Int
+                          )
+
   case class ComponentResult(
                               nodesAmount: Int,
                               exploredNodes: Vector[Int])
@@ -150,9 +156,11 @@ object stronglyConnectedComponents {
 
   /*node's 'rank' or 'layer'*/
   case class IndexedNode(
+                          /*or 'nodeKey' in Map*/
                           nodeVal: Int,
                           var nodeIndex: Option[Int],
                           var nodeLowLink: Int,
+                          /*or check Set.contains(nodeKey)*/
                           var inStack: Boolean
                           )
 
@@ -165,22 +173,46 @@ object stronglyConnectedComponents {
                                      doneOrder: Option[Int],
                                      //var groupLeader: Int
                                      adjustedNodes: Set[Int]
-                                     ){
+                                     ) {
     override def toString =
       s"""[${if (isExplored) "e" else "u"}|$doneOrder(${
-        adjustedNodes.mkString(",")})]"""
+        adjustedNodes.mkString(",")
+      })]"""
   }
 
+  /**
+  @note Helper class
+  @author Gluk Alex
+  @version 1.1, 13/08/2015
+  @define bfinfo copy paste from `Option`
+  @param isExplored: Boolean
+  @param nodeIndex: Option[Int]
+  @param nodeLowLink: Int
+  @param isInStack: Boolean
+  @param doneOrder: Int
+  @param adjustedNodes: Set[Int]
+  @return represent corresponding to node key value in th Map with fields
+    */
   case class NodeMapValFieldsDynamic(
                                       var isExplored: Boolean,
                                       var nodeIndex: Option[Int],
                                       /*default is 'Int.MaxValue'*/
                                       var nodeLowLink: Int,
-                                      var inStack: Boolean,
-                                      var doneOrder: Int,
-                                      var groupLeader: Int,
+                                      var isInStack: Boolean,
+                                      var doneOrder: Option[Int],
+                                      var groupLeader: Option[Int],
                                       var adjustedNodes: Set[Int]
-                                      )
+                                      ){
+    override def toString =
+      s"""{${if (isExplored) "e" else "u"}/""" +
+      s"""$nodeIndex/""" +
+      s"""$nodeLowLink/""" +
+        s"""${if (isInStack) "in" else "out"}/""" +
+    s"""$doneOrder/""" +
+    s"""$groupLeader>to(""" +
+    s"""${adjustedNodes.mkString(",")})}"""
+  }
+
 
   case class RankedNode(node: Int, rank: Int)
 
@@ -258,6 +290,121 @@ object stronglyConnectedComponents {
                                    endIndex: Int = 0
                                    ): Option[Int] = {
     None
+  }
+
+  trait Graph {
+    //var nodesWithAdjusted: Map[Int, Any] = Map.empty
+
+    def addEdge(edgeStartNodeKey: Int, edgeEndNodeKey: Int):
+    Unit
+    //Map[Int, Any]
+  }
+
+  class DirectedGraphDynamic extends Graph {
+    /*override*/ var nodesWithAdjusted: Map[Int, NodeMapValFieldsDynamic] =
+      Map.empty
+
+    /*may be 'Unit' and not have return value*/
+    def addEdge(
+                 arcTail: Int,
+                 arcHead: Int
+                 //): Map[Int, NodeMapValFieldsDynamic] = {
+                 ): Unit = {
+      val defaultMapValue: NodeMapValFieldsDynamic =
+        NodeMapValFieldsDynamic(
+                                 isExplored = false,
+                                 nodeIndex = None,
+                                 nodeLowLink = Int.MaxValue,
+                                 isInStack = false,
+                                 doneOrder = None,
+                                 groupLeader = None,
+                                 adjustedNodes = Set.empty)
+      val arcTailGet: Option[NodeMapValFieldsDynamic] =
+        nodesWithAdjusted
+        .get(key = arcTail)
+      val arcHeadGet: Option[NodeMapValFieldsDynamic] =
+        nodesWithAdjusted
+        .get(key = arcHead)
+      //val addArcHead: Map[Int, NodeMapValFieldsDynamic] =
+        if (arcHeadGet.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          /*side effect*/
+          nodesWithAdjusted =
+            nodesWithAdjusted
+            .updated(
+                key = arcHead,
+                value = defaultMapValue
+                    )
+          /*return value*/
+          //nodesWithAdjusted
+        } else /*if (arcTailGet.isDefined)*/ {
+          /*same value*/
+          //nodesWithAdjusted
+        }
+      //val resultMapUpdated: Map[Int, NodeMapValFieldsDynamic] =
+        if (arcTailGet.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          /*val valToAdd: NodeMapValFieldsDynamic = {
+            /*side effect*/
+            defaultMapValue.adjustedNodes = Set(arcHead)
+            /*return value*/
+            defaultMapValue
+          }*/
+          /*side effect*/
+          nodesWithAdjusted =
+            //addArcHead
+          nodesWithAdjusted
+            .updated(
+                key = arcTail,
+                value = //valToAdd
+                  NodeMapValFieldsDynamic(
+                                           isExplored = false,
+                                           nodeIndex = None,
+                                           nodeLowLink = Int.MaxValue,
+                                           isInStack = false,
+                                           doneOrder = None,
+                                           groupLeader = None,
+                                           adjustedNodes = Set(arcHead))
+                    )
+          /*return value*/
+          //nodesWithAdjusted
+        } else /*if (arcTailGet.isDefined)*/ {
+          /*add new adjusted 'node' to existed 'node'*/
+          /*val valUpdated: NodeMapValFieldsDynamic = {
+            /*side effect*/
+            defaultMapValue.adjustedNodes =
+              arcTailGet
+              .get
+              .adjustedNodes + arcHead
+            /*return value*/
+            defaultMapValue
+          }*/
+          /*side effect*/
+          nodesWithAdjusted =
+            //addArcHead
+          nodesWithAdjusted
+            .updated(
+                key = arcTail,
+                value = //valUpdated
+                  NodeMapValFieldsDynamic(
+                                           isExplored = false,
+                                           nodeIndex = None,
+                                           nodeLowLink = Int.MaxValue,
+                                           isInStack = false,
+                                           doneOrder = None,
+                                           groupLeader = None,
+                                           adjustedNodes =
+                                             arcTailGet
+                                             .get
+                                             .adjustedNodes + arcHead
+                                         )
+                    )
+          /*return value*/
+          //nodesWithAdjusted
+        }
+      /*return value*/
+      //resultMapUpdated
+    }
   }
 
   /*?may be this
@@ -617,6 +764,53 @@ object stronglyConnectedComponents {
   /*assume that 'nodes.value' unique*/
   /*assume that 'Iterator' contains only pair Int in String*/
   @scala.annotation.tailrec
+  def fillDirectedGraphDynamicFromArcs(
+                                        fileContentIter: Iterator[String],
+                                        result: DirectedGraphDynamic =
+                                        new DirectedGraphDynamic,
+                                        pattern: Regex =
+                                        """\d+""".r,
+                                        //isArcsReversed: Boolean = false
+                                        nonReversedArcs: Boolean = true
+                                        ): DirectedGraphDynamic = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      result
+    } else /*if (adjacencyList.hasNext)*/ {
+      /*may be leading 'space' then
+      * delimiter one or double 'space'*/
+      val List(first, second): List[Int] =
+        pattern
+        .findAllIn(fileContentIter
+                   .next())
+        .map(_.toInt)
+        .toList
+      val List(arcTail, arcHead): List[Int] =
+        if (nonReversedArcs) {
+          List(first, second)
+        } else {
+          /*return value*/
+          List(second, first)
+        }
+      /*side effect*/
+      result
+      .addEdge(
+          arcTail = arcTail,
+          arcHead = arcHead
+              )
+      /*recursion*/
+      fillDirectedGraphDynamicFromArcs(
+                                        fileContentIter: Iterator[String],
+                                        result = result,
+                                        nonReversedArcs = nonReversedArcs
+                                      )
+    }
+  }
+
+  /*order of 'arcs' does not matter*/
+  /*assume that 'nodes.value' unique*/
+  /*assume that 'Iterator' contains only pair Int in String*/
+  @scala.annotation.tailrec
   def makeAdjacencyListMapFromArcs(
                                     fileContentIter: Iterator[String],
                                     resultMap: Map[Int,
@@ -647,12 +841,12 @@ object stronglyConnectedComponents {
         .map(_.toInt)
         .toList
       val List(arcTail, arcHead): List[Int] =
-      if (nonReversedArcs) {
-        List(first, second)
-      } else {
-        /*return value*/
-        List(second, first)
-      }
+        if (nonReversedArcs) {
+          List(first, second)
+        } else {
+          /*return value*/
+          List(second, first)
+        }
       val arcTailGet: Option[NodeMapValFieldsStatic] =
         resultMap
         .get(key = arcTail)
@@ -2165,6 +2359,100 @@ object stronglyConnectedComponents {
     }
   }
 
+  // run 'DFS' in `digraph` 'G'
+  // from vertex 'v' and
+  // compute `preorder`/`postorder`
+  //@scala.annotation.tailrec
+  def dfs(
+           graph: Map[Int, NodeMapValFieldsStatic],
+           startFromNodeKey: Int,
+           globalExploredNodesSet:
+           BitSet =
+           BitSet.empty,
+           dfsResults: DFSResults =
+           DFSResults(
+                       preOrder = List.empty,
+                       postOrder = List.empty,
+                       reachable = 0
+                     ),
+           globalPreQueue: scala.collection.immutable.Queue[Int] =
+           Queue.empty[Int],
+           adjustedNodesKeysRemains: Set[Int] =
+           Set.empty
+           ): DFSResults = {
+    //): Unit = {
+    //marked[v] = true
+    /*state*/
+    var localExploredNodesSet:
+    BitSet =
+    //explored
+      BitSet.empty
+    /*state*/
+    var localDFS_Results: DFSResults = dfsResults
+    var localPreQueue: scala.collection.immutable.Queue[Int] =
+    //Queue.empty[Int]
+      globalPreQueue
+
+    /*check for 'node' existence*/
+    val currentNodeValue: Option[NodeMapValFieldsStatic] =
+      graph
+      .get(startFromNodeKey)
+    if (currentNodeValue.isEmpty) {
+      /*'key' no in current graph*/
+      /*exit with unchanged values*/
+      localDFS_Results
+    } else /*if (currentNodeValue.isDefined)*/ {
+      /*mark as `explored`*/
+      localExploredNodesSet = localExploredNodesSet + startFromNodeKey
+      val adjustedNodesKeys: Set[Int] =
+        currentNodeValue.get.adjustedNodes
+      /*set order number for 'node'*/
+      //pre[v] = preCounter++
+      /*add / append order number to 'preorder'*/
+      //preorder.enqueue(v)
+      /*`append` for 'Queue' takes constant time*/
+      localPreQueue = localPreQueue.enqueue(startFromNodeKey)
+      localDFS_Results =
+        DFSResults(
+                    /*`append` is time consuming for 'List' operation*/
+                    localDFS_Results.preOrder :+ startFromNodeKey,
+                    localDFS_Results.postOrder,
+                    localDFS_Results.reachable + 1
+                  )
+      //for (int w : G.adj(v)) {
+      /*check all available adjusted 'nodes' recursively */
+      for (nextAdjustedNodeKey <- adjustedNodesKeys) {
+        if (
+        //!marked[w]
+          !localExploredNodesSet
+           .contains(nextAdjustedNodeKey)
+        ) {
+          /*recursion*/
+          //dfs(G, w)
+          dfs(graph = graph,
+              startFromNodeKey = nextAdjustedNodeKey)
+        } else /*if (nextAdjustedNode.isExplored)*/ {
+          /*go to the 'nextAdjustedNode'*/
+          /*same results as before*/
+        }
+      }
+      /*return value*/
+      /*after 'for' `loop` content of 'postorder' may change
+      within 'for' recursive calls
+       */
+      /*add order number to 'postorder'*/
+      //postorder.enqueue(v)
+      /*set order number for 'node'*/
+      //post[v] = postCounter++
+      DFSResults(
+                  /*`append` is time consuming for 'List' operation*/
+                  localDFS_Results.preOrder,
+                  localDFS_Results.postOrder :+ startFromNodeKey,
+                  localDFS_Results.reachable
+                )
+    }
+  }
+
   /*Depth-first search (DFS)*/
   //A recursive implementation of DFS
   //Input: A graph 'G' and a (starting) vertex 'v' of 'G'
@@ -2905,7 +3193,7 @@ object stronglyConnectedComponents {
   def pre_PostOrderDFS_ver3(
                              graph: Map[Int, NodeMapValFieldsStatic],
                              /*start node*/
-                             startNode: Int,
+                             startNodeKey: Int,
                              /*passed from 'DFS_Ordering'*/
                              explored:
                              BitSet =
@@ -2913,24 +3201,35 @@ object stronglyConnectedComponents {
                              preOrd:
                              List[Int] =
                              List.empty,
+                             /*new added when
+                             ?reached `sink` / nowhere to go else?
+                             'node'.isExplored &&
+                             (adjusted.empty || adjusted.each.isExplored)
+                             or when backtracks to itself ?
+                             * */
                              postOrd:
                              List[Int] =
                              List.empty,
                              counted: Int = 0
                              //): BitSet = {
                              ): DFSResults = {
+    /*assume(graph
+           .get(startNodeKey).isDefined,"'key' must be within 'graph'")*/
+
     /*state*/
     var exploredNodesSet:
     BitSet =
       explored
     //BitSet.empty
     /*accum*/
+    /*'nodes' added before corresponding adjusted list going to be checked*/
     var exploredNodesPre:
     List[Int] =
       preOrd
     //List.empty
     /*Stream[Int] =
     Stream.empty,*/
+    /*'nodes' added after corresponding adjusted list was checked*/
     var exploredNodesPost:
     /*Stream[Int] =
     Stream.empty,*/
@@ -2938,40 +3237,83 @@ object stronglyConnectedComponents {
     //List.empty
       postOrd
     //List(startNode)
+    /*all 'nodes' to check*/
+    /*Last-in-First-out*/
     var nodesStackList: List[Int] =
-      List(startNode)
+    /*`push`*/
+      List(startNodeKey)
+    var nodesStackSet:
+    BitSet =
+      BitSet.empty
+    /*first-In-first-Out*/
+    /*var nodesQueue:
+    scala.collection.immutable
+    .Queue[StackLeader] =
+    //.Queue[Int] =
+    //Queue.empty
+    //Queue(startNodeKey)
+      Queue(
+             StackLeader(
+                          leaderKey = startNodeKey,
+                          nodeKey = startNodeKey
+                        ))*/
+    //nodesQueue = nodesQueue.enqueue(startNodeKey)
     var nodesCounter: Int =
       counted
     //0
 
+    /*
+    to better handle possible `cases` (`flow`), may use:
+    val pf: PartialFunction[Int, String] = {
+      case i if i%2 == 0 => "even"
+    }
+    and they may be `composed` with 'orElse'
+    val tf: (Int => String) = pf orElse { case _ => "odd"}
+    * */
     @scala.annotation.tailrec
     def innerLoop(
                    /*adjacentEdges: Set[Int] =
                    Set.empty*/
-                   doneNode: Option[Int] = None
+                   //doneNode:
+                   //Option[Int] = None
+                   //doneNodeKey:                 Int
+                   //lastCheckedNodeKey: Option[Int] = None
                    ): DFSResults = {
       //): BitSet = {
-      if (nodesStackList.isEmpty) {
+      if (
+        nodesStackList.isEmpty
+      //nodesQueue.isEmpty
+      ) {
+        /*all induced / incident / reachable 
+        from 'startNode' 'nodes' was checked
+        */
         /*side effect*/
-        /*exploredNodesPost =
-          //startNode +: exploredNodesPost
-          if (doneNode.isDefined) {
-            if (
-              exploredNodesSet
-              .contains(
-                  startNode
-                       )
-            ) {
-              /*'append', then 'reverse' somewhere later*/
-              doneNode.get +: exploredNodesPost
-            } else {
-              //startNodeGet.isEmpty
-              exploredNodesPost
-            }
-          } else {
-            /*return value*/
-            exploredNodesPost
-          }*/
+        //exploredNodesPost =
+        //exploredNodesPost :+ startNodeKey
+        //startNode +: exploredNodesPost
+        /*if (
+          //doneNode
+          lastCheckedNodeKey
+          .isDefined) {
+          if (
+            exploredNodesSet
+            .contains(
+                startNodeKey
+                     )
+          ) {*/
+        /*'append', then 'reverse' somewhere later*/
+        //doneNode.get +:
+        exploredNodesPost = exploredNodesPost :+
+          startNodeKey
+        //lastCheckedNodeKey.get
+        /*} else {
+          //startNodeGet.isEmpty
+          //exploredNodesPost
+        }
+      } else {
+        /*return value*/
+        //exploredNodesPost
+      }*/
         /*return value*/
         DFSResults(
                     /*same value for 'preOrder'*/
@@ -2981,65 +3323,148 @@ object stronglyConnectedComponents {
                   )
         //exploredNodesSet
       } else /*if (nodesStackList.nonEmpty)*/ {
-        val nextNodeFromStackKey: Int =
+        /*last-In-first-Out*/
+        val nextNodeKeyFromStack: Int =
+        /*`topLookUp`*/
           nodesStackList.head
 
         /*side effect*/
         /*reduce loop condition to converge*/
+        /*`pop`*/
         nodesStackList = nodesStackList.tail
+        nodesStackSet = nodesStackSet - nextNodeKeyFromStack
+        //val (firstTopElem, restOfQueue) =
+        /*val (nextNodeKeyFromQueue, restOfQueue) =
+          nodesQueue.dequeue
+        /*side effect*/
+        nodesQueue = restOfQueue*/
 
-        exploredNodesPost =
-          if (doneNode.isDefined) {
-            /*if (
-              exploredNodesSet
-              .contains(
-                  startNode
-                       )
-            ) {*/
-            /*'append', then 'reverse' somewhere later*/
-            doneNode.get +: exploredNodesPost
-            /*} else {
-              //startNodeGet.isEmpty
-              exploredNodesPost
-            }*/
-          } else {
-            /*return value*/
-            exploredNodesPost
-          }
+        //exploredNodesPost =
+        /*if (
+        //doneNode.isDefined
+          nextNodeKeyFromQueue.leaderKey !=
+            //startNodeKey
+          doneNodeKey
+        ) {*/
+        /*if (
+          exploredNodesSet
+          .contains(
+              startNode
+                   )
+        ) {*/
+        /*'append', then 'reverse' somewhere later*/
+        //doneNode.get +:
+        /*`prepend`*/
+        //exploredNodesPost :+ startNodeKey
+        /*} else {
+          //startNodeGet.isEmpty
+          exploredNodesPost
+        }*/
+        /*} else {
+          /*return value*/
+          exploredNodesPost
+        }*/
 
         if (
         //nextNodeFromStack.isExplored
           exploredNodesSet
-          .contains(nextNodeFromStackKey)
+          .contains(
+              nextNodeKeyFromStack
+              //nextNodeKeyFromQueue
+              //nextNodeKeyFromQueue.nodeKey
+                   )
         ) {
-          /*exploredNodesPost =
-          nextNodeFromStackKey +: exploredNodesPost*/
+          /*if (
+            //nodesStackSet.contains(nextNodeKeyFromStack)
+            lastCheckedNodeKey.isEmpty
+          ) {
+            /*same*/
+            //exploredNodesPost
+          } else {
+          exploredNodesPost =
+            exploredNodesPost :+
+              lastCheckedNodeKey.get
+          /*nextNodeKeyFromStack +:
+            exploredNodesPost*/
+          }*/
           /*to recursion*/
           /*skip current 'node', check next*/
           /*recursion*/
           innerLoop()
+          //innerLoop(doneNodeKey = doneNodeKey)
         } else /*if (nextNodeFromStack.notExplored)*/ {
-          /*side effect*/
-          /*actual result*/
-          exploredNodesSet =
-            exploredNodesSet + nextNodeFromStackKey
-          exploredNodesPre =
-            nextNodeFromStackKey +: exploredNodesPre
-          nodesCounter += 1
-          //nodesCounter + 1
 
           val nextNodeFromStackGetVal: Option[NodeMapValFieldsStatic] =
             graph
-            .get(nextNodeFromStackKey)
+            .get(nextNodeKeyFromStack)
+          /*val nextNodeFromQueueGetVal: Option[NodeMapValFieldsStatic] =
+            graph
+            .get(
+                //nextNodeKeyFromQueue
+                nextNodeKeyFromQueue.nodeKey
+                )*/
           /*side effect*/
-          if (nextNodeFromStackGetVal.isDefined) {
+          if (
+            nextNodeFromStackGetVal.isDefined
+          //nextNodeFromQueueGetVal.isDefined
+          ) {
+            /*actual result*/
+            exploredNodesSet =
+              exploredNodesSet +
+                nextNodeKeyFromStack
+            /*nextNodeKeyFromQueue
+            .nodeKey*/
+            //var isNodeDone: Boolean = true
+
             nextNodeFromStackGetVal
+            //nextNodeFromQueueGetVal
             .get
             .adjustedNodes
-            .foreach((node: Int) => {nodesStackList = node +: nodesStackList})
+            .foreach((node: Int) => {
+              if (nodesStackSet.contains(node)) {
+              } else {
+                /*`push`*/
+                nodesStackList = node +: nodesStackList
+                nodesStackSet = nodesStackSet + node
+                //isNodeDone = false
+              }
+              /*nodesQueue =
+                nodesQueue
+                .enqueue(
+                    //node
+                    StackLeader(
+                                 leaderKey = startNodeKey,
+                                 nodeKey = node
+                               )
+                        )*/
+            })
+            /*side effect*/
+            exploredNodesPre =
+              /*'append'*/
+              exploredNodesPre :+
+                /*nextNodeKeyFromQueue
+                .nodeKey*/
+                /*`prepend`*/
+                nextNodeKeyFromStack //+: exploredNodesPre
+            if (
+            //isNodeDone
+              true
+            ) {
+              exploredNodesPost =
+                exploredNodesPost :+
+                  nextNodeKeyFromStack /*+:
+            exploredNodesPost*/
+            } else {
+              /*same*/
+              //exploredNodesPost
+            }
+            nodesCounter += 1
+            //nodesCounter + 1
             /*recursion*/
-            //innerLoop()
-            innerLoop(doneNode = Some(nextNodeFromStackKey))
+            innerLoop()
+            //innerLoop(doneNodeKey = nextNodeKeyFromQueue.nodeKey)
+            /*'startNodeKey' was in stack too*/
+            //innerLoop(lastCheckedNodeKey = Some(nextNodeKeyFromStack))
           } else /*if (nextNodeFromStackGetVal.isEmpty)*/ {
             /*?may be check it outside the 'innerLoop()'?*/
             /*'startNode' not in 'graph'*/
@@ -3062,6 +3487,156 @@ object stronglyConnectedComponents {
 
     /*initialization*/
     innerLoop()
+    //innerLoop(doneNodeKey = startNodeKey)
+  }
+
+  /*Depth-first search (DFS)*/
+  /*must skip not existing starting 'node' values*/
+  @scala.annotation.tailrec
+  def pre_PostOrderDFS_ver4(
+                             /*immutable, passed around*/
+                             graph: Map[Int, NodeMapValFieldsStatic],
+                             /*start node*/
+                             startNodeKey: Int,
+                             /*passed from 'DFS_Ordering'*/
+                             explored:
+                             BitSet =
+                             BitSet.empty,
+                             /*TODO review redundant parameters*/
+                             nodesToCheckSet:
+                             BitSet =
+                             BitSet.empty,
+                             nodesRemainsToCheck: List[Int] =
+                             List.empty,
+                             dfsResults: DFSResults =
+                             DFSResults(
+                                         preOrder =
+                                           List.empty,
+                                         /*new added when 'node.done'
+                                         ?reached `sink` / nowhere to go else?
+                                         'node'.isExplored &&
+                                         (adjusted.empty || adjusted.each
+                                         .isExplored)
+                                         or when backtracks to itself ?
+                                         * */
+                                         postOrder =
+                                           List.empty,
+                                         reachable = 0
+                                       )
+                             ): DFSResults = {
+    /*assume(graph
+           .get(startNodeKey).isDefined,"'key' must be within 'graph'")*/
+    if (
+      explored.contains(startNodeKey) &&
+        nodesRemainsToCheck.isEmpty
+    ) {
+      /*return value*/
+      dfsResults
+    } else if (
+             explored.contains(startNodeKey) &&
+               nodesRemainsToCheck.nonEmpty
+           ) {
+      assume(!nodesToCheckSet.contains(startNodeKey))
+      val nodesAdjusted: Set[Int] =
+        graph
+        .get(startNodeKey)
+        .get
+        .adjustedNodes
+      if (nodesAdjusted.isEmpty) {
+        /*nowhere to go, `sink`*/
+        /*`startNodeKey` done*/
+        /*return value*/
+        DFSResults(
+                    dfsResults.preOrder,
+                    /*`append`*/
+                    dfsResults.postOrder :+ startNodeKey,
+                    dfsResults.reachable
+                  )
+      } else /*if (nodesAdjusted.nonEmpty)*/ {
+        /*TODO tow similar checks, at least one redundant*/
+        if (nodesAdjusted.subsetOf(explored)) {
+          /*all nodes within already explored*/
+          /*`startNodeKey` done*/
+          /*return value*/
+          DFSResults(
+                      dfsResults.preOrder,
+                      /*`append`*/
+                      dfsResults.postOrder :+ startNodeKey,
+                      dfsResults.reachable
+                    )
+        } else /*remains unexplored*/ {
+          /*possibly time consuming operations*/
+          val adjustedUnexplored: Set[Int] =
+            nodesAdjusted
+            .diff(explored)
+          if (adjustedUnexplored.isEmpty) {
+            /*`startNodeKey` done*/
+            /*return value*/
+            DFSResults(
+                        dfsResults.preOrder,
+                        /*`append`*/
+                        dfsResults.postOrder :+ startNodeKey,
+                        dfsResults.reachable
+                      )
+          } else /*if (adjustedUnexplored.nonEmpty)*/ {
+            val nextNodeKeyToCheck:
+            //Option[Int] =
+            Int =
+              adjustedUnexplored
+              .head
+            //.headOption
+            val exploredUpdated: BitSet =
+              explored + nextNodeKeyToCheck
+            /*val nodesAdjustedUpdated: Set[Int] =
+          nodesAdjusted - nextNodeKeyToCheck*/
+            /*recursion*/
+            pre_PostOrderDFS_ver4(
+                                   graph = graph,
+                                   startNodeKey: Int,
+                                   /*passed from 'DFS_Ordering'*/
+                                   explored =
+                                     exploredUpdated,
+                                   nodesToCheckSet = nodesToCheckSet,
+                                   nodesRemainsToCheck = nodesRemainsToCheck,
+                                   dfsResults = DFSResults(
+                                                            /*`append`*/
+                                                            dfsResults
+                                                            .preOrder :+
+                                                              startNodeKey,
+                                                            dfsResults
+                                                            .postOrder,
+                                                            dfsResults
+                                                            .reachable + 1
+                                                          )
+                                 )
+          }
+        }
+      }
+    } else /*if (!explored.contains(startNodeKey))*/ {
+      /*fist iteration, `fresh` node*/
+      val exploredUpdated: BitSet =
+        explored + startNodeKey
+      /*return value*/
+      /*recursion*/
+      pre_PostOrderDFS_ver4(
+                             graph = graph,
+                             startNodeKey: Int,
+                             /*passed from 'DFS_Ordering'*/
+                             explored =
+                               exploredUpdated,
+                             nodesToCheckSet = nodesToCheckSet,
+                             nodesRemainsToCheck = nodesRemainsToCheck,
+                             dfsResults = DFSResults(
+                                                      /*`append`*/
+                                                      dfsResults
+                                                      .preOrder :+ startNodeKey,
+                                                      dfsResults.postOrder,
+                                                      dfsResults
+                                                      .reachable + 1
+                                                    )
+                           )
+    }
+
   }
 
   /*Reverse the directions of all `arcs` to obtain the `transpose` `graph`.*/
@@ -3106,7 +3681,7 @@ object stronglyConnectedComponents {
         ) {
           pre_PostOrderDFS_ver3(
                                  graph = graph,
-                                 startNode = currentNodeKey,
+                                 startNodeKey = currentNodeKey,
                                  explored = exploredNodesSet,
                                  preOrd =
                                    resultAccum.preOrder,
@@ -3712,6 +4287,326 @@ object stronglyConnectedComponents {
                            /*incremented every iteration within method call*/
                            index
                          ).sCC
+  }
+
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjanWithMap(
+                     adjacencyList: Map[Int, NodeMapValFieldsStatic],
+                     index: Int = 0,
+                     stack: List[IndexedNode] =
+                     List.empty[IndexedNode]
+                     ): Vector[List[Int]] = {
+    //): List[List[Int]] = {
+    /*global 'index' tracker*/
+    //var index: Int = 0
+    //S := empty
+    /*
+    Use 'List' instead:
+    'stack.push' 'x' becomes
+    'x :: list'
+    'stack.pop' is 'list.tail'
+     */
+    //val stack /*: Stack[Nothing]*/ =
+    //scala.collection.immutable.Stack.empty[IndexedNode]
+    //List.empty[IndexedNode]
+
+    /*auxiliary method*/
+    def createNewSCC(
+                      newSCC: List[Int] =
+                      List.empty,
+                      nodeFromStack: Option[IndexedNode] =
+                      None,
+                      /*assume that 'node.inStack'*/
+                      currentStack: /*Stack*/ List[IndexedNode],
+                      v: IndexedNode
+                      ): List[Int] = {
+      if (
+        nodeFromStack.isDefined &&
+          nodeFromStack.get == v
+      ) {
+        /*return value*/
+        newSCC.reverse
+      } else {
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop*/
+        val stackWithoutTop = currentStack.tail
+        val w = currentStack.head
+        /*side effect*/
+        w.inStack = false
+        /*recursion*/
+        createNewSCC(
+                      newSCC =
+                        w.nodeVal +: newSCC,
+                      nodeFromStack = Some(w),
+                      currentStack = stackWithoutTop,
+                      v = v
+                    )
+      }
+    }
+
+    /*recursive method, what is the output, except side effects ?*/
+    /*changes 'index', so must return new value*/
+    /*create discovered 'SCC', so must return it*/
+    /*changes 'stack', so must return it*/
+    def strongConnect(
+                       /*?just 'key'?*/
+                       node:
+                       Int,
+                       //IndexedNode,
+                       index: Int
+                       ): SCC_Result = {
+      //): List[Int] = {
+      /*auxiliary method*/
+      /*trying to find `min` val*/
+      def minLowLink(
+                      //nodeAndAdjusted: IndexedNodeWithAdjacencyList,
+                      adjustedNodes:
+                      Set[Int],
+                      //List[IndexedNode],
+                      /*actually started with 'node.nodeLowLink'*/
+                      currentMin: Int = Int.MaxValue,
+                      node: IndexedNode,
+                      /*global index state changing with time*/
+                      index: Int
+                      ): Int = {
+        if (adjustedNodes.isEmpty) {
+          /*return value*/
+          currentMin
+        } else {
+          val adjNode: IndexedNode =
+          //adjustedNodes.head
+            IndexedNode(
+                         nodeVal = adjustedNodes.head,
+                         nodeIndex = None,
+                         nodeLowLink = adjustedNodes.head,
+                         inStack = false
+                       )
+
+          /*? partial function ?*/
+          //val newMin: Int =
+          if (adjNode.nodeIndex.isEmpty) {
+            // Successor 'w'
+            // has not yet been visited recurse on it
+            /*outer recursion*/
+            /*?must change 'node.nodeLowLink'?*/
+            val SCC_Result(newLowlink, newIndex, newStack, newSCC) =
+              strongConnect(
+                             //adjNode,
+                             adjNode.nodeVal,
+                             /*?must return as global state?*/
+                             //newIndex
+                             index
+                           )
+            /*side effect*/
+            node.nodeLowLink = newLowlink
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          newLowlink.min(adjNode.nodeLowLink),
+                        //node.nodeLowLink.min(adjNode.nodeLowLink),
+                        node: IndexedNode,
+                        newIndex
+                      )
+            /*return value*/
+            //node.nodeLowLink.min(adjNode.nodeLowLink)
+          } else if (adjNode.inStack) {
+            // Successor 'w' is in `stack` S and
+            // hence in the current `SCC`
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          node.nodeLowLink
+                          .min(adjNode.nodeIndex.getOrElse(node.nodeLowLink)),
+                        node: IndexedNode,
+                        index
+                      )
+            /*return value*/
+            //node.nodeLowLink.min(adjNode.nodeIndex.getOrElse(node
+            // .nodeLowLink))
+          } else {
+            /*return value*/
+            //currentMin
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          currentMin,
+                        node: IndexedNode,
+                        index
+                      )
+          }
+          /*recursion*/
+          /*minLowLink(
+                      adjustedNodes=
+                        /*must converge eventually*/
+                        adjustedNodes.tail,
+                      currentMin=
+                        newMin,
+                      node: IndexedNode,
+                      index
+                    )*/
+        }
+      }
+
+      // Set the depth index for 'node' to the smallest unused `index`
+      /*initialization*/
+      /*side effects*/
+      //node.nodeIndex = Some(index)
+      /*?And what is initial value +infinity?*/
+      //node.nodeLowLink = index
+      /*change state*/
+      //index = index + 1
+      val newIndex = index + 1
+      //stack.push(node)
+      val vInStack: List[IndexedNode] =
+      //node +:
+        IndexedNode(
+                     nodeVal = node,
+                     nodeIndex = None,
+                     nodeLowLink = node,
+                     inStack = false
+                   ) +:
+          stack
+      /*side effect*/
+      //node.inStack = true
+
+      /*must be separate method*/
+      // Consider `successors` of 'node'
+      //for each(node, w) in E do
+      //val nodeAndAdjusted: IndexedNodeWithAdjacencyList =
+      //adjacencyList(node.nodeVal - 1)
+      val adjustedNodesKeys: Set[Int] =
+        adjacencyList.get(
+                           node
+                           //.nodeVal
+                         ).get.adjustedNodes
+      /*trying to find `min` val*/
+      //node.nodeLowLink =
+      minLowLink(
+                  adjustedNodes =
+                    //nodeAndAdjusted.adjustedNodes,
+                    adjustedNodesKeys,
+                  currentMin =
+                    node,
+                  //node.nodeLowLink,
+                  node =
+                    IndexedNode(
+                                 nodeVal = node,
+                                 nodeIndex = None,
+                                 nodeLowLink = node,
+                                 inStack = false
+                               ),
+                  /*? may change within ?*/
+                  index = newIndex
+                )
+      //(
+      /*for {
+        adjNode <- nodeAndAdjusted.adjustedNodes
+      } yield
+      /*? partial function ?*/
+      //if (w.index is undefined) then
+        if (adjNode.nodeIndex.isEmpty) {
+          // Successor 'w'
+          // has not yet been visited recurse on it
+          /*recursion*/
+          strongConnect(
+                         adjNode,
+                        /*?must return as global state?*/
+                        newIndex
+                       )
+          /*side effect*/
+          node.nodeLowLink =
+            node.nodeLowLink.min(adjNode.nodeLowLink)
+          /*return*/
+          node.nodeLowLink
+        } else if (adjNode.inStack) {
+          // Successor 'w' is in `stack` S and
+          // hence in the current `SCC`
+          /*side effect*/
+          node.nodeLowLink =
+            node.nodeLowLink
+            .min(adjNode.nodeIndex.getOrElse(node.nodeLowLink))
+          /*return*/
+          node.nodeLowLink
+        }*/
+      //).head
+
+      // If 'node' is a `root` node,
+      // 'pop' the `stack` and
+      // generate an `SCC`
+      /*assume that 'node.nodeIndex.isDefined'*/
+      if (
+      //node.nodeLowLink == node.nodeIndex.get
+        true
+      ) {
+        //start a new strongly connected component
+        //val newSCC: List[Int] = List.empty
+        //repeat
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop
+        w.inStack = false*/
+        //add 'w' to `current` `strongly connected component`
+        //w +: newSCC
+        //until(w = node)
+        //output the current strongly connected component
+
+        /*return value*/
+        //newSCC.reverse
+        SCC_Result(
+                    //node.nodeLowLink,
+                    node,
+                    newIndex,
+                    vInStack,
+                    createNewSCC(
+                                  newSCC =
+                                    List.empty,
+                                  nodeFromStack = None,
+                                  currentStack = vInStack,
+                                  v =
+                                    //node
+                                    IndexedNode(
+                                                 nodeVal = node,
+                                                 nodeIndex = None,
+                                                 nodeLowLink = node,
+                                                 inStack = false
+                                               )
+                                )
+                  )
+      } else {
+        /*return value*/
+        SCC_Result(
+                    //node.nodeLowLink,
+                    node,
+                    newIndex,
+                    vInStack,
+                    List.empty[Int]
+                  )
+      }
+    }
+
+    /*instead ?must? call recursion on itself*/
+    /*return value*/
+    (for {
+    //adjustedNode <- adjacencyList.valuesIterator //G.V
+      adjustedNode <- adjacencyList.keysIterator
+    /*guard*/
+    //if (node.index is undefined)
+    //if node.node.nodeIndex.isEmpty
+    } yield strongConnect(
+                           //v.node,
+                           adjustedNode,
+                           /*incremented every iteration within method call*/
+                           index
+                         ).sCC).toVector
   }
 
 }

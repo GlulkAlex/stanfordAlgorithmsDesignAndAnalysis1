@@ -47,3 +47,8 @@ bitSet8.tail
 bitSet8.last
 bitSet8.drop(1)
 bitSet8.init
+digitSeq1.subsetOf(bitSet8)
+digitSeq1.subsetOf(bitSet6)
+bitSet6.subsetOf(bitSet8)
+digitSeq1.diff(bitSet6)
+bitSet6.diff(digitSeq1)
