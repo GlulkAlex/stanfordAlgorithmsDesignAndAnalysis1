@@ -2799,7 +2799,7 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'expectedSize'"
                   )
           }
-  test(
+  ignore(
           "61: 'fillDirectedGraphDynamicFromArcs' " +
             "should return " +
             "'new DirectedGraphDynamic'"
@@ -2866,22 +2866,23 @@ class stronglyConnectedComponentsSuit
 
             val directedGraphDynamic: DirectedGraphDynamic =
               fillDirectedGraphDynamicFromArcs(
-                                            fileContentIter = actualFileContent,
-                                            pattern =
-                                              """\d+""".r
-                                          )
+                                                fileContentIter =
+                                                  actualFileContent,
+                                                pattern =
+                                                  """\d+""".r
+                                              )
             println(
                      s"\n'directedGraphDynamic.nodesWithAdjusted.size' is:" +
                        directedGraphDynamic.nodesWithAdjusted.size +
-                     /*s"\n'mapWithAdjacencyList.head' is:" +
-                       directedGraphDynamic
-                         .nodesWithAdjusted
-                       .head +
-                       s"\n'mapWithAdjacencyList.tail.head' is ${
+                       /*s"\n'mapWithAdjacencyList.head' is:" +
                          directedGraphDynamic
-                         .nodesWithAdjusted
-                         .tail.head
-                       }" +*/
+                           .nodesWithAdjusted
+                         .head +
+                         s"\n'mapWithAdjacencyList.tail.head' is ${
+                           directedGraphDynamic
+                           .nodesWithAdjusted
+                           .tail.head
+                         }" +*/
                        //s"\n'nodesWithAdjusted` is:" +
                        s"\nfirst $takeNumber elements in " +
                        s"'nodesWithAdjusted`" +
@@ -2981,9 +2982,9 @@ class stronglyConnectedComponentsSuit
             //1 //*sink
             //12
             //6
-              //7
+            //7
             // 8
-            0
+              0
             val takeNumber: Int = 15
             val nodesLimit: Int = Int.MinValue
 
@@ -3022,7 +3023,7 @@ class stronglyConnectedComponentsSuit
             postExplored,
             totalNodesFound):
             DFSResults =
-              //pre_PostOrderDFS_ver3(
+            //pre_PostOrderDFS_ver3(
             /*TODO DeBug*/
               pre_PostOrderDFS_ver4(
                                      graph = mapWithAdjacencyList,
@@ -3074,139 +3075,140 @@ class stronglyConnectedComponentsSuit
                   )
           }
   ignore(
-        "63: 'nodesCounterDFS' " +
-          "should return " +
-          "right reachable number of 'nodes' in graph"
-      ) {
-          val sourceSize: Int = 5105043
-          val expectedNodesSize: Int = 875714
-          val expectedArcsSize: Int = 5105043
-          /*all 'nodes', but only few / some 'arcs'*/
-          /*at least as big as `mockUp(14)`*/
-          val inputTakeNumber: Int = 2000
-          val expectedNodesInSCC: Int = 3
-          val expectedSize: Int = 4
-          val filePath: String =
-            "/media/gluk-alex/" +
-              "GDI/Java/Scala/sbt/projects/" +
-              "stanfordAlgorithmsDesignAndAnalysis1/" +
-              "src/test/scala/" +
-              "testSCC/"
-          //SCC.txt
-          val fileName: String =
-            "tinyDG.txt"
-          //"SCC.txt"
-          val actualFileContent: Iterator[String] =
-          //Iterator.empty
-            readFromFile(
-                          fileName = fileName,
-                          filePath = filePath
-                        )
-          /*reduce / control input size*/
-          //.take(inputTakeNumber)
-          println(
-                   s"\n'actualFileContent` is:$actualFileContent"
-                 )
-
-          val nodesInGraph: Int =
-            actualFileContent.next().toInt
-          val edgesInGraph: Int =
-            actualFileContent.next().toInt
-          println(
-                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
-                     s"\ntotal 'edgesInGraph`:$edgesInGraph"
-                 )
-
-          val arcs: Vector[Arc] =
-          //extractSortedArcs(actualFileContent)
-            Vector.empty
-            .view
+          "63: 'nodesCounterDFS' " +
+            "should return " +
+            "right reachable number of 'nodes' in graph"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 2000
+            val expectedNodesInSCC: Int = 3
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String =
+              "tinyDG.txt"
+            //"SCC.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
             /*reduce / control input size*/
             //.take(inputTakeNumber)
-            .toVector
+            println(
+                     s"\n'actualFileContent` is:$actualFileContent"
+                   )
 
-          println(
-                   s"\n'arcs` are extracted from file" /*+
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              //.take(inputTakeNumber)
+              .toVector
+
+            println(
+                     s"\n'arcs` are extracted from file" /*+
                    s"\n'arcs.head` is:${arcs.head}" +
                      s"\n'arcs.tail.head' is: ${
                        arcs.tail.head
                      }"*/
-                 )
+                   )
 
-          /*reversed directions*/
-          val transposedArcs: Vector[Arc] =
-            arcs
-            .view
-            .map(a => Arc(a.arcHead, a.arcTail))
-            .sortBy(_.arcTail)
-            .toVector
-          val correspondingNodes: Vector[IsExploredNode] =
-          /*create new collection as `unexplored`*/
-            Vector.empty
-          val startingNode: Int =
-          //1
-          //6
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int =
+            //1
+            //6
             //7 //sink
-          // 8
-          0
-          val takeNumber: Int = 15
-          val nodesLimit: Int = Int.MinValue
+            // 8
+              0
+            val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
 
-          /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
-          val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
-            makeAdjacencyListMapFromArcs(
-                                          fileContentIter =
-                                            actualFileContent
-                                          /*.take(inputTakeNumber)*/ ,
-                                          pattern =
-                                            """\d+""".r,
-                                          nonReversedArcs = false
-                                        )
-          println(
-                   s"\n'mapWithAdjacencyList.isEmpty' is:" +
-                     mapWithAdjacencyList.isEmpty +
-                     s"\n'mapWithAdjacencyList.size' is:" +
-                     mapWithAdjacencyList.size +
-                     s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
-                     mapWithAdjacencyList.get(startingNode) /*+
+            /*!!!Warn: 'arcs' must be sorted by 'arcTail'!!!*/
+            val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+              makeAdjacencyListMapFromArcs(
+                                            fileContentIter =
+                                              actualFileContent
+                                            /*.take(inputTakeNumber)*/ ,
+                                            pattern =
+                                              """\d+""".r,
+                                            nonReversedArcs = false
+                                          )
+            println(
+                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                       mapWithAdjacencyList.isEmpty +
+                       s"\n'mapWithAdjacencyList.size' is:" +
+                       mapWithAdjacencyList.size +
+                       s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
+                       mapWithAdjacencyList.get(startingNode) /*+
                      s"\n'mapWithAdjacencyList.head' is:" +
                      mapWithAdjacencyList.headOption +
                      s"\n'mapWithAdjacencyList.tail.head' is ${
                        mapWithAdjacencyList.tail.head
                      }" +
                      s"\n'mapWithAdjacencyList` is:"*/ +
-                     s"\nfirst $takeNumber elements in 'mapWithAdjacencyList`" +
-                     s" are:" +
-                     s"\n${
-                       mapWithAdjacencyList
-                       .take(takeNumber)
-                       .mkString(",")
-                     }"
-                 )
-          val totalNodesFound:
-          Int =
-            nodesCounterDFS(
-                             graph = mapWithAdjacencyList,
-                             startNode = startingNode
-                           )
-          /*val resultSetDFS: BitSet =
-            pre_PostOrderDFS_ver2(
-                                   graph = mapWithAdjacencyList,
-                                   startNode = startingNode
-                                 )*/
-          println(
-                   s"\n'totalNodesFound`:" + totalNodesFound
-                 )
+                       s"\nfirst $takeNumber elements in " +
+                       s"'mapWithAdjacencyList`" +
+                       s" are:" +
+                       s"\n${
+                         mapWithAdjacencyList
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+            val totalNodesFound:
+            Int =
+              nodesCounterDFS(
+                               graph = mapWithAdjacencyList,
+                               startNode = startingNode
+                             )
+            /*val resultSetDFS: BitSet =
+              pre_PostOrderDFS_ver2(
+                                     graph = mapWithAdjacencyList,
+                                     startNode = startingNode
+                                   )*/
+            println(
+                     s"\n'totalNodesFound`:" + totalNodesFound
+                   )
 
-          assume(
-                  //true == true,
-                  //postExplored.nonEmpty &&
-                  //totalNodesFound > 0
-                  totalNodesFound == nodesInGraph,
-                  s"\n'totalNodesFound' must be > 0 " +
-                    s"& equal to 'nodesInGraph'"
-                )
-        }
+            assume(
+                    //true == true,
+                    //postExplored.nonEmpty &&
+                    //totalNodesFound > 0
+                    totalNodesFound == nodesInGraph,
+                    s"\n'totalNodesFound' must be > 0 " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
   ignore(
           "64: 'DFS_Ordering' " +
             "should return " +
@@ -3447,9 +3449,9 @@ class stronglyConnectedComponentsSuit
             //1
             //6
               7 //sink
-            // 8
-            //0
-            val takeNumber: Int = 15
+    // 8
+    //0
+    val takeNumber: Int = 15
             val nodesLimit: Int = Int.MinValue
 
             val mapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
@@ -3459,20 +3461,21 @@ class stronglyConnectedComponentsSuit
                                             /*.take(inputTakeNumber)*/ ,
                                             pattern =
                                               """\d+""".r,
-              nonReversedArcs = true
+                                            nonReversedArcs = true
                                           )
-                  println(
-                           s"\n'mapWithAdjacencyList.isEmpty' is:" +
-                             mapWithAdjacencyList.isEmpty )
-            val transposedMapWithAdjacencyList: Map[Int, NodeMapValFieldsStatic] =
+            println(
+                     s"\n'mapWithAdjacencyList.isEmpty' is:" +
+                       mapWithAdjacencyList.isEmpty)
+            val transposedMapWithAdjacencyList: Map[Int,
+              NodeMapValFieldsStatic] =
               makeAdjacencyListMapFromArcs(
                                             fileContentIter =
                                               readFromFile(
                                                             fileName = fileName,
                                                             filePath = filePath
                                                           )
-                                                /*skip redundant*/
-                                                .drop(2),
+                                              /*skip redundant*/
+                                              .drop(2),
                                             pattern =
                                               """\d+""".r,
                                             nonReversedArcs = false
@@ -3483,8 +3486,8 @@ class stronglyConnectedComponentsSuit
                        s"\n'transposedMapWithAdjacencyList.size' is:" +
                        transposedMapWithAdjacencyList.size /*+
                        s"\n'mapWithAdjacencyList.get(startingNode)' is:" +
-                       transposedMapWithAdjacencyList.get(startingNode) */+
-                     s"\n'transposedMapWithAdjacencyList.head' is:" +
+                       transposedMapWithAdjacencyList.get(startingNode) */ +
+                       s"\n'transposedMapWithAdjacencyList.head' is:" +
                        transposedMapWithAdjacencyList.headOption /*+
                      s"\n'mapWithAdjacencyList.tail.head' is ${
                        mapWithAdjacencyList.tail.head
@@ -3565,6 +3568,261 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'nodesInGraph'"
                   )
           }
+  ignore(
+          "66: 'tarjanForDiGraphDyn' " +
+            "should return " +
+            "all `SCC` in 'DirectedGraphDynamic'"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int = 20
+            val expectedNodesInSCC: Int = 3
+            val expectedSCCsInDiGraph: Int = 5
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            //SCC.txt
+            val fileName: String = "tinyDG.txt"
+            val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
+            val arcs: Vector[Arc] =
+            //extractSortedArcs(actualFileContent)
+              Vector.empty
+              .view
+              /*reduce / control input size*/
+              .take(inputTakeNumber)
+              .toVector
 
+            println(
+                     s"\n'arcs` are extracted from file" /*+
+                   s"\n'arcs.head` is:${arcs.head}" +
+                     s"\n'arcs.tail.head' is: ${
+                       arcs.tail.head
+                     }"*/
+                   )
+
+            /*reversed directions*/
+            val transposedArcs: Vector[Arc] =
+              arcs
+              .view
+              .map(a => Arc(a.arcHead, a.arcTail))
+              .sortBy(_.arcTail)
+              .toVector
+            val correspondingNodes: Vector[IsExploredNode] =
+            /*create new collection as `unexplored`*/
+              Vector.empty
+            val startingNode: Int = 1
+            val takeNumber: Int = 15
+            val nodesLimit: Int = Int.MinValue
+
+            val directedGraphDynamic: DirectedGraphDynamic =
+              fillDirectedGraphDynamicFromArcs(
+                                                fileContentIter =
+                                                  actualFileContent,
+                                                pattern =
+                                                  """\d+""".r
+                                              )
+            val allSCCs: Iterable[List[Int]] =
+              tarjanForDiGraphDyn(directedGraphDynamic.nodesWithAdjusted)
+            println(
+                     s"\n'allSCCs.size' is:" +
+                       allSCCs.size +
+                       /*s"\n'mapWithAdjacencyList.head' is:" +
+                         directedGraphDynamic
+                           .nodesWithAdjusted
+                         .head +
+                         s"\n'mapWithAdjacencyList.tail.head' is ${
+                           directedGraphDynamic
+                           .nodesWithAdjusted
+                           .tail.head
+                         }" +*/
+                       //s"\n'nodesWithAdjusted` is:" +
+                       s"\nfirst $takeNumber elements in " +
+                       s"'nodesWithAdjusted`" +
+                       s" are:" +
+                       s"\n${
+                         allSCCs
+                         .take(takeNumber)
+                         .mkString("\n")
+                       }"
+                   )
+
+            assume(
+                    //true == true,
+                    allSCCs
+                    .nonEmpty &&
+                      allSCCs
+                      .size == expectedSCCsInDiGraph,
+                    s"\n'allSCCs' must be 'nonEmpty' " +
+                      s"& equal to 'expectedSCCsInDiGraph'"
+                  )
+          }
+  test(
+        "100: 'convert decimal to binary' " +
+          "should return " +
+          "right representation"
+      ) {
+          case class ConvertResults(
+                                     binaryRepresentation: String,
+                                     decimalDecomposition: List[Int],
+                                     remainders: List[Int]
+                                     )
+
+          val decimalNumber: Int = 2014
+          val expectedResult: String =
+          //Int.toString(decimalNumber,2)
+          //*Integer.toString(decimalNumber,2)
+            decimalNumber.toBinaryString
+          //BigDecimal(decimalNumber).byteValue().toString
+
+          /*`positional` notation*/
+          /*?must run at least once for non empty input
+          ?so, post condition as `until` ?
+          first iteration is special because
+          number value checked unchanged, not halved
+          * */
+          @scala.annotation.tailrec
+          def convertDecToBin(
+                               decNum: Int,
+                               /*halfs w/o remainders & initial value*/
+                               resultsSeqInt:
+                               List[Int] =
+                               //List[String] =
+                               List.empty,
+                               remainders:
+                               List[Int] =
+                               //List[String] =
+                               List.empty,
+                               resultsStr:
+                               String = "",
+                               conditionUntil: Boolean = false
+                               ): ConvertResults = {
+            //): (String, List[Int]) = {
+            //): String = {
+            if (
+            /*decNum == 0 ||
+            decNum == 1*/
+              conditionUntil
+            ) {
+              /*val rightmostPosition: String =
+                resultsSeqInt.last match {
+                  case odd if odd % 2 != 0 =>"1"
+                  case even                => "0"}*/
+              /*return value*/
+              //(resultsStr, resultsSeqInt)
+              ConvertResults(
+                              //resultsStr + rightmostPosition,
+                              resultsStr,
+                              resultsSeqInt,
+                              remainders)
+              //.reduce()
+              /*.fold("")(_ + _ match {
+                case odd if _ % 2 != 0 => "1"
+                case even => "0"
+              })*/
+              /*.map(/*_ match*/ {
+                     case odd if odd % 2 != 0 => "1"
+                     case even => "0"
+                   })*/
+              //.mkString
+            } else {
+              val half: Int =
+                if (resultsSeqInt.isEmpty) {
+                  /*initial value*/
+                  decNum
+                } else {
+                  decNum / 2
+                }
+              val remainder: Int =
+                half % 2
+                //decNum % 2
+              //val elemToAdd: String =
+              val (strUpdated, intSeqUpdated): (String, List[Int]) =
+                half match {
+                  case odd if odd % 2 != 0 =>
+                    ("1" + resultsStr,
+                      odd +: resultsSeqInt)
+                  case even                =>
+                    ("0" + resultsStr,
+                      even +: resultsSeqInt)
+                }
+              val checkedCondition: Boolean =
+              /*decNum == 0 ||
+                decNum == 1*/
+                half == 1
+              /*recursion*/
+              convertDecToBin(
+                               half,
+                               resultsStr = strUpdated,
+                               resultsSeqInt = intSeqUpdated,
+                               remainders = remainder +: remainders,
+                               conditionUntil = checkedCondition
+                             )
+            }
+          }
+
+          //val binaryString: String =
+          //val (binaryString, intSource): (String, List[Int]) =
+          val ConvertResults(
+          binaryString,
+          intSource,
+          remainders
+                            ): ConvertResults =
+          //): (String, List[Int]) =
+            convertDecToBin(decimalNumber)
+          val halvesSum: Int = intSource.init.sum
+          val remaindersSum: Int = remainders.sum
+          val remaindersExpected: List[Int] =
+            intSource
+            .init
+          .map(_ % 2)
+          val totalSum: Int = halvesSum + remaindersSum
+
+          println(
+                   s"\n`$decimalNumber` decompose to halves is:\n" +
+                     intSource +
+                   s"\n`remainders` are:\n" +
+                     remainders +
+                   s"\n`remaindersExpected` are:\n" +
+                     remaindersExpected +
+                     s"\n'intSource.sum' is:" +
+                     halvesSum +
+                     s"\n'remainders.sum' is:" +
+                     remaindersSum +
+                     s"\n'totalSum' is:" +
+                     totalSum +
+                     s"\n$decimalNumber 'convertDecToBin' is:" +
+                     binaryString +
+                     s"\n'convertDecToBin.length' is:" +
+                     binaryString.length +
+                     s"\n'expectedResult.length' is:" +
+                     expectedResult.length
+                 )
+          assume(
+                  binaryString == expectedResult,
+                  s"\n'allSCCs' must be 'nonEmpty' " +
+                    s"& equal to 'expectedResult'"
+                )
+
+        }
 
 }

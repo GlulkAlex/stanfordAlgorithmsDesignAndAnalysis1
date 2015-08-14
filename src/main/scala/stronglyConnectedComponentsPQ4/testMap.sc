@@ -20,3 +20,7 @@ varMap4 =
 varMap4.updated(1,"one")
 varMap4
 mapElemWithKey1
+for {
+  (nodeKey, nodeVal) <- map3
+  if nodeVal == "2"
+} yield nodeKey

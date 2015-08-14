@@ -161,7 +161,7 @@ object stronglyConnectedComponents {
                           var nodeIndex: Option[Int],
                           var nodeLowLink: Int,
                           /*or check Set.contains(nodeKey)*/
-                          var inStack: Boolean
+                          var isInStack: Boolean
                           )
 
   case class NodeMapValFieldsStatic(
@@ -202,15 +202,15 @@ object stronglyConnectedComponents {
                                       var doneOrder: Option[Int],
                                       var groupLeader: Option[Int],
                                       var adjustedNodes: Set[Int]
-                                      ){
+                                      ) {
     override def toString =
       s"""{${if (isExplored) "e" else "u"}/""" +
-      s"""$nodeIndex/""" +
-      s"""$nodeLowLink/""" +
+        s"""$nodeIndex/""" +
+        s"""$nodeLowLink/""" +
         s"""${if (isInStack) "in" else "out"}/""" +
-    s"""$doneOrder/""" +
-    s"""$groupLeader>to(""" +
-    s"""${adjustedNodes.mkString(",")})}"""
+        s"""$doneOrder/""" +
+        s"""$groupLeader>to(""" +
+        s"""${adjustedNodes.mkString(",")})}"""
   }
 
 
@@ -297,6 +297,7 @@ object stronglyConnectedComponents {
 
     def addEdge(edgeStartNodeKey: Int, edgeEndNodeKey: Int):
     Unit
+
     //Map[Int, Any]
   }
 
@@ -326,82 +327,82 @@ object stronglyConnectedComponents {
         nodesWithAdjusted
         .get(key = arcHead)
       //val addArcHead: Map[Int, NodeMapValFieldsDynamic] =
-        if (arcHeadGet.isEmpty) {
-          /*add new 'node' / first occurrence*/
-          /*side effect*/
-          nodesWithAdjusted =
-            nodesWithAdjusted
-            .updated(
-                key = arcHead,
-                value = defaultMapValue
-                    )
-          /*return value*/
-          //nodesWithAdjusted
-        } else /*if (arcTailGet.isDefined)*/ {
-          /*same value*/
-          //nodesWithAdjusted
-        }
+      if (arcHeadGet.isEmpty) {
+        /*add new 'node' / first occurrence*/
+        /*side effect*/
+        nodesWithAdjusted =
+          nodesWithAdjusted
+          .updated(
+              key = arcHead,
+              value = defaultMapValue
+                  )
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGet.isDefined)*/ {
+        /*same value*/
+        //nodesWithAdjusted
+      }
       //val resultMapUpdated: Map[Int, NodeMapValFieldsDynamic] =
-        if (arcTailGet.isEmpty) {
-          /*add new 'node' / first occurrence*/
-          /*val valToAdd: NodeMapValFieldsDynamic = {
-            /*side effect*/
-            defaultMapValue.adjustedNodes = Set(arcHead)
-            /*return value*/
-            defaultMapValue
-          }*/
+      if (arcTailGet.isEmpty) {
+        /*add new 'node' / first occurrence*/
+        /*val valToAdd: NodeMapValFieldsDynamic = {
           /*side effect*/
-          nodesWithAdjusted =
-            //addArcHead
-          nodesWithAdjusted
-            .updated(
-                key = arcTail,
-                value = //valToAdd
-                  NodeMapValFieldsDynamic(
-                                           isExplored = false,
-                                           nodeIndex = None,
-                                           nodeLowLink = Int.MaxValue,
-                                           isInStack = false,
-                                           doneOrder = None,
-                                           groupLeader = None,
-                                           adjustedNodes = Set(arcHead))
-                    )
+          defaultMapValue.adjustedNodes = Set(arcHead)
           /*return value*/
-          //nodesWithAdjusted
-        } else /*if (arcTailGet.isDefined)*/ {
-          /*add new adjusted 'node' to existed 'node'*/
-          /*val valUpdated: NodeMapValFieldsDynamic = {
-            /*side effect*/
-            defaultMapValue.adjustedNodes =
-              arcTailGet
-              .get
-              .adjustedNodes + arcHead
-            /*return value*/
-            defaultMapValue
-          }*/
+          defaultMapValue
+        }*/
+        /*side effect*/
+        nodesWithAdjusted =
+          //addArcHead
+          nodesWithAdjusted
+          .updated(
+              key = arcTail,
+              value = //valToAdd
+                NodeMapValFieldsDynamic(
+                                         isExplored = false,
+                                         nodeIndex = None,
+                                         nodeLowLink = Int.MaxValue,
+                                         isInStack = false,
+                                         doneOrder = None,
+                                         groupLeader = None,
+                                         adjustedNodes = Set(arcHead))
+                  )
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGet.isDefined)*/ {
+        /*add new adjusted 'node' to existed 'node'*/
+        /*val valUpdated: NodeMapValFieldsDynamic = {
           /*side effect*/
-          nodesWithAdjusted =
-            //addArcHead
-          nodesWithAdjusted
-            .updated(
-                key = arcTail,
-                value = //valUpdated
-                  NodeMapValFieldsDynamic(
-                                           isExplored = false,
-                                           nodeIndex = None,
-                                           nodeLowLink = Int.MaxValue,
-                                           isInStack = false,
-                                           doneOrder = None,
-                                           groupLeader = None,
-                                           adjustedNodes =
-                                             arcTailGet
-                                             .get
-                                             .adjustedNodes + arcHead
-                                         )
-                    )
+          defaultMapValue.adjustedNodes =
+            arcTailGet
+            .get
+            .adjustedNodes + arcHead
           /*return value*/
-          //nodesWithAdjusted
-        }
+          defaultMapValue
+        }*/
+        /*side effect*/
+        nodesWithAdjusted =
+          //addArcHead
+          nodesWithAdjusted
+          .updated(
+              key = arcTail,
+              value = //valUpdated
+                NodeMapValFieldsDynamic(
+                                         isExplored = false,
+                                         nodeIndex = None,
+                                         nodeLowLink = Int.MaxValue,
+                                         isInStack = false,
+                                         doneOrder = None,
+                                         groupLeader = None,
+                                         adjustedNodes =
+                                           arcTailGet
+                                           .get
+                                           .adjustedNodes + arcHead
+                                       )
+                  )
+        /*return value*/
+        //nodesWithAdjusted
+      }
       /*return value*/
       //resultMapUpdated
     }
@@ -4062,7 +4063,7 @@ object stronglyConnectedComponents {
         val stackWithoutTop = currentStack.tail
         val w = currentStack.head
         /*side effect*/
-        w.inStack = false
+        w.isInStack = false
         /*recursion*/
         createNewSCC(
                       newSCC =
@@ -4129,7 +4130,7 @@ object stronglyConnectedComponents {
                       )
             /*return value*/
             //v.nodeLowLink.min(adjNode.nodeLowLink)
-          } else if (adjNode.inStack) {
+          } else if (adjNode.isInStack) {
             // Successor 'w' is in `stack` S and
             // hence in the current `SCC`
             /*recursion*/
@@ -4184,7 +4185,7 @@ object stronglyConnectedComponents {
       //stack.push(v)
       val vInStack = v +: stack
       /*side effect*/
-      v.inStack = true
+      v.isInStack = true
 
       /*must be separate method*/
       // Consider `successors` of 'v'
@@ -4333,7 +4334,7 @@ object stronglyConnectedComponents {
         val stackWithoutTop = currentStack.tail
         val w = currentStack.head
         /*side effect*/
-        w.inStack = false
+        w.isInStack = false
         /*recursion*/
         createNewSCC(
                       newSCC =
@@ -4380,7 +4381,7 @@ object stronglyConnectedComponents {
                          nodeVal = adjustedNodes.head,
                          nodeIndex = None,
                          nodeLowLink = adjustedNodes.head,
-                         inStack = false
+                         isInStack = false
                        )
 
           /*? partial function ?*/
@@ -4413,7 +4414,7 @@ object stronglyConnectedComponents {
                       )
             /*return value*/
             //node.nodeLowLink.min(adjNode.nodeLowLink)
-          } else if (adjNode.inStack) {
+          } else if (adjNode.isInStack) {
             // Successor 'w' is in `stack` S and
             // hence in the current `SCC`
             /*recursion*/
@@ -4473,7 +4474,7 @@ object stronglyConnectedComponents {
                      nodeVal = node,
                      nodeIndex = None,
                      nodeLowLink = node,
-                     inStack = false
+                     isInStack = false
                    ) +:
           stack
       /*side effect*/
@@ -4503,7 +4504,7 @@ object stronglyConnectedComponents {
                                  nodeVal = node,
                                  nodeIndex = None,
                                  nodeLowLink = node,
-                                 inStack = false
+                                 isInStack = false
                                ),
                   /*? may change within ?*/
                   index = newIndex
@@ -4577,7 +4578,7 @@ object stronglyConnectedComponents {
                                                  nodeVal = node,
                                                  nodeIndex = None,
                                                  nodeLowLink = node,
-                                                 inStack = false
+                                                 isInStack = false
                                                )
                                 )
                   )
@@ -4603,6 +4604,564 @@ object stronglyConnectedComponents {
     //if node.node.nodeIndex.isEmpty
     } yield strongConnect(
                            //v.node,
+                           adjustedNode,
+                           /*incremented every iteration within method call*/
+                           index
+                         ).sCC).toVector
+  }
+
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjanForDiGraphDyn(
+                           adjacencyList: Map[Int, NodeMapValFieldsDynamic]/*,
+                           index: Int = 0,
+                           stack:
+                           List[Int] =*/
+                           //List[IndexedNode] =
+                           //List[Map[Int, NodeMapValFieldsDynamic]] =
+                           //List.empty
+                           ): Iterable[List[Int]] = {
+    //): Vector[List[Int]] = {
+    var localIndex: Int = 0//index
+    var localStack:
+    List[Int] =
+    //List[IndexedNode] =
+      //stack
+    List.empty
+    //index := 0
+    //S := empty
+
+    /*function strongconnect(v)
+    // Set the depth index for v to the smallest unused index
+    v.index := index
+    v.lowlink := index
+    index := index + 1
+    S.push(v)
+    v.onStack := true
+
+    // Consider successors of v
+    for each (v, w) in E do
+      if (w.index is undefined) then
+    // Successor w has not yet been visited; recurse on it
+    strongconnect(w)
+    v.lowlink  := min(v.lowlink, w.lowlink)
+    else if (w.onStack) then
+    // Successor w is in stack S and hence in the current SCC
+    v.lowlink  := min(v.lowlink, w.index)
+    end if
+          end for
+
+    // If v is a root node, pop the stack and generate an SCC
+    if (v.lowlink = v.index) then
+    start a new strongly connected component
+    repeat
+    w := S.pop()
+    w.onStack := false
+    add w to current strongly connected component
+    until (w = v)
+    output the current strongly connected component
+      end if
+            end function*/
+
+    /*for each v in V do
+      if (v.index is undefined) then
+    strongconnect(v)
+    end if
+          end for*/
+    /*possible memory `leak` as it is not `tailrec`,
+    `stack` may grow infinitely
+    */
+    //@scala.annotation.tailrec
+    def strongConnect(
+                       nodeKeyToCheck: Int/*,
+                     currentResultingSCC: List[Int] =
+                     List.empty*/
+                       ): List[Int] = {
+      //assume(adjacencyList.get(nodeKeyToCheck).isDefined)
+      val nodeVal: NodeMapValFieldsDynamic =
+        adjacencyList.get(nodeKeyToCheck).get
+      /*side effects*/
+      nodeVal.nodeIndex = Some(localIndex)
+      nodeVal.nodeLowLink = localIndex
+      localIndex += 1
+      localStack = nodeKeyToCheck +: localStack
+      nodeVal.isInStack = true
+
+      /* iterate over ? adjusted ?*/
+      /*calculate ? min val for `lowlink`?*/
+      /*for {
+        adjustedNodeKey <- nodeVal.adjustedNodes
+      }*/
+      nodeVal
+      .adjustedNodes
+      .foreach(adjustedNodeKey => {
+        //assume(adjacencyList.get(adjustedNodeKey).isDefined)
+        val adjustedNodeVal: NodeMapValFieldsDynamic =
+          adjacencyList.get(adjustedNodeKey).get
+
+        if (adjustedNodeVal.nodeIndex.isEmpty /* is undefined*/ ) {
+          // has not yet been visited
+          // recurse on it
+          strongConnect(adjustedNodeKey)
+          /*side effect*/
+          nodeVal.nodeLowLink =
+            min(nodeVal.nodeLowLink, adjustedNodeVal.nodeLowLink)
+        } else if (
+               //adjustedNodeVal.nodeIndex.isDefined &&
+                 adjustedNodeVal.isInStack
+               ) {
+          // Successor w is in stack S and hence in the current SCC
+          nodeVal.nodeLowLink =
+            min(nodeVal.nodeLowLink,
+                adjustedNodeVal.nodeIndex.getOrElse(nodeVal.nodeLowLink)
+               )
+        }
+      }
+              )
+
+      // If it is a `root` node,
+      // pop the `stack` and
+      // generate an `SCC`
+      //assume(nodeVal.nodeIndex.isDefined)
+      if (nodeVal.nodeLowLink == nodeVal.nodeIndex.get) {
+        //start /  create a new `strongly connected component`
+        //`until` loop with post condition,
+        // so always run at least once
+        @scala.annotation.tailrec
+        def loopOnStack(
+                         loopSCC: List[Int] = List.empty,
+                       condition: Boolean = false
+                         ): List[Int] = {
+          if (
+            condition ||
+            localStack.isEmpty
+          ) {
+            /*stop & return / exit */
+            //currentResultingSCC
+            loopSCC
+          } else /*if (localStack.nonEmpty)*/{
+            val stackTopKey = localStack.head
+            /*side effect*/
+            localStack = localStack.tail
+            //assume(adjacencyList.get(stackTopKey).isDefined)
+            val stackTopVal: NodeMapValFieldsDynamic =
+              adjacencyList.get(stackTopKey).get
+            /*side effect*/
+            stackTopVal.isInStack = false
+            /*post condition*/
+            if (stackTopKey == nodeKeyToCheck) {
+              /*stop & return / exit */
+              //currentResultingSCC
+              //loopSCC
+              loopOnStack(loopSCC, condition = true)
+            } else {
+              /*recursion*/
+              loopOnStack(stackTopKey +: loopSCC, condition = condition)
+            }
+          }
+        }
+        /*return value*/
+        /*initialization*/
+        loopOnStack()
+      } else {
+        /*return value*/
+        List.empty
+      }
+    }
+
+    /*side effect*/
+    /*adjacencyList
+    .foreach(
+        //(nodeKey: Int, nodeVal: NodeMapValFieldsDynamic) =>
+        //((nodeKey, nodeVal): (Int,NodeMapValFieldsDynamic)) =>
+        n => {
+          val (nodeKey, nodeVal): (Int, NodeMapValFieldsDynamic) = n
+          if (nodeVal.isExplored) {
+            strongConnect(nodeKey)
+          }
+        }
+            )*/
+    /*return*/
+    for {
+      (nodeKey, nodeVal) <- adjacencyList
+      if nodeVal.nodeIndex.isEmpty
+    } yield strongConnect(nodeKey)
+  }
+
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjanForDiGraphDyn_ver2(
+                                adjacencyList: Map[Int,
+                                  NodeMapValFieldsDynamic],
+                                index: Int = 0,
+                                stack:
+                                List[IndexedNode] =
+                                //List[Map[Int, NodeMapValFieldsDynamic]] =
+                                List.empty
+                                ): Vector[List[Int]] = {
+    //): List[List[Int]] = {
+    /*global 'index' tracker*/
+    //var index: Int = 0
+    //S := empty
+    /*
+    Use 'List' instead:
+    'stack.push' 'x' becomes
+    'x :: list'
+    'stack.pop' is 'list.tail'
+     */
+    //val stack /*: Stack[Nothing]*/ =
+    //scala.collection.immutable.Stack.empty[IndexedNode]
+    //List.empty[IndexedNode]
+
+    /*auxiliary method*/
+    def createNewSCC(
+                      newSCC: List[Int] =
+                      List.empty,
+                      nodeFromStack:
+                      Option[IndexedNode] =
+                      //Option[NodeMapValFieldsDynamic] =
+                      //Option[Map[Int,NodeMapValFieldsDynamic]] =
+                      None,
+                      /*assume that 'node.inStack'*/
+                      currentStack:
+                      /*Stack*/
+                      List[IndexedNode],
+                      //List[NodeMapValFieldsDynamic],
+                      //List[Map[Int,NodeMapValFieldsDynamic]],
+                      //nodeKey: Int,
+                      //nodeFields: NodeMapValFieldsDynamic
+                      node: IndexedNode
+                      ): List[Int] = {
+      if (
+        nodeFromStack.isDefined
+      ) {
+        /*deconstruct*/
+        /*val (stack_Key,stack_Val):(Int,NodeMapValFieldsDynamic) =
+          nodeFromStack.get.head*/
+
+        if (
+        //stack_Val == nodeFields
+          nodeFromStack.get.nodeVal == node.nodeVal
+        ) {
+        } else {
+
+        }
+        /*return value*/
+        newSCC.reverse
+      } else {
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop*/
+        val stackWithoutTop = currentStack.tail
+        /*val (topKey,topVal):(Int,NodeMapValFieldsDynamic) =
+          currentStack
+          .head
+          .head*/
+        val topNode: IndexedNode = currentStack.head
+        /*side effect*/
+        //topVal.isInStack = false
+        topNode.isInStack = false
+        /*recursion*/
+        createNewSCC(
+                      newSCC =
+                        //topKey
+                        topNode.nodeVal +:
+                          newSCC,
+                      nodeFromStack =
+                        Some(topNode),
+                      //Some(Map(topKey->topVal)),
+                      currentStack = stackWithoutTop,
+                      //nodeKey = nodeKey,
+                      //nodeFields = nodeFields
+                      node = node
+                    )
+      }
+    }
+
+    /*recursive method, what is the output, except side effects ?*/
+    /*changes 'index', so must return new value*/
+    /*create discovered 'SCC', so must return it*/
+    /*changes 'stack', so must return it*/
+    def strongConnect(
+                       /*?just 'key'?*/
+                       node:
+                       Int,
+                       //IndexedNode,
+                       index: Int
+                       ): SCC_Result = {
+      //): List[Int] = {
+      /*auxiliary method*/
+      /*trying to find `min` val*/
+      def minLowLink(
+                      //nodeAndAdjusted: IndexedNodeWithAdjacencyList,
+                      adjustedNodes:
+                      Set[Int],
+                      //List[IndexedNode],
+                      /*actually started with 'node.nodeLowLink'*/
+                      currentMin: Int = Int.MaxValue,
+                      node:
+                      IndexedNode,
+                      //Map[Int, NodeMapValFieldsDynamic],
+                      /*global index state changing with time*/
+                      index: Int
+                      ): Int = {
+        /*val (nodeKey, nodeVal): (Int, NodeMapValFieldsDynamic) =
+          node.head*/
+
+        if (adjustedNodes.isEmpty) {
+          /*return value*/
+          currentMin
+        } else {
+          val adjNode:
+          IndexedNode =
+          //NodeMapValFieldsDynamic =
+          //adjustedNodes.head
+          //NodeMapValFieldsDynamic(
+            IndexedNode(
+                         nodeVal = adjustedNodes.head,
+                         //isExplored = true,
+                         nodeIndex = None,
+                         nodeLowLink = adjustedNodes.head,
+                         isInStack = false //,
+                         //doneOrder = None,
+                         //groupLeader = None,
+                         //adjustedNodes = adjustedNodes
+                       )
+
+          /*? partial function ?*/
+          //val newMin: Int =
+          if (adjNode.nodeIndex.isEmpty) {
+            // Successor 'w'
+            // has not yet been visited recurse on it
+            /*outer recursion*/
+            /*?must change 'node.nodeLowLink'?*/
+            val SCC_Result(newLowlink, newIndex, newStack, newSCC) =
+              strongConnect(
+                             //adjNode,
+                             adjNode.nodeVal,
+                             //nodeKey,
+                             //nodeVal,
+                             /*?must return as global state?*/
+                             //newIndex
+                             index
+                           )
+            /*side effect*/
+            node
+            //nodeVal
+            .nodeLowLink = newLowlink
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          newLowlink.min(adjNode.nodeLowLink),
+                        //node.nodeLowLink.min(adjNode.nodeLowLink),
+                        node = node,
+                        newIndex
+                      )
+            /*return value*/
+            //node.nodeLowLink.min(adjNode.nodeLowLink)
+          } else if (adjNode.isInStack) {
+            // Successor 'w' is in `stack` S and
+            // hence in the current `SCC`
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          node
+                          //nodeVal
+                          .nodeLowLink
+                          .min(
+                              adjNode
+                              .nodeIndex
+                              .getOrElse(
+                                  node
+                                  //nodeVal
+                                  .nodeLowLink)),
+                        node = node,
+                        index
+                      )
+            /*return value*/
+            //node.nodeLowLink.min(adjNode.nodeIndex.getOrElse(node
+            // .nodeLowLink))
+          } else {
+            /*return value*/
+            //currentMin
+            /*recursion*/
+            minLowLink(
+                        adjustedNodes =
+                          /*must converge eventually*/
+                          adjustedNodes.tail,
+                        currentMin =
+                          currentMin,
+                        node = node,
+                        index
+                      )
+          }
+          /*recursion*/
+          /*minLowLink(
+                      adjustedNodes=
+                        /*must converge eventually*/
+                        adjustedNodes.tail,
+                      currentMin=
+                        newMin,
+                      node: IndexedNode,
+                      index
+                    )*/
+        }
+      }
+
+      // Set the depth index for 'node' to the smallest unused `index`
+      /*initialization*/
+      /*side effects*/
+      //node.nodeIndex = Some(index)
+      /*?And what is initial value +infinity?*/
+      //node.nodeLowLink = index
+      /*change state*/
+      //index = index + 1
+      val newIndex = index + 1
+      //stack.push(node)
+      val vInStack:
+      //List[Map[Int, NodeMapValFieldsDynamic]] =
+      List[IndexedNode] =
+      //node +:
+      //NodeMapValFieldsDynamic(
+        IndexedNode(
+                     nodeVal = node,
+                     nodeIndex = None,
+                     nodeLowLink = node,
+                     isInStack = false
+                   ) +:
+          stack
+      /*side effect*/
+      //node.inStack = true
+
+      /*must be separate method*/
+      // Consider `successors` of 'node'
+      //for each(node, w) in E do
+      //val nodeAndAdjusted: IndexedNodeWithAdjacencyList =
+      //adjacencyList(node.nodeVal - 1)
+      val adjustedNodesKeys: Set[Int] =
+        adjacencyList.get(
+                           node
+                           //.nodeVal
+                         ).get.adjustedNodes
+      /*trying to find `min` val*/
+      //node.nodeLowLink =
+      minLowLink(
+                  adjustedNodes =
+                    //nodeAndAdjusted.adjustedNodes,
+                    adjustedNodesKeys,
+                  currentMin =
+                    node,
+                  //node.nodeLowLink,
+                  node =
+                    IndexedNode(
+                                 nodeVal = node,
+                                 nodeIndex = None,
+                                 nodeLowLink = node,
+                                 isInStack = false
+                               ),
+                  /*? may change within ?*/
+                  index = newIndex
+                )
+      //(
+      /*for {
+        adjNode <- nodeAndAdjusted.adjustedNodes
+      } yield
+      /*? partial function ?*/
+      //if (w.index is undefined) then
+        if (adjNode.nodeIndex.isEmpty) {
+          // Successor 'w'
+          // has not yet been visited recurse on it
+          /*recursion*/
+          strongConnect(
+                         adjNode,
+                        /*?must return as global state?*/
+                        newIndex
+                       )
+          /*side effect*/
+          node.nodeLowLink =
+            node.nodeLowLink.min(adjNode.nodeLowLink)
+          /*return*/
+          node.nodeLowLink
+        } else if (adjNode.inStack) {
+          // Successor 'w' is in `stack` S and
+          // hence in the current `SCC`
+          /*side effect*/
+          node.nodeLowLink =
+            node.nodeLowLink
+            .min(adjNode.nodeIndex.getOrElse(node.nodeLowLink))
+          /*return*/
+          node.nodeLowLink
+        }*/
+      //).head
+
+      // If 'node' is a `root` node,
+      // 'pop' the `stack` and
+      // generate an `SCC`
+      /*assume that 'node.nodeIndex.isDefined'*/
+      if (
+      //node.nodeLowLink == node.nodeIndex.get
+        true
+      ) {
+        //start a new strongly connected component
+        //val newSCC: List[Int] = List.empty
+        //repeat
+        /*val (w, stackWithoutTop): (IndexedNode, Stack[IndexedNode]) =
+          stack.pop
+        w.inStack = false*/
+        //add 'w' to `current` `strongly connected component`
+        //w +: newSCC
+        //until(w = node)
+        //output the current strongly connected component
+
+        /*return value*/
+        //newSCC.reverse
+        SCC_Result(
+                    //node.nodeLowLink,
+                    node,
+                    newIndex,
+                    vInStack,
+                    createNewSCC(
+                                  newSCC =
+                                    List.empty,
+                                  nodeFromStack = None,
+                                  currentStack = vInStack,
+                                  //nodeFields =
+                                  node =
+                                    IndexedNode(
+                                                 nodeVal = node,
+                                                 nodeIndex = None,
+                                                 nodeLowLink = node,
+                                                 isInStack = false
+                                               )
+                                )
+                  )
+      } else {
+        /*return value*/
+        SCC_Result(
+                    //node.nodeLowLink,
+                    node,
+                    newIndex,
+                    vInStack,
+                    List.empty[Int]
+                  )
+      }
+    }
+
+    /*instead ?must? call recursion on itself*/
+    /*return value*/
+    (for {
+    //adjustedNode <- adjacencyList.valuesIterator //G.V
+      adjustedNode <- adjacencyList.keysIterator
+    /*guard*/
+    //if (node.index is undefined)
+    //if node.node.nodeIndex.isEmpty
+    } yield strongConnect(
+                           //nodeFields.node,
                            adjustedNode,
                            /*incremented every iteration within method call*/
                            index
