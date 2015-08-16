@@ -211,11 +211,13 @@ object stronglyConnectedComponents {
     override def toString =
     //s"""{${if (isExplored) "e" else "u"}/""" +
       s"""i=$nodeIndex,""" +
-        s"""l=${if (nodeLowLink == Int.MaxValue) {
-          "maxInt"
-        } else {
-          nodeLowLink.toString
-        }}""" +
+        s"""l=${
+          if (nodeLowLink == Int.MaxValue) {
+            "maxInt"
+          } else {
+            nodeLowLink.toString
+          }
+        }""" +
         //s"""${if (isInStack) "in" else "out"}/""" +
         //s"""$doneOrder/""" +
         //s"""$groupLeader>to(""" +
@@ -235,12 +237,13 @@ object stronglyConnectedComponents {
     override def toString =
       s"""key($nodeKey)""" +
         s""",i:$nodeIndex""" +
-        s",l:" +
-        {if (nodeLowLink == Int.MaxValue) {
+        s",l:" + {
+        if (nodeLowLink == Int.MaxValue) {
           "maxInt"
         } else {
           nodeLowLink.toString
-        }} +
+        }
+      } +
         s""",{${adjustedNodes.mkString(",")}}"""
   }
 
@@ -330,6 +333,73 @@ object stronglyConnectedComponents {
     Unit
 
     //Map[Int, Any]
+  }
+
+  class DiGraphSetsMap extends Graph {
+    /*override*/ var nodesWithAdjusted: Map[Int, Set[Int]] =
+      Map.empty
+
+    /*may be 'Unit' and not have return value*/
+    def addEdge(
+                 arcTail: Int,
+                 arcHead: Int
+               /*retun type must concord declared in trait*/
+                 //): Map[Int, Set[Int]] = {
+      ): Unit = {
+      val arcTailGetAdjusted: Option[Set[Int]] =
+        nodesWithAdjusted
+        .get(key = arcTail)
+      val arcHeadGetAdjusted: Option[Set[Int]] =
+        nodesWithAdjusted
+        .get(key = arcHead)
+      //val addArcHead: Map[Int, Set[Int]] =
+        if (arcHeadGetAdjusted.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          /*side effect*/
+          //nodesWithAdjusted =
+          nodesWithAdjusted
+          .updated(
+              key = arcHead,
+              value = Set.empty
+                  )
+          /*return value*/
+          //nodesWithAdjusted
+        } else /*if (arcTailGetAdjusted.isDefined)*/ {
+          /*same value*/
+          nodesWithAdjusted
+        }
+      //val resultMapUpdated: Map[Int, Set[Int]] =
+        if (arcTailGetAdjusted.isEmpty) {
+          /*add new 'node' / first occurrence*/
+          /*side effect*/
+          nodesWithAdjusted =
+          nodesWithAdjusted
+          //addArcHead
+          .updated(
+              key = arcTail,
+              value = //valToAdd
+                Set(arcHead)
+                  )
+          /*return value*/
+          //nodesWithAdjusted
+        } else /*if (arcTailGetAdjusted.isDefined)*/ {
+          /*add new adjusted 'node' to existed 'node'*/
+          /*side effect*/
+          nodesWithAdjusted =
+          nodesWithAdjusted
+          //addArcHead
+          .updated(
+              key = arcTail,
+              value = //valUpdated
+                arcTailGetAdjusted
+                .get + arcHead
+                  )
+          /*return value*/
+          //nodesWithAdjusted
+        }
+      /*return value*/
+      //resultMapUpdated
+    }
   }
 
   class DirectedGraphDynamic extends Graph {
@@ -479,7 +549,7 @@ object stronglyConnectedComponents {
     */
     //Array(defaultMapValue)
     //ArrayBuffer(defaultMapValue)
-      //ArrayBuffer.empty
+    //ArrayBuffer.empty
       Array.empty
 
     //`Auxiliary Constructor`
@@ -528,7 +598,7 @@ object stronglyConnectedComponents {
       //val addArcHead: Map[Int, NodeMapValFieldsDynamic] =
       if (
         arcHeadGet.nodeKey == -1
-        //arcHeadGet.isEmpty
+      //arcHeadGet.isEmpty
       ) {
         /*add new 'node' / first occurrence*/
         /*side effect*/
@@ -542,8 +612,8 @@ object stronglyConnectedComponents {
         //nodes(arcHead).nodeKey = arcHead
         nodes
         .update(
-          /*idx =*/ arcHead,
-          //elem =
+            /*idx =*/ arcHead,
+            //elem =
             //defaultMapValue
             NodeFieldsArray(
                              nodeKey =
@@ -554,7 +624,7 @@ object stronglyConnectedComponents {
                              adjustedNodes =
                                Stream.empty
                            )
-                )
+               )
         /*return value*/
         //nodesWithAdjusted
       } else /*if (arcTailGet.isDefined)*/ {
@@ -564,7 +634,7 @@ object stronglyConnectedComponents {
       //val resultMapUpdated: Map[Int, NodeMapValFieldsDynamic] =
       if (
         arcTailGet.nodeKey == -1
-        //arcTailGet.isEmpty
+      //arcTailGet.isEmpty
       ) {
         /*add new 'node' / first occurrence*/
         /*val valToAdd: NodeMapValFieldsDynamic = {
@@ -578,15 +648,15 @@ object stronglyConnectedComponents {
         .update(
             /*idx =*/ arcTail,
             /*elem =*/
-              NodeFieldsArray(
-                               nodeKey =
-                                 arcTail,
-                               nodeIndex =
-                                 -1,
-                               nodeLowLink = Int.MaxValue,
-                               adjustedNodes =
-                                 Stream(arcHead)
-                             )
+            NodeFieldsArray(
+                             nodeKey =
+                               arcTail,
+                             nodeIndex =
+                               -1,
+                             nodeLowLink = Int.MaxValue,
+                             adjustedNodes =
+                               Stream(arcHead)
+                           )
                )
         /*return value*/
         //nodesWithAdjusted
@@ -633,9 +703,9 @@ object stronglyConnectedComponents {
       /*'+1' for 'ArrayBuffer(0)'*/
       val nodesSize = maxKeyVal - minKeyVal + 1 + 1
       val bufferArray: collection.mutable.ArrayBuffer[NodeFieldsArray] =
-      new ArrayBuffer[NodeFieldsArray]
-      //.empty
-      .padTo(nodesSize, resultObject.defaultMapValue)
+        new ArrayBuffer[NodeFieldsArray]
+        //.empty
+        .padTo(nodesSize, resultObject.defaultMapValue)
       /*side effect*/
       resultObject.nodesSize = nodesSize
       resultObject.nodes = bufferArray.toArray
@@ -1088,6 +1158,58 @@ object stronglyConnectedComponents {
                                 result = result,
                                 nonReversedArcs = nonReversedArcs
                               )
+    }
+  }
+
+  /*order of 'arcs' does not matter*/
+  /*assume that 'nodes.value' unique*/
+  /*assume that 'Iterator' contains only pair Int in String*/
+  @scala.annotation.tailrec
+  def fillSetsMapFromArcs(
+                           fileContentIter: Iterator[String],
+                           resultMap:
+                           DiGraphSetsMap =
+                           new DiGraphSetsMap,
+                           /*Map[Int, Set[Int]] =
+                           Map.empty,*/
+                           pattern: Regex =
+                           """\d+""".r,
+                           //isArcsReversed: Boolean = false
+                           nonReversedArcs: Boolean = true
+                           ): DiGraphSetsMap = {
+                           //): Map[Int, Set[Int]] = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      resultMap
+    } else /*if (adjacencyList.hasNext)*/ {
+      /*may be leading 'space' then
+      * delimiter one or double 'space'*/
+      val List(first, second): List[Int] =
+        pattern
+        .findAllIn(fileContentIter
+                   .next())
+        .map(_.toInt)
+        .toList
+      val List(arcTail, arcHead): List[Int] =
+        if (nonReversedArcs) {
+          List(first, second)
+        } else {
+          /*return value*/
+          List(second, first)
+        }
+      /*side effect*/
+      resultMap
+      .addEdge(
+          arcTail = arcTail,
+          arcHead = arcHead
+              )
+      /*recursion*/
+      fillSetsMapFromArcs(
+                           fileContentIter: Iterator[String],
+                           resultMap =
+                             resultMap,
+                           nonReversedArcs = nonReversedArcs
+                         )
     }
   }
 
@@ -2641,6 +2763,62 @@ object stronglyConnectedComponents {
                               graphComponents
                             )
     }
+  }
+
+  /*by Marimuthu Madasamy
+  with some modification by me Alex
+  * */
+  def traverse(
+                graph: Map[Int, Set[Int]],
+                start: Int): List[Int] = {
+    /*def childrenNotVisited(parent: Int, visited: List[Int]) =
+      graph(parent) filter (x => !visited.contains(x))*/
+
+    @annotation.tailrec
+    def loop(
+              /*`nodes` remain to check*/
+              stack: Set[Int],
+              /*to maintain / preserve order*/
+              visited: List[Int],
+              /*to check condition*/
+              visitedSet: Set[Int] =
+              Set.empty
+              ): List[Int] = {
+      if (stack isEmpty) {
+        /*return value*/
+        visited
+      }
+      else {
+        val visitedSetUpdated: Set[Int] =
+          visitedSet + stack.head
+        /*recursion*/
+        //assume(graph.isDefinedAt(start))
+        //assume(graph.isDefinedAt(stack.head))
+        /*reduce 'stack' by 'head' to converge eventually*/
+        loop(
+              //childrenNotVisited(stack.head, visited) ++ stack.tail,
+              graph(stack.head)
+              .diff(
+                  //visitedSet
+                    visitedSetUpdated
+                   )
+              .union(stack.tail),
+              stack.head :: visited,
+              /*to keep track on `visited` & simplify `contains` check*/
+              //visitedSet + stack.head
+              visitedSetUpdated
+            )
+      }
+    }
+    /*initialization*/
+    /*return value*/
+    loop(
+          Set(start),
+          //Nil
+          List.empty
+        )
+    /*because 'visited' formed by `prepend`*/
+    .reverse
   }
 
   // run 'DFS' in `digraph` 'G'
@@ -4997,9 +5175,9 @@ object stronglyConnectedComponents {
       val nodeVal:
       //NodeFieldsArray =
       NodeMapValFieldsDynamic =
-        adjacencyList//(nodeKeyToCheck)
-      .get(nodeKeyToCheck)
-      .get
+        adjacencyList //(nodeKeyToCheck)
+        .get(nodeKeyToCheck)
+        .get
       /*side effects*/
       nodeVal.nodeIndex =
         localIndex
@@ -5022,8 +5200,8 @@ object stronglyConnectedComponents {
         val adjustedNodeVal:
         //NodeFieldsArray =
         NodeMapValFieldsDynamic =
-          adjacencyList//(adjustedNodeKey)
-        .get(adjustedNodeKey).get
+          adjacencyList //(adjustedNodeKey)
+          .get(adjustedNodeKey).get
 
         if (
           adjustedNodeVal.nodeIndex == -1
@@ -5154,9 +5332,9 @@ object stronglyConnectedComponents {
       nodeIndex,
       nodeLowLink,
       adjustedNodes) if nodeIndex == -1*/
-        case (nodeKey, nodeVal) if nodeVal.nodeIndex == -1
+      case (nodeKey, nodeVal) if nodeVal.nodeIndex == -1
         //.isEmpty
-            =>
+             =>
         strongConnect(nodeKey)
       case _ =>
     }
@@ -5164,6 +5342,7 @@ object stronglyConnectedComponents {
     /*return value*/
     graphSCCs
   }
+
   /*
   TODO
   Done: replace 'Set' with 'List' or 'Stream' & check the effect
@@ -5179,18 +5358,18 @@ object stronglyConnectedComponents {
   //input: graph G = (V, E)
   //output: set of strongly connected components (sets of vertices)
   def tarjanForDiGraphArray(
-                           adjacencyList:
-                           Array[NodeFieldsArray]
-                           //ArrayBuffer[NodeFieldsArray]
-                           //Map[Int, Set[Int]]
-                           //Map[Int, NodeMapValFieldsDynamic] //,
-                           /*index: Int = 0,
-                           stack:
-                           List[Int] =*/
-                           //List[IndexedNode] =
-                           //List[Map[Int, NodeMapValFieldsDynamic]] =
-                           //List.empty
-                           ): Stream[Int] = {
+                             adjacencyList:
+                             Array[NodeFieldsArray]
+                             //ArrayBuffer[NodeFieldsArray]
+                             //Map[Int, Set[Int]]
+                             //Map[Int, NodeMapValFieldsDynamic] //,
+                             /*index: Int = 0,
+                             stack:
+                             List[Int] =*/
+                             //List[IndexedNode] =
+                             //List[Map[Int, NodeMapValFieldsDynamic]] =
+                             //List.empty
+                             ): Stream[Int] = {
     //): List[Int] = {
     //): List[List[Int]] = {
     //): Iterable[List[Int]] = {
@@ -5250,6 +5429,10 @@ object stronglyConnectedComponents {
     end if
           end for*/
 
+    /*
+    TODO switch from a linear recursive process to a linear iterative process
+    that has a fixed number of `state variables`
+     */
     /*possible memory `leak` as it is not `tailrec`,
     `stack` may grow infinitely
     */
@@ -5428,7 +5611,7 @@ object stronglyConnectedComponents {
       adjustedNodes) if nodeIndex == -1 && nodeKey != -1
         //case (nodeKey, nodeVal) if (nodeVal.nodeIndex == -1
         //.isEmpty
-            =>
+             =>
         strongConnect(nodeKey)
       case _ =>
     }

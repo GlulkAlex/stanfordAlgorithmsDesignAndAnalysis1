@@ -17,6 +17,7 @@ val digitSeq4 = digitSeq3 + (8,7,6,5)
 val digitSeq5 =
   (9 to 0 by -1).toSet
 val digitSeq6 = Set(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+val digitSeq7 = Set(9, 8, 7, 6, 5, 4, 0)
 //.map(digitSeq1 + _)
 //.flatten(digitSeq1 + _)
 //.flatMap(digitSeq1 + _)
@@ -52,3 +53,12 @@ digitSeq1.subsetOf(bitSet6)
 bitSet6.subsetOf(bitSet8)
 digitSeq1.diff(bitSet6)
 bitSet6.diff(digitSeq1)
+val notInDigitSeq1 =
+  digitSeq7.diff(digitSeq1)
+//digitSeq1.subsetOf(digitSeq4)
+//digitSeq1.subsetOf(digitSeq7)
+val notInDigitSeq7 =
+digitSeq1.diff(digitSeq7)
+Set.empty[Int].diff(Set.empty[Int])
+Set.empty[Int].diff(digitSeq7)
+digitSeq7.diff(Set.empty[Int])
