@@ -6,6 +6,7 @@ import scala.math.min
 import scala.math.max
 import scala.collection.immutable.Queue
 import scala.collection.immutable.Stack
+import scala.collection.mutable.ArrayBuffer
 import randomGenerators.RandomGenerators.randomIntWithinInterval
 
 import scala.util.matching.Regex
@@ -185,32 +186,62 @@ object stronglyConnectedComponents {
   @author Gluk Alex
   @version 1.1, 13/08/2015
   @define bfinfo copy paste from `Option`
-  @param isExplored: Boolean
   @param nodeIndex: Option[Int]
   @param nodeLowLink: Int
-  @param isInStack: Boolean
-  @param doneOrder: Int
   @param adjustedNodes: Set[Int]
   @return represent corresponding to node key value in th Map with fields
     */
   case class NodeMapValFieldsDynamic(
-                                      var isExplored: Boolean,
-                                      var nodeIndex: Option[Int],
+                                      /*disable all redundant*/
+                                      //var isExplored: Boolean,
+                                      var nodeIndex:
+                                      /*replace with value out of bound (-1)*/
+                                      Int,
+                                      /*change option */
+                                      //Option[Int],
                                       /*default is 'Int.MaxValue'*/
                                       var nodeLowLink: Int,
-                                      var isInStack: Boolean,
-                                      var doneOrder: Option[Int],
-                                      var groupLeader: Option[Int],
-                                      var adjustedNodes: Set[Int]
+                                      //var isInStack: Boolean,
+                                      //var doneOrder: Option[Int],
+                                      //var groupLeader: Option[Int],
+                                      var adjustedNodes:
+                                      Stream[Int]
+                                      //Set[Int]
                                       ) {
     override def toString =
-      s"""{${if (isExplored) "e" else "u"}/""" +
-        s"""$nodeIndex/""" +
-        s"""$nodeLowLink/""" +
-        s"""${if (isInStack) "in" else "out"}/""" +
-        s"""$doneOrder/""" +
-        s"""$groupLeader>to(""" +
-        s"""${adjustedNodes.mkString(",")})}"""
+    //s"""{${if (isExplored) "e" else "u"}/""" +
+      s"""i=$nodeIndex,""" +
+        s"""l=${if (nodeLowLink == Int.MaxValue) {
+          "maxInt"
+        } else {
+          nodeLowLink.toString
+        }}""" +
+        //s"""${if (isInStack) "in" else "out"}/""" +
+        //s"""$doneOrder/""" +
+        //s"""$groupLeader>to(""" +
+        s""",{${adjustedNodes.mkString(",")}}"""
+  }
+
+  case class NodeFieldsArray(
+                              var nodeKey: Int,
+                              /*compound value fields*/
+                              var nodeIndex:
+                              /*replace with value out of bound like (-1)*/
+                              Int,
+                              var nodeLowLink: Int,
+                              var adjustedNodes:
+                              Stream[Int]
+                              ) {
+    override def toString =
+      s"""key($nodeKey)""" +
+        s""",i:$nodeIndex""" +
+        s",l:" +
+        {if (nodeLowLink == Int.MaxValue) {
+          "maxInt"
+        } else {
+          nodeLowLink.toString
+        }} +
+        s""",{${adjustedNodes.mkString(",")}}"""
   }
 
 
@@ -313,13 +344,19 @@ object stronglyConnectedComponents {
                  ): Unit = {
       val defaultMapValue: NodeMapValFieldsDynamic =
         NodeMapValFieldsDynamic(
-                                 isExplored = false,
-                                 nodeIndex = None,
+                                 //isExplored = false,
+                                 nodeIndex =
+                                   -1,
+                                 //None,
                                  nodeLowLink = Int.MaxValue,
-                                 isInStack = false,
-                                 doneOrder = None,
-                                 groupLeader = None,
-                                 adjustedNodes = Set.empty)
+                                 //isInStack = false,
+                                 //doneOrder = None,
+                                 //groupLeader = None,
+                                 adjustedNodes =
+                                   //Set
+                                   Stream
+                                   .empty
+                               )
       val arcTailGet: Option[NodeMapValFieldsDynamic] =
         nodesWithAdjusted
         .get(key = arcTail)
@@ -359,13 +396,18 @@ object stronglyConnectedComponents {
               key = arcTail,
               value = //valToAdd
                 NodeMapValFieldsDynamic(
-                                         isExplored = false,
-                                         nodeIndex = None,
+                                         //isExplored = false,
+                                         nodeIndex =
+                                           -1,
+                                         //None,
                                          nodeLowLink = Int.MaxValue,
-                                         isInStack = false,
-                                         doneOrder = None,
-                                         groupLeader = None,
-                                         adjustedNodes = Set(arcHead))
+                                         //isInStack = false,
+                                         //doneOrder = None,
+                                         //groupLeader = None,
+                                         adjustedNodes =
+                                           Stream(arcHead)
+                                         //Set(arcHead)
+                                       )
                   )
         /*return value*/
         //nodesWithAdjusted
@@ -388,16 +430,18 @@ object stronglyConnectedComponents {
               key = arcTail,
               value = //valUpdated
                 NodeMapValFieldsDynamic(
-                                         isExplored = false,
-                                         nodeIndex = None,
+                                         //isExplored = false,
+                                         nodeIndex =
+                                           -1,
+                                         //None,
                                          nodeLowLink = Int.MaxValue,
-                                         isInStack = false,
-                                         doneOrder = None,
-                                         groupLeader = None,
+                                         //isInStack = false,
+                                         //doneOrder = None,
+                                         //groupLeader = None,
                                          adjustedNodes =
                                            arcTailGet
                                            .get
-                                           .adjustedNodes + arcHead
+                                           .adjustedNodes :+ arcHead
                                        )
                   )
         /*return value*/
@@ -405,6 +449,198 @@ object stronglyConnectedComponents {
       }
       /*return value*/
       //resultMapUpdated
+    }
+  }
+
+  /*
+  TODO may be use 'Buffer' or 'ArrayBuffer'
+  as `appending` an item to an `array buffer` takes amortized `constant` time.
+   */
+  class DiGraphArray extends Graph {
+    val defaultMapValue: NodeFieldsArray =
+      NodeFieldsArray(
+                       nodeKey =
+                         -1,
+                       nodeIndex =
+                         -1,
+                       nodeLowLink = Int.MaxValue,
+                       adjustedNodes =
+                         Stream
+                         .empty
+                     )
+    /*current 'Array.length - 1' equal to max available key value*/
+    var nodesSize: Int = 0
+    /*override*/ var nodes:
+    //scala.collection.mutable.ArrayBuffer[NodeFieldsArray] =
+    Array[NodeFieldsArray] =
+    /*first element not used
+    to achieve 1-to-1 correspondence between
+    array index & node key value
+    */
+    //Array(defaultMapValue)
+    //ArrayBuffer(defaultMapValue)
+      //ArrayBuffer.empty
+      Array.empty
+
+    //`Auxiliary Constructor`
+    def this(minKeyVal: Int, maxKeyVal: Int) {
+      //assume(maxKeyVal >= minKeyVal, s"at least one element")
+      /*invoke the `primary constructor`*/
+      this()
+      /*'+1' for 'ArrayBuffer(0)'*/
+      this.nodesSize = maxKeyVal - minKeyVal + 1 + 1
+      this.nodes = nodes.padTo(nodesSize, defaultMapValue)
+    }
+
+    /*may be 'Unit' and not have return value*/
+    def addEdge(
+                 arcTail: Int,
+                 arcHead: Int
+                 //): Map[Int, NodeMapValFieldsDynamic] = {
+                 ): Unit = {
+      /*also:
+      def isDefinedAt(idx: Int): Boolean
+      Tests (bounds) whether this arraybuffer contains given index.
+      def lengthCompare(len: Int): Int
+      Compares the length of this arraybuffer to a test value.
+      its running time is O(length min len) instead of O(length)
+      * */
+      //assume(nodes.isDefinedAt(arcTail),s"'Array' predefined, so must exist")
+      val arcTailGet: NodeFieldsArray =
+        nodes(arcTail)
+      /*Option[NodeFieldsArray] =
+        if (nodesSize >= arcTail) {
+          /*must be in / within Array*/
+          Some(nodes(arcTail))
+        } else {
+          /*undefined*/
+          None
+        }*/
+      val arcHeadGet: NodeFieldsArray =
+        nodes(arcHead)
+      /*val arcHeadGet: Option[NodeFieldsArray] =
+        if (nodesSize >= arcHead) {
+          Some(nodes(arcHead))
+        } else {
+          /*undefined*/
+          None
+        }*/
+      //val addArcHead: Map[Int, NodeMapValFieldsDynamic] =
+      if (
+        arcHeadGet.nodeKey == -1
+        //arcHeadGet.isEmpty
+      ) {
+        /*add new 'node' / first occurrence*/
+        /*side effect*/
+        /*
+        def append(elems: A*): Unit
+        Appends the given elements to this buffer.
+        def update(idx: Int, elem: A): Unit
+        Replaces `element` at given `index` with a new `value`.
+         */
+        /*?changes all nodes value?*/
+        //nodes(arcHead).nodeKey = arcHead
+        nodes
+        .update(
+          /*idx =*/ arcHead,
+          //elem =
+            //defaultMapValue
+            NodeFieldsArray(
+                             nodeKey =
+                               arcHead,
+                             nodeIndex =
+                               -1,
+                             nodeLowLink = Int.MaxValue,
+                             adjustedNodes =
+                               Stream.empty
+                           )
+                )
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGet.isDefined)*/ {
+        /*same value*/
+        //nodesWithAdjusted
+      }
+      //val resultMapUpdated: Map[Int, NodeMapValFieldsDynamic] =
+      if (
+        arcTailGet.nodeKey == -1
+        //arcTailGet.isEmpty
+      ) {
+        /*add new 'node' / first occurrence*/
+        /*val valToAdd: NodeMapValFieldsDynamic = {
+          /*side effect*/
+          defaultMapValue.adjustedNodes = Set(arcHead)
+          /*return value*/
+          defaultMapValue
+        }*/
+        /*side effect*/
+        nodes
+        .update(
+            /*idx =*/ arcTail,
+            /*elem =*/
+              NodeFieldsArray(
+                               nodeKey =
+                                 arcTail,
+                               nodeIndex =
+                                 -1,
+                               nodeLowLink = Int.MaxValue,
+                               adjustedNodes =
+                                 Stream(arcHead)
+                             )
+               )
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGet.isDefined)*/ {
+        /*add new adjusted 'node' to existed 'node'*/
+        /*val valUpdated: NodeMapValFieldsDynamic = {
+          /*side effect*/
+          defaultMapValue.adjustedNodes =
+            arcTailGet
+            .get
+            .adjustedNodes + arcHead
+          /*return value*/
+          defaultMapValue
+        }*/
+        /*side effect*/
+        nodes(arcTail)
+        .adjustedNodes =
+          arcTailGet
+          //.get
+          .adjustedNodes :+ arcHead
+
+        /*return value*/
+        //nodesWithAdjusted
+      }
+      /*return value*/
+      //resultMapUpdated
+    }
+  }
+
+  /*the companion object of the class*/
+  object DiGraphArray {
+    //factory methods, extractors, apply
+    /*`parameters` only for 'case classes'*/
+    //def apply() = new DiGraphArray("<no name>", 0)
+    //def apply(name: String) = new DiGraphArray(name, 0)
+    //Extractor: Create tokens that represent your object
+    /*def unapply(x: Employee) =
+      Some(x.lastName, x.middleName, x.firstName)*/
+    /*Factory*/
+    def init(minKeyVal: Int, maxKeyVal: Int): DiGraphArray = {
+      //assume(maxKeyVal >= minKeyVal, s"at least one element")
+      /*invoke the `primary constructor`*/
+      val resultObject: DiGraphArray = new DiGraphArray
+      /*'+1' for 'ArrayBuffer(0)'*/
+      val nodesSize = maxKeyVal - minKeyVal + 1 + 1
+      val bufferArray: collection.mutable.ArrayBuffer[NodeFieldsArray] =
+      new ArrayBuffer[NodeFieldsArray]
+      //.empty
+      .padTo(nodesSize, resultObject.defaultMapValue)
+      /*side effect*/
+      resultObject.nodesSize = nodesSize
+      resultObject.nodes = bufferArray.toArray
+      /*return value*/
+      resultObject
     }
   }
 
@@ -805,6 +1041,53 @@ object stronglyConnectedComponents {
                                         result = result,
                                         nonReversedArcs = nonReversedArcs
                                       )
+    }
+  }
+
+  /*order of 'arcs' does not matter*/
+  /*assume that 'nodes.value' unique*/
+  /*assume that 'Iterator' contains only pair Int in String*/
+  @scala.annotation.tailrec
+  def fillDiGraphArrayWithArcs(
+                                fileContentIter: Iterator[String],
+                                result: DiGraphArray =
+                                new DiGraphArray,
+                                pattern: Regex =
+                                """\d+""".r,
+                                //isArcsReversed: Boolean = false
+                                nonReversedArcs: Boolean = true
+                                ): DiGraphArray = {
+    if (fileContentIter.isEmpty) {
+      /*return value*/
+      result
+    } else /*if (adjacencyList.hasNext)*/ {
+      /*may be leading 'space' then
+      * delimiter one or double 'space'*/
+      val List(first, second): List[Int] =
+        pattern
+        .findAllIn(fileContentIter
+                   .next())
+        .map(_.toInt)
+        .toList
+      val List(arcTail, arcHead): List[Int] =
+        if (nonReversedArcs) {
+          List(first, second)
+        } else {
+          /*return value*/
+          List(second, first)
+        }
+      /*side effect*/
+      result
+      .addEdge(
+          arcTail = arcTail,
+          arcHead = arcHead
+              )
+      /*recursion*/
+      fillDiGraphArrayWithArcs(
+                                fileContentIter: Iterator[String],
+                                result = result,
+                                nonReversedArcs = nonReversedArcs
+                              )
     }
   }
 
@@ -2546,7 +2829,8 @@ object stronglyConnectedComponents {
                           nodeIndexShift: Int = -1
                           ): Stream[IsExploredNode] = {
     //): List[IsExploredNode] = {
-    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+    //assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -2636,7 +2920,8 @@ object stronglyConnectedComponents {
                             nodeIndexShift: Int = -1
                             //): Stream[Int] = {
                             ): List[Int] = {
-    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+    //assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -2717,7 +3002,8 @@ object stronglyConnectedComponents {
                        0,
                        nodeIndexShift: Int = -1
                        ): Int = {
-    assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+    //assume(graph.nonEmpty, s"graph must be '.nonEmpty'")
+
     //label 'v' as `discovered`
     val starNode: ExplorableNodeWithAdjusted =
       graph(v + nodeIndexShift)
@@ -3537,7 +3823,8 @@ object stronglyConnectedComponents {
              explored.contains(startNodeKey) &&
                nodesRemainsToCheck.nonEmpty
            ) {
-      assume(!nodesToCheckSet.contains(startNodeKey))
+      //assume(!nodesToCheckSet.contains(startNodeKey))
+
       val nodesAdjusted: Set[Int] =
         graph
         .get(startNodeKey)
@@ -3554,7 +3841,7 @@ object stronglyConnectedComponents {
                     dfsResults.reachable
                   )
       } else /*if (nodesAdjusted.nonEmpty)*/ {
-        /*TODO tow similar checks, at least one redundant*/
+        /*TODO two similar checks, at least one redundant*/
         if (nodesAdjusted.subsetOf(explored)) {
           /*all nodes within already explored*/
           /*`startNodeKey` done*/
@@ -4610,24 +4897,46 @@ object stronglyConnectedComponents {
                          ).sCC).toVector
   }
 
+  /*
+  Done: replace 'Set' with 'List' or 'Stream' & check the effect
+  - 'Stream' take a little less space then 'Set' according to the test
+  if fails,
+  replace 'Map' with 'Array',
+  as it's size known ahead ('nodes' are just a range from '1' to '875714') &
+  'Array' is a native Java object
+   */
   //input: graph G = (V, E)
   //output: set of strongly connected components (sets of vertices)
   def tarjanForDiGraphDyn(
-                           adjacencyList: Map[Int, NodeMapValFieldsDynamic]/*,
-                           index: Int = 0,
+                           adjacencyList:
+                           //ArrayBuffer[NodeFieldsArray]
+                           //Map[Int, Set[Int]]
+                           Map[Int, NodeMapValFieldsDynamic] //,
+                           /*index: Int = 0,
                            stack:
                            List[Int] =*/
                            //List[IndexedNode] =
                            //List[Map[Int, NodeMapValFieldsDynamic]] =
                            //List.empty
-                           ): Iterable[List[Int]] = {
+                           ): Stream[Int] = {
+    //): List[Int] = {
+    //): List[List[Int]] = {
+    //): Iterable[List[Int]] = {
     //): Vector[List[Int]] = {
-    var localIndex: Int = 0//index
+    var localIndex: Int = 0 //index
+    var nodesOnStack: BitSet =
+      BitSet.empty
+    var graphSCCs:
+    //List[List[Int]] =
+    /*List[Int] =
+      List.empty*/
+    Stream[Int] =
+      Stream.empty
     var localStack:
     List[Int] =
     //List[IndexedNode] =
-      //stack
-    List.empty
+    //stack
+      List.empty
     //index := 0
     //S := empty
 
@@ -4668,24 +4977,38 @@ object stronglyConnectedComponents {
     strongconnect(v)
     end if
           end for*/
+
     /*possible memory `leak` as it is not `tailrec`,
     `stack` may grow infinitely
     */
+    /*
+    must find & return SCC if any
+     */
     //@scala.annotation.tailrec
     def strongConnect(
-                       nodeKeyToCheck: Int/*,
+                       nodeKeyToCheck: Int /*,
                      currentResultingSCC: List[Int] =
                      List.empty*/
-                       ): List[Int] = {
+                       ): Int = {
+      //): List[Int] = {
       //assume(adjacencyList.get(nodeKeyToCheck).isDefined)
-      val nodeVal: NodeMapValFieldsDynamic =
-        adjacencyList.get(nodeKeyToCheck).get
+      //assume(adjacencyList.isDefinedAt(nodeKeyToCheck))
+
+      val nodeVal:
+      //NodeFieldsArray =
+      NodeMapValFieldsDynamic =
+        adjacencyList//(nodeKeyToCheck)
+      .get(nodeKeyToCheck)
+      .get
       /*side effects*/
-      nodeVal.nodeIndex = Some(localIndex)
+      nodeVal.nodeIndex =
+        localIndex
+      //Some(localIndex)
       nodeVal.nodeLowLink = localIndex
       localIndex += 1
       localStack = nodeKeyToCheck +: localStack
-      nodeVal.isInStack = true
+      //nodeVal.isInStack = true
+      nodesOnStack = nodesOnStack + nodeKeyToCheck
 
       /* iterate over ? adjusted ?*/
       /*calculate ? min val for `lowlink`?*/
@@ -4696,10 +5019,17 @@ object stronglyConnectedComponents {
       .adjustedNodes
       .foreach(adjustedNodeKey => {
         //assume(adjacencyList.get(adjustedNodeKey).isDefined)
-        val adjustedNodeVal: NodeMapValFieldsDynamic =
-          adjacencyList.get(adjustedNodeKey).get
+        val adjustedNodeVal:
+        //NodeFieldsArray =
+        NodeMapValFieldsDynamic =
+          adjacencyList//(adjustedNodeKey)
+        .get(adjustedNodeKey).get
 
-        if (adjustedNodeVal.nodeIndex.isEmpty /* is undefined*/ ) {
+        if (
+          adjustedNodeVal.nodeIndex == -1
+        //.isEmpty /* is undefined*/
+        //nodesOnStack.contains()
+        ) {
           // has not yet been visited
           // recurse on it
           strongConnect(adjustedNodeKey)
@@ -4708,12 +5038,15 @@ object stronglyConnectedComponents {
             min(nodeVal.nodeLowLink, adjustedNodeVal.nodeLowLink)
         } else if (
                //adjustedNodeVal.nodeIndex.isDefined &&
-                 adjustedNodeVal.isInStack
+               //adjustedNodeVal.isInStack
+                 nodesOnStack.contains(adjustedNodeKey)
                ) {
           // Successor w is in stack S and hence in the current SCC
           nodeVal.nodeLowLink =
             min(nodeVal.nodeLowLink,
-                adjustedNodeVal.nodeIndex.getOrElse(nodeVal.nodeLowLink)
+                /*careful with '-1' may be use 'Int.MaxValue' as default*/
+                adjustedNodeVal.nodeIndex
+                //.getOrElse(nodeVal.nodeLowLink)
                )
         }
       }
@@ -4723,40 +5056,63 @@ object stronglyConnectedComponents {
       // pop the `stack` and
       // generate an `SCC`
       //assume(nodeVal.nodeIndex.isDefined)
-      if (nodeVal.nodeLowLink == nodeVal.nodeIndex.get) {
+      if (nodeVal.nodeLowLink == nodeVal.nodeIndex
+      //.get
+      ) {
         //start /  create a new `strongly connected component`
         //`until` loop with post condition,
         // so always run at least once
         @scala.annotation.tailrec
         def loopOnStack(
-                         loopSCC: List[Int] = List.empty,
-                       condition: Boolean = false
-                         ): List[Int] = {
+                         //loopSCC: List[Int] = List.empty,
+                         SCCsize: Int = 0,
+                         condition: Boolean = false
+                         ): Int = {
+          //): List[Int] = {
           if (
             condition ||
-            localStack.isEmpty
+              localStack.isEmpty
           ) {
             /*stop & return / exit */
+            /*side effect*/
+            graphSCCs =
+              //loopSCC.length +:
+              SCCsize +:
+                graphSCCs
+            //loopSCC +: graphSCCs
             //currentResultingSCC
-            loopSCC
-          } else /*if (localStack.nonEmpty)*/{
+            //loopSCC
+            SCCsize
+          } else /*if (localStack.nonEmpty)*/ {
             val stackTopKey = localStack.head
             /*side effect*/
             localStack = localStack.tail
             //assume(adjacencyList.get(stackTopKey).isDefined)
-            val stackTopVal: NodeMapValFieldsDynamic =
-              adjacencyList.get(stackTopKey).get
+            /*val stackTopVal: NodeMapValFieldsDynamic =
+              adjacencyList.get(stackTopKey).get*/
             /*side effect*/
-            stackTopVal.isInStack = false
+            //stackTopVal.isInStack = false
+            nodesOnStack = nodesOnStack - stackTopKey
+            /*val updatedSCC: List[Int] =
+              stackTopKey +: loopSCC*/
+            val updatedSCCsize: Int =
+              SCCsize + 1
+
             /*post condition*/
             if (stackTopKey == nodeKeyToCheck) {
               /*stop & return / exit */
               //currentResultingSCC
               //loopSCC
-              loopOnStack(loopSCC, condition = true)
+              loopOnStack(
+                           //updatedSCC,
+                           updatedSCCsize,
+                           condition = true)
             } else {
               /*recursion*/
-              loopOnStack(stackTopKey +: loopSCC, condition = condition)
+              loopOnStack(
+                           //updatedSCC,
+                           updatedSCCsize,
+                           condition = condition)
             }
           }
         }
@@ -4765,7 +5121,8 @@ object stronglyConnectedComponents {
         loopOnStack()
       } else {
         /*return value*/
-        List.empty
+        //List.empty
+        0
       }
     }
 
@@ -4782,10 +5139,302 @@ object stronglyConnectedComponents {
         }
             )*/
     /*return*/
-    for {
+    /*for {
       (nodeKey, nodeVal) <- adjacencyList
       if nodeVal.nodeIndex.isEmpty
-    } yield strongConnect(nodeKey)
+    } yield strongConnect(nodeKey)*/
+    adjacencyList
+    .foreach(
+    /*(nodeKey, nodeVal) =>
+  if (nodeVal.nodeIndex.isEmpty) {
+    strongConnect(nodeKey)
+  }*/ {
+      /*case NodeFieldsArray(
+      nodeKey,
+      nodeIndex,
+      nodeLowLink,
+      adjustedNodes) if nodeIndex == -1*/
+        case (nodeKey, nodeVal) if nodeVal.nodeIndex == -1
+        //.isEmpty
+            =>
+        strongConnect(nodeKey)
+      case _ =>
+    }
+            )
+    /*return value*/
+    graphSCCs
+  }
+  /*
+  TODO
+  Done: replace 'Set' with 'List' or 'Stream' & check the effect
+  - 'Stream' take a little less space then 'Set' according to the test
+  if fails,
+  replace 'Map' with 'Array',
+  as it's size known ahead ('nodes' are just a range from '1' to '875714') &
+  'Array' is a native Java object
+  and, if it is possible, `tailrec` 'strongConnect' or
+  try to refactor / decompose to that case,
+  because here is / lays a main impact on memory leak
+   */
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjanForDiGraphArray(
+                           adjacencyList:
+                           Array[NodeFieldsArray]
+                           //ArrayBuffer[NodeFieldsArray]
+                           //Map[Int, Set[Int]]
+                           //Map[Int, NodeMapValFieldsDynamic] //,
+                           /*index: Int = 0,
+                           stack:
+                           List[Int] =*/
+                           //List[IndexedNode] =
+                           //List[Map[Int, NodeMapValFieldsDynamic]] =
+                           //List.empty
+                           ): Stream[Int] = {
+    //): List[Int] = {
+    //): List[List[Int]] = {
+    //): Iterable[List[Int]] = {
+    //): Vector[List[Int]] = {
+    var localIndex: Int = 0 //index
+    var nodesOnStack: BitSet =
+      BitSet.empty
+    var graphSCCs:
+    //List[List[Int]] =
+    /*List[Int] =
+      List.empty*/
+    Stream[Int] =
+      Stream.empty
+    var localStack:
+    List[Int] =
+    //List[IndexedNode] =
+    //stack
+      List.empty
+    //index := 0
+    //S := empty
+
+    /*function strongconnect(v)
+    // Set the depth index for v to the smallest unused index
+    v.index := index
+    v.lowlink := index
+    index := index + 1
+    S.push(v)
+    v.onStack := true
+
+    // Consider successors of v
+    for each (v, w) in E do
+      if (w.index is undefined) then
+    // Successor w has not yet been visited; recurse on it
+    strongconnect(w)
+    v.lowlink  := min(v.lowlink, w.lowlink)
+    else if (w.onStack) then
+    // Successor w is in stack S and hence in the current SCC
+    v.lowlink  := min(v.lowlink, w.index)
+    end if
+          end for
+
+    // If v is a root node, pop the stack and generate an SCC
+    if (v.lowlink = v.index) then
+    start a new strongly connected component
+    repeat
+    w := S.pop()
+    w.onStack := false
+    add w to current strongly connected component
+    until (w = v)
+    output the current strongly connected component
+      end if
+            end function*/
+
+    /*for each v in V do
+      if (v.index is undefined) then
+    strongconnect(v)
+    end if
+          end for*/
+
+    /*possible memory `leak` as it is not `tailrec`,
+    `stack` may grow infinitely
+    */
+    /*
+    must find & return SCC if any
+     */
+    //@scala.annotation.tailrec
+    def strongConnect(
+                       nodeKeyToCheck: Int /*,
+                     currentResultingSCC: List[Int] =
+                     List.empty*/
+                       ): Int = {
+      //): List[Int] = {
+      //assume(adjacencyList.get(nodeKeyToCheck).isDefined)
+      //assume(adjacencyList.isDefinedAt(nodeKeyToCheck))
+      /*!!!Warn!!!: 'DiGraphArray' has `empty` '0' element, just for shift*/
+      val nodeVal:
+      NodeFieldsArray =
+      //NodeMapValFieldsDynamic =
+        adjacencyList(nodeKeyToCheck)
+      /*.get(nodeKeyToCheck)
+      .get*/
+      /*side effects*/
+      nodeVal.nodeIndex =
+        localIndex
+      //Some(localIndex)
+      nodeVal.nodeLowLink = localIndex
+      localIndex += 1
+      localStack = nodeKeyToCheck +: localStack
+      //nodeVal.isInStack = true
+      nodesOnStack = nodesOnStack + nodeKeyToCheck
+
+      /* iterate over ? adjusted ?*/
+      /*calculate ? min val for `lowlink`?*/
+      /*for {
+        adjustedNodeKey <- nodeVal.adjustedNodes
+      }*/
+      nodeVal
+      .adjustedNodes
+      .foreach(adjustedNodeKey => {
+        //assume(adjacencyList.get(adjustedNodeKey).isDefined)
+        val adjustedNodeVal:
+        NodeFieldsArray =
+        //NodeMapValFieldsDynamic =
+          adjacencyList(adjustedNodeKey)
+        //.get(adjustedNodeKey).get
+
+        if (
+          adjustedNodeVal.nodeIndex == -1
+        //.isEmpty /* is undefined*/
+        //nodesOnStack.contains()
+        ) {
+          // has not yet been visited
+          // recurse on it
+          strongConnect(adjustedNodeKey)
+          /*side effect*/
+          nodeVal.nodeLowLink =
+            min(nodeVal.nodeLowLink, adjustedNodeVal.nodeLowLink)
+        } else if (
+               //adjustedNodeVal.nodeIndex.isDefined &&
+               //adjustedNodeVal.isInStack
+                 nodesOnStack.contains(adjustedNodeKey)
+               ) {
+          // Successor w is in stack S and hence in the current SCC
+          nodeVal.nodeLowLink =
+            min(nodeVal.nodeLowLink,
+                /*careful with '-1' may be use 'Int.MaxValue' as default*/
+                adjustedNodeVal.nodeIndex
+                //.getOrElse(nodeVal.nodeLowLink)
+               )
+        }
+      }
+              )
+
+      // If it is a `root` node,
+      // pop the `stack` and
+      // generate an `SCC`
+      //assume(nodeVal.nodeIndex.isDefined)
+      if (nodeVal.nodeLowLink == nodeVal.nodeIndex
+      //.get
+      ) {
+        //start /  create a new `strongly connected component`
+        //`until` loop with post condition,
+        // so always run at least once
+        @scala.annotation.tailrec
+        def loopOnStack(
+                         //loopSCC: List[Int] = List.empty,
+                         SCCsize: Int = 0,
+                         condition: Boolean = false
+                         ): Int = {
+          //): List[Int] = {
+          if (
+            condition ||
+              localStack.isEmpty
+          ) {
+            /*stop & return / exit */
+            /*side effect*/
+            graphSCCs =
+              //loopSCC.length +:
+              SCCsize +:
+                graphSCCs
+            //loopSCC +: graphSCCs
+            //currentResultingSCC
+            //loopSCC
+            SCCsize
+          } else /*if (localStack.nonEmpty)*/ {
+            val stackTopKey = localStack.head
+            /*side effect*/
+            localStack = localStack.tail
+            //assume(adjacencyList.get(stackTopKey).isDefined)
+            /*val stackTopVal: NodeMapValFieldsDynamic =
+              adjacencyList.get(stackTopKey).get*/
+            /*side effect*/
+            //stackTopVal.isInStack = false
+            nodesOnStack = nodesOnStack - stackTopKey
+            /*val updatedSCC: List[Int] =
+              stackTopKey +: loopSCC*/
+            val updatedSCCsize: Int =
+              SCCsize + 1
+
+            /*post condition*/
+            if (stackTopKey == nodeKeyToCheck) {
+              /*stop & return / exit */
+              //currentResultingSCC
+              //loopSCC
+              loopOnStack(
+                           //updatedSCC,
+                           updatedSCCsize,
+                           condition = true)
+            } else {
+              /*recursion*/
+              loopOnStack(
+                           //updatedSCC,
+                           updatedSCCsize,
+                           condition = condition)
+            }
+          }
+        }
+        /*return value*/
+        /*initialization*/
+        loopOnStack()
+      } else {
+        /*return value*/
+        //List.empty
+        0
+      }
+    }
+
+    /*side effect*/
+    /*adjacencyList
+    .foreach(
+        //(nodeKey: Int, nodeVal: NodeMapValFieldsDynamic) =>
+        //((nodeKey, nodeVal): (Int,NodeMapValFieldsDynamic)) =>
+        n => {
+          val (nodeKey, nodeVal): (Int, NodeMapValFieldsDynamic) = n
+          if (nodeVal.isExplored) {
+            strongConnect(nodeKey)
+          }
+        }
+            )*/
+    /*return*/
+    /*for {
+      (nodeKey, nodeVal) <- adjacencyList
+      if nodeVal.nodeIndex.isEmpty
+    } yield strongConnect(nodeKey)*/
+    adjacencyList
+    .foreach(
+    /*(nodeKey, nodeVal) =>
+  if (nodeVal.nodeIndex.isEmpty) {
+    strongConnect(nodeKey)
+  }*/ {
+      case NodeFieldsArray(
+      nodeKey,
+      nodeIndex,
+      nodeLowLink,
+      adjustedNodes) if nodeIndex == -1 && nodeKey != -1
+        //case (nodeKey, nodeVal) if (nodeVal.nodeIndex == -1
+        //.isEmpty
+            =>
+        strongConnect(nodeKey)
+      case _ =>
+    }
+            )
+    /*return value*/
+    graphSCCs
   }
 
   //input: graph G = (V, E)
@@ -4894,7 +5543,8 @@ object stronglyConnectedComponents {
       def minLowLink(
                       //nodeAndAdjusted: IndexedNodeWithAdjacencyList,
                       adjustedNodes:
-                      Set[Int],
+                      Stream[Int],
+                      //Set[Int],
                       //List[IndexedNode],
                       /*actually started with 'node.nodeLowLink'*/
                       currentMin: Int = Int.MaxValue,
@@ -5043,7 +5693,9 @@ object stronglyConnectedComponents {
       //for each(node, w) in E do
       //val nodeAndAdjusted: IndexedNodeWithAdjacencyList =
       //adjacencyList(node.nodeVal - 1)
-      val adjustedNodesKeys: Set[Int] =
+      val adjustedNodesKeys:
+      //Set[Int] =
+      Stream[Int] =
         adjacencyList.get(
                            node
                            //.nodeVal

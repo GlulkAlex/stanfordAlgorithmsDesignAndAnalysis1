@@ -3578,61 +3578,70 @@ class stronglyConnectedComponentsSuit
             val expectedArcsSize: Int = 5105043
             /*all 'nodes', but only few / some 'arcs'*/
             /*at least as big as `mockUp(14)`*/
-            val inputTakeNumber: Int = 20
+            val inputTakeNumber: Int =
+              250000 +
+                //250000 +
+                125000 +
+                62500 +
+                31250 +
+                //15625 +
+                7812 +
+                7812 +
+                3906 +
+                3906 +
+                3906 +
+                //3906 +
+                //1953 +
+                976 +
+                //976 +
+                488 +
+                //488 +
+                //244 +
+                122 +
+                //122 +
+                //122
+                61 +
+                //61 +
+                //30 +
+                //15 +
+                7
+            //500000
             val expectedNodesInSCC: Int = 3
-            val expectedSCCsInDiGraph: Int = 5
-            val expectedSize: Int = 4
+            val expectedSCCsInDiGraph: Int = 5 //4
+    val expectedSize: Int = 4
             val filePath: String =
               "/media/gluk-alex/" +
                 "GDI/Java/Scala/sbt/projects/" +
                 "stanfordAlgorithmsDesignAndAnalysis1/" +
                 "src/test/scala/" +
                 "testSCC/"
-            //SCC.txt
-            val fileName: String = "tinyDG.txt"
+            val fileName: String =
+              "SCC.txt"
+            //"tinyDG.txt"
+            //"diGraphWith4SCCs"
             val actualFileContent: Iterator[String] =
             //Iterator.empty
               readFromFile(
                             fileName = fileName,
                             filePath = filePath
                           )
+              /*reduce / control input size*/
+              .take(inputTakeNumber)
             val nodesInGraph: Int =
-              actualFileContent.next().toInt
+            //actualFileContent.next().toInt
+              875714
             val edgesInGraph: Int =
-              actualFileContent.next().toInt
+            //actualFileContent.next().toInt
+              5105043
             println(
                      s"\ntotal 'nodesInGraph`:$nodesInGraph" +
                        s"\ntotal 'edgesInGraph`:$edgesInGraph"
                    )
-            val arcs: Vector[Arc] =
-            //extractSortedArcs(actualFileContent)
-              Vector.empty
-              .view
-              /*reduce / control input size*/
-              .take(inputTakeNumber)
-              .toVector
 
-            println(
-                     s"\n'arcs` are extracted from file" /*+
-                   s"\n'arcs.head` is:${arcs.head}" +
-                     s"\n'arcs.tail.head' is: ${
-                       arcs.tail.head
-                     }"*/
-                   )
-
-            /*reversed directions*/
-            val transposedArcs: Vector[Arc] =
-              arcs
-              .view
-              .map(a => Arc(a.arcHead, a.arcTail))
-              .sortBy(_.arcTail)
-              .toVector
-            val correspondingNodes: Vector[IsExploredNode] =
-            /*create new collection as `unexplored`*/
-              Vector.empty
             val startingNode: Int = 1
-            val takeNumber: Int = 15
-            val nodesLimit: Int = Int.MinValue
+            /*only '5' max matter*/
+            val takeNumber: Int = 5 //15
+    val nodesLimit: Int = Int.MinValue
 
             val directedGraphDynamic: DirectedGraphDynamic =
               fillDirectedGraphDynamicFromArcs(
@@ -3641,8 +3650,28 @@ class stronglyConnectedComponentsSuit
                                                 pattern =
                                                   """\d+""".r
                                               )
-            val allSCCs: Iterable[List[Int]] =
-              tarjanForDiGraphDyn(directedGraphDynamic.nodesWithAdjusted)
+            println(
+                     s"\n'arcs` are extracted from file" +
+                       s"\n'directedGraphDynamic.nodesWithAdjusted.head' is:" +
+                       directedGraphDynamic.nodesWithAdjusted.head +
+                       s"\n'directedGraphDynamic.nodesWithAdjusted.tail.head'" +
+                       s" " +
+                       s"is:" +
+                       directedGraphDynamic.nodesWithAdjusted.tail.head
+                   )
+
+            val allSCCs:
+            //Iterable[List[Int]] =
+            //List[Int] =
+            Stream[Int] =
+              tarjanForDiGraphDyn(
+                                   directedGraphDynamic.nodesWithAdjusted
+                                 )
+              .view
+              .sorted(Ordering[Int].reverse)
+              .take(takeNumber)
+              //.toList
+              .toStream
             println(
                      s"\n'allSCCs.size' is:" +
                        allSCCs.size +
@@ -3656,13 +3685,14 @@ class stronglyConnectedComponentsSuit
                            .tail.head
                          }" +*/
                        //s"\n'nodesWithAdjusted` is:" +
+                       s"\n`inputTakeNumber` is $inputTakeNumber" +
                        s"\nfirst $takeNumber elements in " +
                        s"'nodesWithAdjusted`" +
                        s" are:" +
                        s"\n${
                          allSCCs
                          .take(takeNumber)
-                         .mkString("\n")
+                         .mkString(",")
                        }"
                    )
 
@@ -3677,152 +3707,347 @@ class stronglyConnectedComponentsSuit
                   )
           }
   test(
-        "100: 'convert decimal to binary' " +
+        "67: 'tarjanForDiGraphArray' " +
           "should return " +
-          "right representation"
+          "all `SCCs` sizes in 'DiGraphArray'"
       ) {
-          case class ConvertResults(
-                                     binaryRepresentation: String,
-                                     decimalDecomposition: List[Int],
-                                     remainders: List[Int]
-                                     )
+          val sourceSize: Int = 5105043
+          val expectedNodesSize: Int = 875714
+          val expectedArcsSize: Int = 5105043
+          /*all 'nodes', but only few / some 'arcs'*/
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int =
+          //250000 +
+          //250000 +
+          125000 +
+          125000 +
+          62500 +
+          62500 +
+          31250 +
+          31250 +
+          //31250 +
+          15625 +
+          15625 +
+          7812 +
+          7812 +
+          7812 +
+          7812 +
+          //7812 +
+          //3906 +
+          //3906 +
+          //3906 +
+          3906 +
+          1953 +
+          1953 +
+            976 +
+              //976 +
+              488 +
+              //488 +
+              //244 +
+              122 +
+              122 +
+              //122
+              61 +
+              //61 +
+              //30 +
+              //15 +
+              7
+          //500000
+          val expectedNodesInSCC: Int = 3
+          val expectedSCCsInDiGraph: Int = 5 //4
+    val expectedSize: Int = 4
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"
+          val fileName: String =
+          "SCC.txt"
+          //"tinyDG.txt"
+            //"diGraphWith4SCCs"
+          val actualFileContent: Iterator[String] =
+          //Iterator.empty
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            /*reduce / control input size*/
+            .take(inputTakeNumber)
+          /*val firstFiveStrIter: Iterator[String] =
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            .take(25)*/
+          val nodesInGraph: Int =
+          //  actualFileContent.next().toInt
+          875714
+          val edgesInGraph: Int =
+          //  actualFileContent.next().toInt
+          5105043
+          /*println(
+                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                     s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
+                   //s"\ntotal 'adjusted` for node '1':" +
+                   //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
+                   // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
+                   //s"\n'firstFiveStrIter`:"+
+                   //firstFiveStrIter.mkString(",")
+                 )*/
 
-          val decimalNumber: Int = 2014
-          val expectedResult: String =
-          //Int.toString(decimalNumber,2)
-          //*Integer.toString(decimalNumber,2)
-            decimalNumber.toBinaryString
-          //BigDecimal(decimalNumber).byteValue().toString
+          /*only '5' max matter*/
+          val takeNumber: Int = 5 //15
+    val nodesLimit: Int = Int.MinValue
 
-          /*`positional` notation*/
-          /*?must run at least once for non empty input
-          ?so, post condition as `until` ?
-          first iteration is special because
-          number value checked unchanged, not halved
-          * */
-          @scala.annotation.tailrec
-          def convertDecToBin(
-                               decNum: Int,
-                               /*halfs w/o remainders & initial value*/
-                               resultsSeqInt:
-                               List[Int] =
-                               //List[String] =
-                               List.empty,
-                               remainders:
-                               List[Int] =
-                               //List[String] =
-                               List.empty,
-                               resultsStr:
-                               String = "",
-                               conditionUntil: Boolean = false
-                               ): ConvertResults = {
-            //): (String, List[Int]) = {
-            //): String = {
-            if (
-            /*decNum == 0 ||
-            decNum == 1*/
-              conditionUntil
-            ) {
-              /*val rightmostPosition: String =
-                resultsSeqInt.last match {
-                  case odd if odd % 2 != 0 =>"1"
-                  case even                => "0"}*/
-              /*return value*/
-              //(resultsStr, resultsSeqInt)
-              ConvertResults(
-                              //resultsStr + rightmostPosition,
-                              resultsStr,
-                              resultsSeqInt,
-                              remainders)
-              //.reduce()
-              /*.fold("")(_ + _ match {
-                case odd if _ % 2 != 0 => "1"
-                case even => "0"
-              })*/
-              /*.map(/*_ match*/ {
-                     case odd if odd % 2 != 0 => "1"
-                     case even => "0"
-                   })*/
-              //.mkString
-            } else {
-              val half: Int =
-                if (resultsSeqInt.isEmpty) {
-                  /*initial value*/
-                  decNum
-                } else {
-                  decNum / 2
-                }
-              val remainder: Int =
-                half % 2
-                //decNum % 2
-              //val elemToAdd: String =
-              val (strUpdated, intSeqUpdated): (String, List[Int]) =
-                half match {
-                  case odd if odd % 2 != 0 =>
-                    ("1" + resultsStr,
-                      odd +: resultsSeqInt)
-                  case even                =>
-                    ("0" + resultsStr,
-                      even +: resultsSeqInt)
-                }
-              val checkedCondition: Boolean =
-              /*decNum == 0 ||
-                decNum == 1*/
-                half == 1
-              /*recursion*/
-              convertDecToBin(
-                               half,
-                               resultsStr = strUpdated,
-                               resultsSeqInt = intSeqUpdated,
-                               remainders = remainder +: remainders,
-                               conditionUntil = checkedCondition
-                             )
-            }
-          }
-
-          //val binaryString: String =
-          //val (binaryString, intSource): (String, List[Int]) =
-          val ConvertResults(
-          binaryString,
-          intSource,
-          remainders
-                            ): ConvertResults =
-          //): (String, List[Int]) =
-            convertDecToBin(decimalNumber)
-          val halvesSum: Int = intSource.init.sum
-          val remaindersSum: Int = remainders.sum
-          val remaindersExpected: List[Int] =
-            intSource
-            .init
-          .map(_ % 2)
-          val totalSum: Int = halvesSum + remaindersSum
-
-          println(
-                   s"\n`$decimalNumber` decompose to halves is:\n" +
-                     intSource +
-                   s"\n`remainders` are:\n" +
-                     remainders +
-                   s"\n`remaindersExpected` are:\n" +
-                     remaindersExpected +
-                     s"\n'intSource.sum' is:" +
-                     halvesSum +
-                     s"\n'remainders.sum' is:" +
-                     remaindersSum +
-                     s"\n'totalSum' is:" +
-                     totalSum +
-                     s"\n$decimalNumber 'convertDecToBin' is:" +
-                     binaryString +
-                     s"\n'convertDecToBin.length' is:" +
-                     binaryString.length +
-                     s"\n'expectedResult.length' is:" +
-                     expectedResult.length
+          /*val initialDiGraphArray: DiGraphArray =
+            new DiGraphArray(minKeyVal = 1,
+                             maxKeyVal =
+                               nodesInGraph)*/
+          /*println(
+                   s"\n'initialDiGraphArray.nodesSize` is:" +
+                     initialDiGraphArray.nodesSize +
+                     s"\n'initialDiGraphArray.nodes.length` is:" +
+                     initialDiGraphArray.nodes.length +
+                     s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                     initialDiGraphArray.nodes.tail.head
                  )
-          assume(
-                  binaryString == expectedResult,
-                  s"\n'allSCCs' must be 'nonEmpty' " +
-                    s"& equal to 'expectedResult'"
-                )
+                initialDiGraphArray
+                .addEdge(
+                    arcTail = 0,
+                    arcHead = 1
+                        )
+                println(
+                           s"\n'initialDiGraphArray.nodes.head' is:" +
+                           initialDiGraphArray.nodes.head +
+                s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                           initialDiGraphArray.nodes.tail.head
+                       )*/
 
+          /*TODO `fillDiGraphArrayWithArcs` fails
+          check logic in the 'addEdge'
+          * */
+          val diGraphArray: DiGraphArray =
+            fillDiGraphArrayWithArcs(
+                                      fileContentIter =
+                                        actualFileContent,
+                                      result =
+                                        //initialDiGraphArray,
+                                        /*new DiGraphArray(minKeyVal = 1,
+                                                         maxKeyVal =
+                                                           nodesInGraph),*/
+                                        DiGraphArray
+                                        .init(
+                                            minKeyVal = 1,
+                                            maxKeyVal =
+                                              nodesInGraph),
+                                      pattern =
+                                        """\d+""".r
+                                    )
+          /*println(
+                   s"\n'arcs` are extracted from file" +
+                     //s"\n'diGraphArray.nodes.head' is:" +
+                     //diGraphArray.nodes.head +
+                     s"\n'diGraphArray.nodes.tail.head' is:" +
+                     diGraphArray.nodes.tail.head
+                 )*/
+
+          val allSCCs:
+          //Iterable[List[Int]] =
+          //List[Int] =
+          Stream[Int] =
+            tarjanForDiGraphArray(diGraphArray.nodes)
+            .view
+            .sorted(Ordering[Int].reverse)
+            .take(takeNumber)
+            //.toList
+            .toStream
+          println(
+                   s"\n'allSCCs.size' is:" +
+                     allSCCs.size +
+                     /*s"\n'mapWithAdjacencyList.head' is:" +
+                       directedGraphDynamic
+                         .nodesWithAdjusted
+                       .head +
+                       s"\n'mapWithAdjacencyList.tail.head' is ${
+                         directedGraphDynamic
+                         .nodesWithAdjusted
+                         .tail.head
+                       }" +*/
+                     //s"\n'nodesWithAdjusted` is:" +
+                     s"\n`inputTakeNumber` is $inputTakeNumber" +
+                     s"\nfirst $takeNumber elements in " +
+                     s"'nodesWithAdjusted`" +
+                     s" are:" +
+                     s"\n${
+                       allSCCs
+                       .take(takeNumber)
+                       .mkString(",")
+                     }"
+                 )
+
+          assume(
+                  //true == true,
+                  allSCCs
+                  .nonEmpty &&
+                    allSCCs
+                    .size == expectedSCCsInDiGraph,
+                  s"\n'allSCCs' must be 'nonEmpty' " +
+                    s"& equal to 'expectedSCCsInDiGraph'"
+                )
         }
+  ignore(
+          "100: 'convert decimal to binary' " +
+            "should return " +
+            "right representation"
+        ) {
+            case class ConvertResults(
+                                       binaryRepresentation: String,
+                                       decimalDecomposition: List[Int],
+                                       remainders: List[Int]
+                                       )
+
+            val decimalNumber: Int = 2014
+            val expectedResult: String =
+            //Int.toString(decimalNumber,2)
+            //*Integer.toString(decimalNumber,2)
+              decimalNumber.toBinaryString
+            //BigDecimal(decimalNumber).byteValue().toString
+
+            /*
+            pc.aggregate(Set[Int]())(_ += process(_), _ ++ _)
+            Aggregates the results of
+            applying an operator to subsequent elements.
+             */
+            /*`positional` notation*/
+            /*?must run at least once for non empty input
+            ?so, post condition as `until` ?
+            first iteration is special because
+            number value checked unchanged, not halved
+            * */
+            @scala.annotation.tailrec
+            def convertDecToBin(
+                                 decNum: Int,
+                                 /*halfs w/o remainders & initial value*/
+                                 resultsSeqInt:
+                                 List[Int] =
+                                 //List[String] =
+                                 List.empty,
+                                 remainders:
+                                 List[Int] =
+                                 //List[String] =
+                                 List.empty,
+                                 resultsStr:
+                                 String = "",
+                                 conditionUntil: Boolean = false
+                                 ): ConvertResults = {
+              //): (String, List[Int]) = {
+              //): String = {
+              if (
+              /*decNum == 0 ||
+              decNum == 1*/
+                conditionUntil
+              ) {
+                /*val rightmostPosition: String =
+                  resultsSeqInt.last match {
+                    case odd if odd % 2 != 0 =>"1"
+                    case even                => "0"}*/
+                /*return value*/
+                //(resultsStr, resultsSeqInt)
+                ConvertResults(
+                                //resultsStr + rightmostPosition,
+                                resultsStr,
+                                resultsSeqInt,
+                                remainders)
+                //.reduce()
+                /*.fold("")(_ + _ match {
+                  case odd if _ % 2 != 0 => "1"
+                  case even => "0"
+                })*/
+                /*.map(/*_ match*/ {
+                       case odd if odd % 2 != 0 => "1"
+                       case even => "0"
+                     })*/
+                //.mkString
+              } else {
+                val half: Int =
+                  if (resultsSeqInt.isEmpty) {
+                    /*initial value*/
+                    decNum
+                  } else {
+                    decNum / 2
+                  }
+                val remainder: Int =
+                  half % 2
+                //decNum % 2
+                //val elemToAdd: String =
+                val (strUpdated, intSeqUpdated): (String, List[Int]) =
+                  half match {
+                    case odd if odd % 2 != 0 =>
+                      ("1" + resultsStr,
+                        odd +: resultsSeqInt)
+                    case even                =>
+                      ("0" + resultsStr,
+                        even +: resultsSeqInt)
+                  }
+                val checkedCondition: Boolean =
+                /*decNum == 0 ||
+                  decNum == 1*/
+                  half == 1
+                /*recursion*/
+                convertDecToBin(
+                                 half,
+                                 resultsStr = strUpdated,
+                                 resultsSeqInt = intSeqUpdated,
+                                 remainders = remainder +: remainders,
+                                 conditionUntil = checkedCondition
+                               )
+              }
+            }
+
+            //val binaryString: String =
+            //val (binaryString, intSource): (String, List[Int]) =
+            val ConvertResults(
+            binaryString,
+            intSource,
+            remainders
+                              ): ConvertResults =
+            //): (String, List[Int]) =
+              convertDecToBin(decimalNumber)
+            val halvesSum: Int = intSource.init.sum
+            val remaindersSum: Int = remainders.sum
+            val remaindersExpected: List[Int] =
+              intSource
+              .init
+              .map(_ % 2)
+            val totalSum: Int = halvesSum + remaindersSum
+
+            println(
+                     s"\n`$decimalNumber` decompose to halves is:\n" +
+                       intSource +
+                       s"\n`remainders` are:\n" +
+                       remainders +
+                       s"\n`remaindersExpected` are:\n" +
+                       remaindersExpected +
+                       s"\n'intSource.sum' is:" +
+                       halvesSum +
+                       s"\n'remainders.sum' is:" +
+                       remaindersSum +
+                       s"\n'totalSum' is:" +
+                       totalSum +
+                       s"\n$decimalNumber 'convertDecToBin' is:" +
+                       binaryString +
+                       s"\n'convertDecToBin.length' is:" +
+                       binaryString.length +
+                       s"\n'expectedResult.length' is:" +
+                       expectedResult.length
+                   )
+            assume(
+                    binaryString == expectedResult,
+                    s"\n'allSCCs' must be 'nonEmpty' " +
+                      s"& equal to 'expectedResult'"
+                  )
+
+          }
 
 }

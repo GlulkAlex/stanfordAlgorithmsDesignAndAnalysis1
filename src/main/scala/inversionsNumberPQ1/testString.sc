@@ -1,11 +1,21 @@
 import scala.util.matching.Regex
+val nodeKey: Int = -1
+s"""key($nodeKey)""" +
+  s"""i:$nodeKey/""" +
+  s"l:" +
+{if (nodeKey == Int.MaxValue) {
+  "maxInt"
+} else {
+  nodeKey.toString
+}} +
+  "[" +
+  s"""$nodeKey]}"""
 "123"
 "123".toInt
 val tab = "" + '\u0009'
 val mockAdjacencyList =
   List(1, 2, 7, 8).mkString("", tab, "\n") +
     List(2, 1, 8, 7, 3).mkString("", tab, "\n")
-
 val mockIter =
 mockAdjacencyList.lines
 mockIter.next()
@@ -34,7 +44,6 @@ splitArray
 .map(_.replace(" ",""))
 splitArray
 .map(_.replace('\u0020',Char.MinValue))
-
 val pattern1: Regex =
 """\d+""".r
 val pattern2 =
