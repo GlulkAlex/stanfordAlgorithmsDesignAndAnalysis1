@@ -3956,7 +3956,29 @@ class stronglyConnectedComponentsSuit
           //"SCC.txt"
           //"tinyDG.txt"
             "diGraphWith4SCCs"
-          val actualFileContent: Iterator[String] =
+          /*There is
+          only one standard operation
+          which allows to
+          re-use the same `iterator`:
+          The call
+           */
+          //val (it1, it2) = it.duplicate
+          /*gives you
+          two `iterators`
+          which each return
+          exactly the same `elements` as
+          the iterator 'it'.
+          The two `iterators` work independently;
+          advancing one does not affect the other.
+          By contrast
+          the original iterator 'it' is
+          advanced to its `end`
+          by `duplicate` and
+          is thus rendered `unusable`.
+           */
+          val (actualFileContent, fileContentIter):
+          (Iterator[String], Iterator[String]) =
+          //val actualFileContent: Iterator[String] =
           //Iterator.empty
             readFromFile(
                           fileName = fileName,
@@ -3964,12 +3986,25 @@ class stronglyConnectedComponentsSuit
                         )
             /*reduce / control input size*/
             .take(inputTakeNumber)
+            .duplicate
           /*val firstFiveStrIter: Iterator[String] =
             readFromFile(
                           fileName = fileName,
                           filePath = filePath
                         )
             .take(25)*/
+    /*
+    Calling 'head' on a `buffered` `iterator`
+    will return
+    its first `element` but
+    will not `advance` the `iterator`.
+     */
+          val bit: BufferedIterator[String] =
+            fileContentIter
+            .buffered
+          def skipEmptyWords(it: BufferedIterator[String]) =
+            while (it.head.isEmpty) { it.next() }
+
           val nodesInGraph: Int =
             actualFileContent.next().toInt
           //875714

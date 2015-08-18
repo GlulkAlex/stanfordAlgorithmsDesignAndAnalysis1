@@ -904,185 +904,241 @@ class PivotingSuit
                   )
           }
   ignore(
-        "71: 'orderStatistic'" +
-          "should return right smallest element from sequence"
-      ) {
-          val takeNumber: Int = 25
-          val lowerBound: Int = 0
-          val upperBound: Int = 9
-          val smallestOrder: Int = 9
-          val expectedVal: Int =
-            smallestOrder - 1
-          //15
-          /*size must be exactly 'upperBound + 1 - lowerBound'*/
-          val randomIntSeq: Seq[Int] =
-            randomlyOrderedSequenceFromInterval(
-                                                 lowerBound,
-                                                 upperBound)
-          println(
-                   s"\n'randomIntSeq.length' is:'\n${
-                     randomIntSeq
-                     .length
-                   }'")
+          "71: 'orderStatistic'" +
+            "should return right smallest element from sequence"
+        ) {
+            val takeNumber: Int = 25
+            val lowerBound: Int = 0
+            val upperBound: Int = 9
+            val smallestOrder: Int = 9
+            val expectedVal: Int =
+              smallestOrder - 1
+            //15
+            /*size must be exactly 'upperBound + 1 - lowerBound'*/
+            val randomIntSeq: Seq[Int] =
+              randomlyOrderedSequenceFromInterval(
+                                                   lowerBound,
+                                                   upperBound)
+            println(
+                     s"\n'randomIntSeq.length' is:'\n${
+                       randomIntSeq
+                       .length
+                     }'")
 
-          println(
-                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
-                     upperBound
-                   }")
-          println(
-                   s"\n'expectedVal' is: $expectedVal")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .sorted
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
+            println(
+                     s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                       upperBound
+                     }")
+            println(
+                     s"\n'expectedVal' is: $expectedVal")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .sorted
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
 
-          val smallestElem: Int =
-            orderStatisticRandomSelection(
-                            randomIntSeq.toArray,
-                            smallestOrder,
-                            0,
-                            randomIntSeq.length - 1
-                          )
+            val smallestElem: Int =
+              orderStatisticRandomSelection(
+                                             randomIntSeq.toArray,
+                                             smallestOrder,
+                                             0,
+                                             randomIntSeq.length - 1
+                                           )
 
-          println(
-                   s"\n$smallestOrder-th 'smallestElem' is: $smallestElem")
+            println(
+                     s"\n$smallestOrder-th 'smallestElem' is: $smallestElem")
 
-          assume(
-                  //true == true,
-                  smallestElem == expectedVal,
-                  s"\n$smallestOrder-th 'smallestElem' must be " +
-                    s"equal to '$expectedVal'"
-                )
-        }
-  test(
-        "72: 'pivotDeterministicSelection / orderStatisticDeterministicSelection'" +
-          "should return right smallest element from sequence"
-      ) {
-          val takeNumber: Int = 25
-          val lowerBound: Int = 0
-          val upperBound: Int = 9
-          val smallestOrder: Int = 5
-          val expectedVal: Int =
-            smallestOrder - 1
-          //15
-          /*size must be exactly 'upperBound + 1 - lowerBound'*/
-          val randomIntSeq: Seq[Int] =
-            randomlyOrderedSequenceFromInterval(
-                                                 lowerBound,
-                                                 upperBound)
-          println(
-                   s"\n'randomIntSeq.length' is:'\n${
-                     randomIntSeq
-                     .length
-                   }'")
-
-          println(
-                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
-                     upperBound
-                   }")
-          println(
-                   s"\n'expectedVal' is: $expectedVal")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .sorted
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
-
-          val smallestElem: Int =
-            pivotDeterministicSelection(
-                            randomIntSeq.toArray,
-                            smallestOrder
-                          )
-
-          println(
-                   s"\n$smallestOrder-th 'smallestElem' is: $smallestElem")
-
-          assume(
-                  //true == true,
-                  smallestElem == expectedVal,
-                  s"\n$smallestOrder-th 'smallestElem' must be " +
-                    s"equal to '$expectedVal'"
-                )
-        }
+            assume(
+                    //true == true,
+                    smallestElem == expectedVal,
+                    s"\n$smallestOrder-th 'smallestElem' must be " +
+                      s"equal to '$expectedVal'"
+                  )
+          }
   ignore(
-        "81: 'medianOfFive'" +
-          "should return right median element from sequence"
-      ) {
-          val takeNumber: Int = 25
-          val lowerBound: Int = 5
-          val upperBound: Int = 5
-          val expectedVal: Int =
-            5
-          //15
-          /*size must be exactly 'upperBound + 1 - lowerBound'*/
-          val randomIntSeq: Seq[Int] =
-            randomlyOrderedSequenceFromInterval(
-                                                 lowerBound,
-                                                 upperBound)
-          println(
-                   s"\n'randomIntSeq.length' is:'\n${
-                     randomIntSeq
-                     .length
-                   }'")
+          "72: 'pivotDeterministicSelection / " +
+            "orderStatisticDeterministicSelection'" +
+            "should return right smallest element from sequence"
+        ) {
+            val takeNumber: Int = 25
+            val lowerBound: Int = 0
+            val upperBound: Int = 9
+            val smallestOrder: Int = 5
+            val expectedVal: Int =
+              smallestOrder - 1
+            //15
+            /*size must be exactly 'upperBound + 1 - lowerBound'*/
+            val randomIntSeq: Seq[Int] =
+              randomlyOrderedSequenceFromInterval(
+                                                   lowerBound,
+                                                   upperBound)
+            println(
+                     s"\n'randomIntSeq.length' is:'\n${
+                       randomIntSeq
+                       .length
+                     }'")
 
-          println(
-                   s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
-                     upperBound
-                   }")
-          println(
-                   s"\n'expectedVal' is: $expectedVal")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
-          println(
-                   s"\n'randomIntSeq' is:'\n${
-                     randomIntSeq
-                     .sorted
-                     .take(takeNumber)
-                     .mkString("{", "|", "}")
-                   }'")
+            println(
+                     s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                       upperBound
+                     }")
+            println(
+                     s"\n'expectedVal' is: $expectedVal")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .sorted
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
 
-          val medianElem: Int =
-            medianOfFive(
+            val smallestElem: Int =
+              pivotDeterministicSelection(
+                                           randomIntSeq.toArray,
+                                           smallestOrder
+                                         )
+
+            println(
+                     s"\n$smallestOrder-th 'smallestElem' is: $smallestElem")
+
+            assume(
+                    //true == true,
+                    smallestElem == expectedVal,
+                    s"\n$smallestOrder-th 'smallestElem' must be " +
+                      s"equal to '$expectedVal'"
+                  )
+          }
+  ignore(
+          "81: 'medianOfFive'" +
+            "should return right median element from sequence"
+        ) {
+            val takeNumber: Int = 25
+            val lowerBound: Int = 5
+            val upperBound: Int = 5
+            val expectedVal: Int =
+              5
+            //15
+            /*size must be exactly 'upperBound + 1 - lowerBound'*/
+            val randomIntSeq: Seq[Int] =
+              randomlyOrderedSequenceFromInterval(
+                                                   lowerBound,
+                                                   upperBound)
+            println(
+                     s"\n'randomIntSeq.length' is:'\n${
+                       randomIntSeq
+                       .length
+                     }'")
+
+            println(
+                     s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                       upperBound
+                     }")
+            println(
+                     s"\n'expectedVal' is: $expectedVal")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .sorted
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+
+            val medianElem: Int =
+              medianOfFive(
                             randomIntSeq.toArray
                           )
 
-          println(
-                   s"\n'medianElem' is: $medianElem")
+            println(
+                     s"\n'medianElem' is: $medianElem")
 
-          assume(
-                  //true == true,
-                  medianElem == expectedVal,
-                  s"\n'medianElem' must be " +
-                    s"equal to '$expectedVal'"
-                )
-        }
+            assume(
+                    //true == true,
+                    medianElem == expectedVal,
+                    s"\n'medianElem' must be " +
+                      s"equal to '$expectedVal'"
+                  )
+          }
+  ignore(
+          "82: 'medianOfMedians'" +
+            "should return right median element from sequence"
+        ) {
+            val takeNumber: Int = 25
+            val lowerBound: Int = 0
+            val upperBound: Int = 9
+            val expectedVal: Int =
+              4
+            /*size must be exactly 'upperBound + 1 - lowerBound'*/
+            val randomIntSeq: Seq[Int] =
+              randomlyOrderedSequenceFromInterval(
+                                                   lowerBound,
+                                                   upperBound)
+            println(
+                     s"\n'randomIntSeq.length' is:'\n${
+                       randomIntSeq
+                       .length
+                     }'")
+
+            println(
+                     s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                       upperBound
+                     }")
+            println(
+                     s"\n'expectedVal' is: $expectedVal")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .sorted
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+
+            val medianElem: Int =
+              medianOfMedians(
+                               randomIntSeq.toArray
+                             )
+
+            println(
+                     s"\n'medianElem' is: $medianElem")
+
+            assume(
+                    //true == true,
+                    medianElem == expectedVal,
+                    s"\n'medianElem' must be " +
+                      s"equal to '$expectedVal'"
+                  )
+          }
   test(
-        "82: 'medianOfMedians'" +
+        "83: 'HeapsMedian.addElems'" +
           "should return right median element from sequence"
       ) {
           val takeNumber: Int = 25
-          val lowerBound: Int = 0
+          val lowerBound: Int = 1
           val upperBound: Int = 9
           val expectedVal: Int =
             4
@@ -1116,21 +1172,90 @@ class PivotingSuit
                      .take(takeNumber)
                      .mkString("{", "|", "}")
                    }'")
-
-          val medianElem: Int =
-            medianOfMedians(
-                            randomIntSeq.toArray
-                          )
+          val heapsMedian = new HeapsMedian
+          heapsMedian.addElems(randomIntSeq)
+          println(
+                   s"\n'heapsMedian.heapMax' is: ${heapsMedian.heapMax}")
+          println(
+                   s"\n'heapsMedian.heapMin' is: ${heapsMedian.heapMin}")
+          val medians: Option[(Int, Int)] =
+            heapsMedian
+            .getMedians
 
           println(
-                   s"\n'medianElem' is: $medianElem")
+                   s"\n'medians' are: $medians")
 
           assume(
-                  //true == true,
-                  medianElem == expectedVal,
-                  s"\n'medianElem' must be " +
+                  medians.isDefined &&
+                    (medians.get._1 == expectedVal ||
+                      medians.get._2 == expectedVal),
+                  s"\none of 'medians' must be " +
                     s"equal to '$expectedVal'"
                 )
         }
+  test(
+          "84: 'HeapsMedian.addElem'" +
+            "should return right median element from sequence"
+        ) {
+            val takeNumber: Int = 25
+            /*0-9 even number of elements*/
+            val lowerBound: Int = 1
+            val upperBound: Int = 9
+            val expectedVal: Int =
+              4
+            /*size must be exactly 'upperBound + 1 - lowerBound'*/
+            val randomIntSeq: Seq[Int] =
+              randomlyOrderedSequenceFromInterval(
+                                                   lowerBound,
+                                                   upperBound)
+            println(
+                     s"\n'randomIntSeq.length' is:'\n${
+                       randomIntSeq
+                       .length
+                     }'")
+
+            println(
+                     s"\n'lowerBound' is: $lowerBound\n'upperBound' is:${
+                       upperBound
+                     }")
+            println(
+                     s"\n'expectedVal' is: $expectedVal")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            println(
+                     s"\n'randomIntSeq' is:'\n${
+                       randomIntSeq
+                       .sorted
+                       .take(takeNumber)
+                       .mkString("{", "|", "}")
+                     }'")
+            val heapsMedian = new HeapsMedian
+
+            randomIntSeq
+            .foreach(heapsMedian
+                     .addElem(_))
+                    println(
+                             s"\n'heapsMedian.heapMax' is: ${heapsMedian.heapMax}")
+                    println(
+                             s"\n'heapsMedian.heapMin' is: ${heapsMedian.heapMin}")
+            val medians: Option[(Int, Int)] =
+              heapsMedian
+              .getMedians
+
+            println(
+                     s"\n'medians' are: $medians")
+
+            assume(
+                    medians.isDefined &&
+                      (medians.get._1 == expectedVal ||
+                        medians.get._2 == expectedVal),
+                    s"\none of 'medians' must be " +
+                      s"equal to '$expectedVal'"
+                  )
+          }
 
 }
