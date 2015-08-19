@@ -59,6 +59,11 @@ val notInDigitSeq1 =
 //digitSeq1.subsetOf(digitSeq7)
 val notInDigitSeq7 =
 digitSeq1.diff(digitSeq7)
+digitSeq1.intersect(digitSeq7)
+digitSeq7.intersect(digitSeq1)
+digitSeq7
+digitSeq4
+digitSeq7.intersect(digitSeq4)
 Set.empty[Int].diff(Set.empty[Int])
 Set.empty[Int].diff(digitSeq7)
 digitSeq7.diff(Set.empty[Int])

@@ -343,9 +343,9 @@ object stronglyConnectedComponents {
     def addEdge(
                  arcTail: Int,
                  arcHead: Int
-               /*retun type must concord declared in trait*/
+                 /*retun type must concord declared in trait*/
                  //): Map[Int, Set[Int]] = {
-      ): Unit = {
+                 ): Unit = {
       val arcTailGetAdjusted: Option[Set[Int]] =
         nodesWithAdjusted
         .get(key = arcTail)
@@ -353,26 +353,26 @@ object stronglyConnectedComponents {
         nodesWithAdjusted
         .get(key = arcHead)
       //val addArcHead: Map[Int, Set[Int]] =
-        if (arcHeadGetAdjusted.isEmpty) {
-          /*add new 'node' / first occurrence*/
-          /*side effect*/
-          //nodesWithAdjusted =
-          nodesWithAdjusted
-          .updated(
-              key = arcHead,
-              value = Set.empty
-                  )
-          /*return value*/
-          //nodesWithAdjusted
-        } else /*if (arcTailGetAdjusted.isDefined)*/ {
-          /*same value*/
-          nodesWithAdjusted
-        }
+      if (arcHeadGetAdjusted.isEmpty) {
+        /*add new 'node' / first occurrence*/
+        /*side effect*/
+        //nodesWithAdjusted =
+        nodesWithAdjusted
+        .updated(
+            key = arcHead,
+            value = Set.empty
+                )
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGetAdjusted.isDefined)*/ {
+        /*same value*/
+        nodesWithAdjusted
+      }
       //val resultMapUpdated: Map[Int, Set[Int]] =
-        if (arcTailGetAdjusted.isEmpty) {
-          /*add new 'node' / first occurrence*/
-          /*side effect*/
-          nodesWithAdjusted =
+      if (arcTailGetAdjusted.isEmpty) {
+        /*add new 'node' / first occurrence*/
+        /*side effect*/
+        nodesWithAdjusted =
           nodesWithAdjusted
           //addArcHead
           .updated(
@@ -380,12 +380,12 @@ object stronglyConnectedComponents {
               value = //valToAdd
                 Set(arcHead)
                   )
-          /*return value*/
-          //nodesWithAdjusted
-        } else /*if (arcTailGetAdjusted.isDefined)*/ {
-          /*add new adjusted 'node' to existed 'node'*/
-          /*side effect*/
-          nodesWithAdjusted =
+        /*return value*/
+        //nodesWithAdjusted
+      } else /*if (arcTailGetAdjusted.isDefined)*/ {
+        /*add new adjusted 'node' to existed 'node'*/
+        /*side effect*/
+        nodesWithAdjusted =
           nodesWithAdjusted
           //addArcHead
           .updated(
@@ -394,9 +394,9 @@ object stronglyConnectedComponents {
                 arcTailGetAdjusted
                 .get + arcHead
                   )
-          /*return value*/
-          //nodesWithAdjusted
-        }
+        /*return value*/
+        //nodesWithAdjusted
+      }
       /*return value*/
       //resultMapUpdated
     }
@@ -1177,7 +1177,7 @@ object stronglyConnectedComponents {
                            //isArcsReversed: Boolean = false
                            nonReversedArcs: Boolean = true
                            ): DiGraphSetsMap = {
-                           //): Map[Int, Set[Int]] = {
+    //): Map[Int, Set[Int]] = {
     if (fileContentIter.isEmpty) {
       /*return value*/
       resultMap
@@ -2800,7 +2800,7 @@ object stronglyConnectedComponents {
               graph(stack.head)
               .diff(
                   //visitedSet
-                    visitedSetUpdated
+                  visitedSetUpdated
                    )
               .union(stack.tail),
               stack.head :: visited,
@@ -5616,6 +5616,319 @@ object stronglyConnectedComponents {
       case _ =>
     }
             )
+    /*return value*/
+    graphSCCs
+  }
+
+  /*
+  TODO switch from a linear recursive process to a linear iterative process
+  and, if it is possible, `tailrec` 'strongConnect' or
+  try to refactor / decompose to that case,
+  because here is / lays a main impact on memory leak
+   */
+  //input: graph G = (V, E)
+  //output: set of strongly connected components (sets of vertices)
+  def tarjanOnArray(
+                     adjacencyList:
+                     Array[NodeFieldsArray]
+                     //ArrayBuffer[NodeFieldsArray]
+                     //Map[Int, Set[Int]]
+                     //Map[Int, NodeMapValFieldsDynamic] //,
+                     /*index: Int = 0,
+                     stack:
+                     List[Int] =*/
+                     //List[IndexedNode] =
+                     //List[Map[Int, NodeMapValFieldsDynamic]] =
+                     //List.empty
+                     ): Stream[Int] = {
+    //): List[Int] = {
+    //): List[List[Int]] = {
+    //): Iterable[List[Int]] = {
+    //): Vector[List[Int]] = {
+    var localIndex: Int = 0 //index
+    var nodesOnStack: BitSet =
+      BitSet.empty
+    var graphSCCs:
+    //List[List[Int]] =
+    /*List[Int] =
+      List.empty*/
+    Stream[Int] =
+      Stream.empty
+    /*may be used to backtrack to `parent`*/
+    var pathStack:
+    List[Int] =
+    //List[IndexedNode] =
+    //stack
+      List.empty
+
+    //start /  create a new `strongly connected component`
+    //`until` loop with post condition,
+    //so always run at least once
+    @scala.annotation.tailrec
+    def createSCC_FromPath(
+                            //loopSCC: List[Int] = List.empty,
+                            SCCsize: Int = 0,
+                            condition: Boolean = false,
+                            //forEach: Boolean = false,
+                            /*stop node*/
+                            nodeKeyToCheck: Int
+                            ): Int = {
+      //): List[Int] = {
+      if (
+        condition ||
+          pathStack.isEmpty
+      ) {
+        /*stop & return / exit */
+        /*side effect*/
+        graphSCCs =
+          //loopSCC.length +:
+          SCCsize +:
+            graphSCCs
+        //loopSCC +: graphSCCs
+        //currentResultingSCC
+        //loopSCC
+        SCCsize
+      } else /*if (pathStack.nonEmpty)*/ {
+        val stackTopKey = pathStack.head
+        /*side effect*/
+        pathStack = pathStack.tail
+        //assume(adjacencyList.get(stackTopKey).isDefined)
+        /*val stackTopVal: NodeMapValFieldsDynamic =
+          adjacencyList.get(stackTopKey).get*/
+        /*side effect*/
+        //stackTopVal.isInStack = false
+        nodesOnStack = nodesOnStack - stackTopKey
+        /*val updatedSCC: List[Int] =
+          stackTopKey +: loopSCC*/
+        val updatedSCCsize: Int =
+          SCCsize + 1
+
+        /*post condition*/
+        if (stackTopKey == nodeKeyToCheck) {
+          /*stop & return / exit */
+          //currentResultingSCC
+          //loopSCC
+          createSCC_FromPath(
+                              //updatedSCC,
+                              updatedSCCsize,
+                              condition = true,
+                              nodeKeyToCheck = nodeKeyToCheck
+                            )
+        } else {
+          /*recursion*/
+          createSCC_FromPath(
+                              //updatedSCC,
+                              updatedSCCsize,
+                              condition = condition,
+                              nodeKeyToCheck = nodeKeyToCheck
+                            )
+        }
+      }
+    }
+
+    @scala.annotation.tailrec
+    def createOneNodeSCCs_FromPath: Int = {
+      //): List[Int] = {
+      if (
+        pathStack.isEmpty
+      ) {
+        /*stop & return / exit */
+        1
+      } else /*if (pathStack.nonEmpty)*/ {
+        val stackTopKey = pathStack.head
+        /*side effect*/
+        /*reduce to empty to converge eventually*/
+        pathStack = pathStack.tail
+        /*side effect*/
+        //stackTopVal.isInStack = false
+        nodesOnStack = nodesOnStack - stackTopKey
+        /*side effect*/
+        graphSCCs =
+          1 +:
+            graphSCCs
+        /*recursion*/
+        createOneNodeSCCs_FromPath
+      }
+    }
+
+    /*TODO complete method, add & check logic*/
+    /*possible memory `leak` as it is not `tailrec`,
+    `stack` may grow infinitely
+    */
+    /*
+    stop condition ?
+    must iterate over all not indexed nodes
+    starting with adjusted until not empty
+    then pick / took next non indexed if any left
+     */
+    /*
+    must find & return SCC if any
+     */
+    //@scala.annotation.tailrec
+    def findSCC(
+                 nodeKeyToCheck: Int,
+                 currentIndex: Int,
+                 /*stack*/
+                 unCompletedSCCs: List[Int] =
+                 List.empty,
+                 /*stack*/
+                 //backTrackPath
+                 traceBack: List[Int] =
+                 List.empty,
+                 exploredNodes: BitSet =
+                 BitSet.empty,
+                 unExploredNodes: Set[Int] =
+                 Set.empty,
+                 findResult: Stream[Int] =
+                 Stream.empty
+                 //): Int = {
+                 //): List[Int] = {
+                 ): Stream[Int] = {
+      //assume(adjacencyList.get(nodeKeyToCheck).isDefined)
+      //assume(adjacencyList.isDefinedAt(nodeKeyToCheck))
+
+      /*!!!Warn!!!: 'DiGraphArray' has `empty` '0' element, just for shift*/
+      val nodeVal:
+      NodeFieldsArray =
+      //NodeMapValFieldsDynamic =
+        adjacencyList(nodeKeyToCheck)
+      /*.get(nodeKeyToCheck)
+      .get*/
+      val (newCurrentIndex, newUnCompletedSCCs, newTraceBack):
+      (Int, List[Int], List[Int]) =
+      if (nodeVal.nodeIndex == -1) {
+        /*side effects*/
+        nodeVal.nodeIndex =
+          currentIndex
+        //localIndex
+        //Some(localIndex)
+        nodeVal.nodeLowLink = currentIndex
+        //localIndex += 1
+        //pathStack = nodeKeyToCheck +: pathStack
+        //nodeVal.isInStack = true
+        //nodesOnStack = nodesOnStack + nodeKeyToCheck
+        /*return value*/
+        (currentIndex + 1,
+          nodeKeyToCheck +: unCompletedSCCs,
+          nodeKeyToCheck +: traceBack)
+      } else {
+        /*return value*/
+        (currentIndex, unCompletedSCCs, traceBack)
+      }
+
+      if (nodeVal.adjustedNodes.isEmpty) {
+
+      } else /*if (nodeVal.adjustedNodes.nonEmpty)*/ {
+
+      }
+
+      /*
+      `new SCC	condition`	TRUE	if
+      >TRUE	nothing conncected to explore
+      >TRUE	isRoot i=L
+       */
+      // If it is a `root` node,
+      // pop the `stack` and
+      // generate an `SCC`
+      //assume(nodeVal.nodeIndex.isDefined)
+      val newFindResult: scala.Stream[Int] =
+      if (nodeVal.nodeLowLink == nodeVal.nodeIndex
+      //.get
+      ) {
+        /*return value*/
+        /*initialization*/
+        createSCC_FromPath(nodeKeyToCheck = nodeKeyToCheck) +:
+          findResult
+      } else {
+        /*return value*/
+        //List.empty
+        //0
+        findResult
+      }
+
+      if (
+        unExploredNodes.isEmpty &&
+          newUnCompletedSCCs.isEmpty &&
+          newTraceBack.isEmpty
+      ) {
+        /*return value*/
+        findResult
+      } else {
+        /*recursion*/
+        findSCC(
+                 /*it depends*/
+                 nodeKeyToCheck = newTraceBack.head,
+                 /*it depends*/
+                 currentIndex = newCurrentIndex,
+                 unCompletedSCCs = newUnCompletedSCCs,
+                 traceBack = newTraceBack,//.tail,
+                 /*it depends*/
+                 exploredNodes = exploredNodes - newTraceBack.head,
+                 /*it depends*/
+                 unExploredNodes = unExploredNodes + newTraceBack.head,
+                 findResult = newFindResult
+               )
+      }
+    }
+
+    /*side effect*/
+    /*adjacencyList
+    .foreach(
+        //(nodeKey: Int, nodeVal: NodeMapValFieldsDynamic) =>
+        //((nodeKey, nodeVal): (Int,NodeMapValFieldsDynamic)) =>
+        n => {
+          val (nodeKey, nodeVal): (Int, NodeMapValFieldsDynamic) = n
+          if (nodeVal.isExplored) {
+            findSCC(nodeKey)
+          }
+        }
+            )*/
+
+    /*unExploredNodes: Set[Int]*/
+    val nodesToCheck:
+    Set[Int] =
+    //Array[Int] =
+    /*return*/
+      (for {
+        NodeFieldsArray(
+        nodeKey,
+        nodeIndex,
+        nodeLowLink,
+        adjustedNodes
+                       ) <- adjacencyList
+        //(nodeKey, nodeVal) <- adjacencyList
+        //if nodeVal.nodeIndex.isEmpty
+        if nodeIndex == -1 && nodeKey != -1
+      } yield
+      nodeKey).toSet
+    val keyToCheck:Int = nodesToCheck.head
+
+    //findSCC(nodeKey)
+    /*initialization*/
+    findSCC(
+             nodeKeyToCheck = keyToCheck,
+             currentIndex = 0,
+             unExploredNodes = nodesToCheck - keyToCheck
+           )
+
+    /*adjacencyList
+    .foreach(
+    /*(nodeKey, nodeVal) =>
+  if (nodeVal.nodeIndex.isEmpty) {
+    findSCC(nodeKey)
+  }*/ {
+      case NodeFieldsArray(
+      nodeKey,
+      nodeIndex,
+      nodeLowLink,
+      adjustedNodes) if nodeIndex == -1 && nodeKey != -1
+        //case (nodeKey, nodeVal) if (nodeVal.nodeIndex == -1
+        //.isEmpty
+             =>
+        findSCC(nodeKey)
+      case _ =>
+    }
+            )*/
     /*return value*/
     graphSCCs
   }
