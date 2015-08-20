@@ -1,0 +1,7 @@
+val stream1 = Stream(1,2,3)
+val stream2 = Stream(3,4,5)
+val stream3 = Stream(6,7,8)
+stream1.diff(stream2).mkString(",")
+stream1.intersect(stream2).mkString(",")
+stream2.intersect(stream1).mkString(",")
+stream2.intersect(stream3).mkString(",")

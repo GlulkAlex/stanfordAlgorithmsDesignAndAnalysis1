@@ -5621,10 +5621,10 @@ object stronglyConnectedComponents {
   }
 
   /*
-  TODO switch from a linear recursive process to a linear iterative process
-  and, if it is possible, `tailrec` 'strongConnect' or
-  try to refactor / decompose to that case,
-  because here is / lays a main impact on memory leak
+  DONE switch from a linear recursive process to a linear iterative process
+  and, if it is possible, `tailrec` 'strongConnect' as 'findSCC',
+  refactored / decompose to that case,
+  because here was / lays a main impact on memory leak
    */
   //input: graph G = (V, E)
   //output: set of strongly connected components (sets of vertices)
@@ -5665,42 +5665,60 @@ object stronglyConnectedComponents {
     //`until` loop with post condition,
     //so always run at least once
     @scala.annotation.tailrec
-    def createSCC_FromPath(
-                            //loopSCC: List[Int] = List.empty,
-                            SCCsize: Int = 0,
-                            condition: Boolean = false,
-                            //forEach: Boolean = false,
-                            /*stop node*/
-                            nodeKeyToCheck: Int
-                            ): Int = {
-      //): List[Int] = {
+    def createSCC_FromCollected(
+                                 listOfSCCs: Stream[Int] =
+                                 Stream.empty,
+                                 collectedNodes: Stream[Int] =
+                                 Stream.empty,
+                                 SCCsize: Int = 0,
+                                 condition: Boolean = false,
+                                 //forEach: Boolean = false,
+                                 /*stop node*/
+                                 nodeKeyToCheck: Int
+                                 //): Int = {
+                                 //): List[Int] = {
+                                 //): Stream[Int] = {
+                                 //): (Stream[Int],Stream[Int]) = {
+                                 ): List[Stream[Int]] = {
       if (
         condition ||
-          pathStack.isEmpty
+          //pathStack
+          collectedNodes
+          .isEmpty
       ) {
         /*stop & return / exit */
         /*side effect*/
-        graphSCCs =
-          //loopSCC.length +:
-          SCCsize +:
-            graphSCCs
+        //graphSCCs =
+        //loopSCC.length +:
+        /*SCCsize +:
+          graphSCCs*/
         //loopSCC +: graphSCCs
         //currentResultingSCC
         //loopSCC
-        SCCsize
+        //SCCsize
+        if (SCCsize > 0) {
+          /*return value*/
+          List(SCCsize +: listOfSCCs, collectedNodes)
+        } else {
+          /*return value*/
+          List(listOfSCCs, collectedNodes)
+        }
       } else /*if (pathStack.nonEmpty)*/ {
-        val stackTopKey = pathStack.head
+        val stackTopKey: Int =
+        //pathStack
+          collectedNodes
+          .head
         /*side effect*/
-        pathStack = pathStack.tail
+        //pathStack = pathStack.tail
         //assume(adjacencyList.get(stackTopKey).isDefined)
         /*val stackTopVal: NodeMapValFieldsDynamic =
           adjacencyList.get(stackTopKey).get*/
         /*side effect*/
         //stackTopVal.isInStack = false
-        nodesOnStack = nodesOnStack - stackTopKey
+        //nodesOnStack = nodesOnStack - stackTopKey
         /*val updatedSCC: List[Int] =
           stackTopKey +: loopSCC*/
-        val updatedSCCsize: Int =
+        val updatedSCC_Size: Int =
           SCCsize + 1
 
         /*post condition*/
@@ -5708,20 +5726,22 @@ object stronglyConnectedComponents {
           /*stop & return / exit */
           //currentResultingSCC
           //loopSCC
-          createSCC_FromPath(
-                              //updatedSCC,
-                              updatedSCCsize,
-                              condition = true,
-                              nodeKeyToCheck = nodeKeyToCheck
-                            )
+          createSCC_FromCollected(
+                                   listOfSCCs = listOfSCCs,
+                                   collectedNodes = collectedNodes.tail,
+                                   SCCsize = updatedSCC_Size,
+                                   condition = true,
+                                   nodeKeyToCheck = nodeKeyToCheck
+                                 )
         } else {
           /*recursion*/
-          createSCC_FromPath(
-                              //updatedSCC,
-                              updatedSCCsize,
-                              condition = condition,
-                              nodeKeyToCheck = nodeKeyToCheck
-                            )
+          createSCC_FromCollected(
+                                   listOfSCCs = listOfSCCs,
+                                   collectedNodes = collectedNodes.tail,
+                                   SCCsize = updatedSCC_Size,
+                                   condition = condition,
+                                   nodeKeyToCheck = nodeKeyToCheck
+                                 )
         }
       }
     }
@@ -5750,7 +5770,76 @@ object stronglyConnectedComponents {
         createOneNodeSCCs_FromPath
       }
     }
-
+    /*auxiliary method*/
+    def findNextAdjustedKey(
+                             //nodeKeyToCheck: Int,
+                             /*nodeVal:
+                             NodeFieldsArray,*/
+                             adjustedNodes: scala.Stream[Int],
+                             exploredNodes: BitSet,
+                             unExploredNodes: Set[Int]
+                             ): Option[Int] = {
+      if (
+      //nodeVal
+        adjustedNodes
+        .isEmpty) {
+        None
+      } else {
+        adjustedNodes
+        .collect({ case node if
+        //unExploredNodes
+        !exploredNodes
+         .contains(node) => node
+                 })
+        .headOption
+      }
+    }
+    /*auxiliary method*/
+    def findUnExploredAdjusted(
+                                //nodeKeyToCheck: Int,
+                                /*nodeVal:
+                                NodeFieldsArray,*/
+                                adjustedNodes: scala.Stream[Int],
+                                exploredNodes: BitSet,
+                                unExploredNodes: Set[Int]
+                                ): Stream[Int] = {
+      if (
+      //nodeVal
+        adjustedNodes
+        .isEmpty) {
+        Stream.empty
+      } else {
+        adjustedNodes
+        .view
+        .collect({ case node if
+        //unExploredNodes
+        !exploredNodes
+         .contains(node) => node
+                 })
+        .toStream
+      }
+    }
+    /*auxiliary method*/
+    def findAdjustedInSCC_Key(
+                               //nodeKeyToCheck: Int,
+                               /*nodeVal:
+                               NodeFieldsArray,*/
+                               unExploredAdjustedNodes: scala.Stream[Int] =
+                               Stream.empty,
+                               /*SCCs members*/
+                               unCompletedSCCs: Stream[Int]
+                               ): Option[Int] = {
+      if (
+        unExploredAdjustedNodes
+        .isEmpty) {
+        None
+      } else {
+        unExploredAdjustedNodes
+        .view
+        .intersect(unCompletedSCCs)
+        .headOption
+      }
+    }
     /*TODO complete method, add & check logic*/
     /*possible memory `leak` as it is not `tailrec`,
     `stack` may grow infinitely
@@ -5764,21 +5853,22 @@ object stronglyConnectedComponents {
     /*
     must find & return SCC if any
      */
-    //@scala.annotation.tailrec
+    @scala.annotation.tailrec
     def findSCC(
                  nodeKeyToCheck: Int,
                  currentIndex: Int,
                  /*stack*/
-                 unCompletedSCCs: List[Int] =
-                 List.empty,
+                 unCompletedSCCs: Stream[Int] =
+                 Stream.empty,
                  /*stack*/
                  //backTrackPath
-                 traceBack: List[Int] =
-                 List.empty,
+                 traceBack: Stream[Int] =
+                 Stream.empty,
                  exploredNodes: BitSet =
                  BitSet.empty,
                  unExploredNodes: Set[Int] =
                  Set.empty,
+                 /*list of all graph's SCCs*/
                  findResult: Stream[Int] =
                  Stream.empty
                  //): Int = {
@@ -5795,77 +5885,157 @@ object stronglyConnectedComponents {
       /*.get(nodeKeyToCheck)
       .get*/
       val (newCurrentIndex, newUnCompletedSCCs, newTraceBack):
-      (Int, List[Int], List[Int]) =
-      if (nodeVal.nodeIndex == -1) {
-        /*side effects*/
-        nodeVal.nodeIndex =
-          currentIndex
-        //localIndex
-        //Some(localIndex)
-        nodeVal.nodeLowLink = currentIndex
-        //localIndex += 1
-        //pathStack = nodeKeyToCheck +: pathStack
-        //nodeVal.isInStack = true
-        //nodesOnStack = nodesOnStack + nodeKeyToCheck
-        /*return value*/
-        (currentIndex + 1,
-          nodeKeyToCheck +: unCompletedSCCs,
-          nodeKeyToCheck +: traceBack)
-      } else {
-        /*return value*/
-        (currentIndex, unCompletedSCCs, traceBack)
-      }
-
-      if (nodeVal.adjustedNodes.isEmpty) {
-
-      } else /*if (nodeVal.adjustedNodes.nonEmpty)*/ {
-
-      }
+      (Int, Stream[Int], Stream[Int]) =
+        if (
+        /*unDefined*/
+          nodeVal
+          .nodeIndex == -1
+        ) {
+          /*side effects*/
+          nodeVal.nodeIndex =
+            currentIndex
+          //localIndex
+          //Some(localIndex)
+          nodeVal.nodeLowLink = currentIndex
+          //localIndex += 1
+          //pathStack = nodeKeyToCheck +: pathStack
+          //nodeVal.isInStack = true
+          //nodesOnStack = nodesOnStack + nodeKeyToCheck
+          /*return value*/
+          (currentIndex + 1,
+            nodeKeyToCheck +: unCompletedSCCs,
+            nodeKeyToCheck +: traceBack)
+        } else {
+          /*return value*/
+          (currentIndex, unCompletedSCCs, traceBack)
+        }
 
       /*
-      `new SCC	condition`	TRUE	if
-      >TRUE	nothing conncected to explore
+      `new SCC condition`	TRUE if
+      >TRUE	nothing connected to explore
       >TRUE	isRoot i=L
        */
       // If it is a `root` node,
       // pop the `stack` and
       // generate an `SCC`
       //assume(nodeVal.nodeIndex.isDefined)
-      val newFindResult: scala.Stream[Int] =
-      if (nodeVal.nodeLowLink == nodeVal.nodeIndex
-      //.get
-      ) {
-        /*return value*/
-        /*initialization*/
-        createSCC_FromPath(nodeKeyToCheck = nodeKeyToCheck) +:
-          findResult
-      } else {
-        /*return value*/
-        //List.empty
-        //0
-        findResult
-      }
+      val List(newFindResult, unCompletedSCCsUpdated, traceBackUpdated):
+      //(scala.Stream[Int],Stream[Int],Stream[Int]) =
+      List[Stream[Int]] =
+        if (
+          nodeVal.nodeLowLink == nodeVal.nodeIndex &&
+            nodeVal.adjustedNodes.isEmpty
+        //.get
+        ) {
+          /*'traceBack' - reduced by one*/
+          /*'unCompletedSCCs' - reduced at least by one*/
+          /*'findResult' - inflated / increased at least by one*/
+          /*return value*/
+          /*initialization*/
+          createSCC_FromCollected(
+                                   listOfSCCs = findResult,
+                                   collectedNodes =
+                                     newUnCompletedSCCs,
+                                   //unCompletedSCCs,
+                                   //SCCsize = updatedSCC_Size,
+                                   //condition = condition,
+                                   nodeKeyToCheck = nodeKeyToCheck
+                                 ) :+
+            //traceBack
+            newTraceBack
+            .tail
+        } else {
+          /*return value*/
+          //List.empty
+          //0
+          List(findResult,
+               //unCompletedSCCs,
+               //traceBack
+               newUnCompletedSCCs,
+               newTraceBack
+              )
+        }
 
+      /*
+      cases:
+      >nodeVal.adjustedNodes.unExploredNodes.head
+      >>traceBack.head
+      >>>unExploredNodes.head
+      >Done
+       */
       if (
         unExploredNodes.isEmpty &&
-          newUnCompletedSCCs.isEmpty &&
+          //newUnCompletedSCCs
+          unCompletedSCCsUpdated
+          .isEmpty &&
           newTraceBack.isEmpty
       ) {
         /*return value*/
         findResult
       } else {
+        val unExploredAdjusted: Stream[Int] =
+          findUnExploredAdjusted(
+                                  adjustedNodes =
+                                    nodeVal
+                                    .adjustedNodes,
+                                  exploredNodes = exploredNodes,
+                                  unExploredNodes = unExploredNodes
+                                )
+        /*if any `unexplored` left / exist*/
+        val nextAdjustedKey: Option[Int] =
+          unExploredAdjusted.headOption
+        val nextBackTraceKey: Option[Int] =
+          if (nextAdjustedKey.isEmpty) {
+            if (
+              traceBackUpdated
+              .isEmpty) {
+              None
+            } else {
+              traceBackUpdated.headOption
+            }
+          } else /*if (traceBackUpdated.nonEmpty)*/ {
+            None
+          }
+        val nextUnExploredKey: Option[Int] =
+        /*not the case, rulled out by above check*/
+          if (
+          //unExploredNodes.
+            nextBackTraceKey
+              isEmpty) {
+            unExploredNodes.headOption
+          } else /*if (nextBackTraceKey.nonEmpty)*/ {
+            None
+          }
+        val nextNodeKeyToCheck: Int =
+          List(nextAdjustedKey, nextBackTraceKey, nextUnExploredKey)
+          .collect({ case Some(x) => x })
+          .head
+        /*.headOption
+       .get*/
         /*recursion*/
         findSCC(
                  /*it depends*/
-                 nodeKeyToCheck = newTraceBack.head,
+                 nodeKeyToCheck = nextNodeKeyToCheck,
+                 //newTraceBack.head,
+                 //traceBackUpdated.head,
                  /*it depends*/
                  currentIndex = newCurrentIndex,
-                 unCompletedSCCs = newUnCompletedSCCs,
-                 traceBack = newTraceBack,//.tail,
+                 unCompletedSCCs =
+                   //newUnCompletedSCCs,
+                   unCompletedSCCsUpdated,
+                 traceBack =
+                   //newTraceBack, //.tail,
+                   traceBackUpdated,
                  /*it depends*/
-                 exploredNodes = exploredNodes - newTraceBack.head,
+                 exploredNodes =
+                   exploredNodes +
+                     nextNodeKeyToCheck,
+                 //newTraceBack.head,
                  /*it depends*/
-                 unExploredNodes = unExploredNodes + newTraceBack.head,
+                 unExploredNodes =
+                   unExploredNodes -
+                     nextNodeKeyToCheck,
+                 //newTraceBack.head,
                  findResult = newFindResult
                )
       }
@@ -5900,8 +6070,8 @@ object stronglyConnectedComponents {
         //if nodeVal.nodeIndex.isEmpty
         if nodeIndex == -1 && nodeKey != -1
       } yield
-      nodeKey).toSet
-    val keyToCheck:Int = nodesToCheck.head
+        nodeKey).toSet
+    val keyToCheck: Int = nodesToCheck.head
 
     //findSCC(nodeKey)
     /*initialization*/

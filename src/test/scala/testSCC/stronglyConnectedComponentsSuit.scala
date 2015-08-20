@@ -3893,15 +3893,234 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'expectedSCCsInDiGraph'"
                   )
           }
+  ignore(
+          "70: 'traverse' " +
+            "should return " +
+            "all reachable from specified `nodes` in 'DiGraphSetsMap'"
+        ) {
+            val startFromNode: Int =
+            //8
+              7
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int =
+            //250000 +
+            //250000 +
+              125000 +
+                125000 +
+                62500 +
+                62500 +
+                31250 +
+                31250 +
+                //31250 +
+                15625 +
+                15625 +
+                7812 +
+                7812 +
+                7812 +
+                7812 +
+                //7812 +
+                //3906 +
+                //3906 +
+                //3906 +
+                3906 +
+                1953 +
+                1953 +
+                976 +
+                //976 +
+                488 +
+                //488 +
+                //244 +
+                122 +
+                122 +
+                //122
+                61 +
+                //61 +
+                //30 +
+                //15 +
+                7
+            //500000
+            val expectedNodesInSCC: Int = 3
+            val expectedSCCsInDiGraph: Int = 5 //4
+    val expectedSize: Int = 4
+            val filePath: String =
+              "/media/gluk-alex/" +
+                "GDI/Java/Scala/sbt/projects/" +
+                "stanfordAlgorithmsDesignAndAnalysis1/" +
+                "src/test/scala/" +
+                "testSCC/"
+            val fileName: String =
+            //"SCC.txt"
+            //"tinyDG.txt"
+              "diGraphWith4SCCs"
+            /*There is
+            only one standard operation
+            which allows to
+            re-use the same `iterator`:
+            The call
+             */
+            //val (it1, it2) = it.duplicate
+            /*gives you
+            two `iterators`
+            which each return
+            exactly the same `elements` as
+            the iterator 'it'.
+            The two `iterators` work independently;
+            advancing one does not affect the other.
+            By contrast
+            the original iterator 'it' is
+            advanced to its `end`
+            by `duplicate` and
+            is thus rendered `unusable`.
+             */
+            val (actualFileContent, fileContentIter):
+            (Iterator[String], Iterator[String]) =
+            //val actualFileContent: Iterator[String] =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+              /*reduce / control input size*/
+              .take(inputTakeNumber)
+              .duplicate
+            /*val firstFiveStrIter: Iterator[String] =
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+              .take(25)*/
+            /*
+            Calling 'head' on a `buffered` `iterator`
+            will return
+            its first `element` but
+            will not `advance` the `iterator`.
+             */
+            val bit: BufferedIterator[String] =
+              fileContentIter
+              .buffered
+            def skipEmptyWords(it: BufferedIterator[String]) =
+              while (it.head.isEmpty) {it.next()}
+
+            val nodesInGraph: Int =
+              actualFileContent.next().toInt
+            //875714
+            val edgesInGraph: Int =
+              actualFileContent.next().toInt
+            //5105043
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
+                     //s"\ntotal 'adjusted` for node '1':" +
+                     //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
+                     // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
+                     //s"\n'firstFiveStrIter`:"+
+                     //firstFiveStrIter.mkString(",")
+                   )
+
+            /*only '5' max matter*/
+            val takeNumber: Int = 5 //15
+    val nodesLimit: Int = Int.MinValue
+
+            /*val initialDiGraphArray: DiGraphArray =
+              new DiGraphArray(minKeyVal = 1,
+                               maxKeyVal =
+                                 nodesInGraph)*/
+            /*println(
+                     s"\n'initialDiGraphArray.nodesSize` is:" +
+                       initialDiGraphArray.nodesSize +
+                       s"\n'initialDiGraphArray.nodes.length` is:" +
+                       initialDiGraphArray.nodes.length +
+                       s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                       initialDiGraphArray.nodes.tail.head
+                   )
+                  initialDiGraphArray
+                  .addEdge(
+                      arcTail = 0,
+                      arcHead = 1
+                          )
+                  println(
+                             s"\n'initialDiGraphArray.nodes.head' is:" +
+                             initialDiGraphArray.nodes.head +
+                  s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                             initialDiGraphArray.nodes.tail.head
+                         )*/
+
+            val diGraphSetsMap: DiGraphSetsMap =
+              fillSetsMapFromArcs(
+                                   fileContentIter =
+                                     actualFileContent,
+                                   pattern =
+                                     """\d+""".r
+                                 )
+            val diGraphNodes: Map[Int, Set[Int]] =
+              diGraphSetsMap.nodesWithAdjusted
+            println(
+                     s"\n'arcs` are extracted from file" +
+                       s"\n'diGraphNodes.head' is:" +
+                       diGraphNodes.headOption //+
+                     //s"\n'diGraphSetsMap.nodes.tail.head' is:" +
+                     //diGraphNodes.tail.head
+                   )
+
+            val allReachableNodes:
+            //Iterable[List[Int]] =
+            List[Int] =
+            //Stream[Int] =
+              traverse(
+                        graph = diGraphNodes,
+                        start = startFromNode)
+            //.view
+            //.sorted(Ordering[Int].reverse)
+            //.take(takeNumber)
+            //.toList
+            //.toStream
+            println(
+                     s"\n'allSCCs.size' is:" +
+                       allReachableNodes.size +
+                       /*s"\n'mapWithAdjacencyList.head' is:" +
+                         directedGraphDynamic
+                           .nodesWithAdjusted
+                         .head +
+                         s"\n'mapWithAdjacencyList.tail.head' is ${
+                           directedGraphDynamic
+                           .nodesWithAdjusted
+                           .tail.head
+                         }" +*/
+                       //s"\n'nodesWithAdjusted` is:" +
+                       s"\n`inputTakeNumber` is $inputTakeNumber" +
+                       s"\nfirst $takeNumber elements in " +
+                       s"'nodesWithAdjusted`" +
+                       s" are:" +
+                       s"\n${
+                         allReachableNodes
+                         .take(takeNumber)
+                         .mkString(",")
+                       }"
+                   )
+
+            assume(
+                    //true == true,
+                    allReachableNodes
+                    .nonEmpty &&
+                      allReachableNodes
+                      .size == nodesInGraph,
+                    s"\n'allReachableNodes' must be 'nonEmpty' " +
+                      s"& equal to 'nodesInGraph'"
+                  )
+          }
   test(
-        "68: 'traverse' " +
+        "71: 'tarjanOnArray' " +
           "should return " +
-          "all reachable from specified `nodes` in 'DiGraphSetsMap'"
+          "all SCCs sizes in 'Array[NodeFieldsArray]' graph"
       ) {
           val startFromNode: Int =
-            //8
-             7
-    val sourceSize: Int = 5105043
+          //8
+            7
+          val sourceSize: Int = 5105043
           val expectedNodesSize: Int = 875714
           val expectedArcsSize: Int = 5105043
           /*all 'nodes', but only few / some 'arcs'*/
@@ -3993,17 +4212,18 @@ class stronglyConnectedComponentsSuit
                           filePath = filePath
                         )
             .take(25)*/
-    /*
-    Calling 'head' on a `buffered` `iterator`
-    will return
-    its first `element` but
-    will not `advance` the `iterator`.
-     */
+
+          /*
+          Calling 'head' on a `buffered` `iterator`
+          will return
+          its first `element` but
+          will not `advance` the `iterator`.
+           */
           val bit: BufferedIterator[String] =
             fileContentIter
             .buffered
           def skipEmptyWords(it: BufferedIterator[String]) =
-            while (it.head.isEmpty) { it.next() }
+            while (it.head.isEmpty) {it.next()}
 
           val nodesInGraph: Int =
             actualFileContent.next().toInt
@@ -4049,38 +4269,44 @@ class stronglyConnectedComponentsSuit
                            initialDiGraphArray.nodes.tail.head
                        )*/
 
-          val diGraphSetsMap: DiGraphSetsMap =
-            fillSetsMapFromArcs(
-                                 fileContentIter =
-                                   actualFileContent,
-                                 pattern =
-                                   """\d+""".r
-                               )
-          val diGraphNodes: Map[Int, Set[Int]] =
-            diGraphSetsMap.nodesWithAdjusted
-          println(
+          val diGraphArray: DiGraphArray =
+            fillDiGraphArrayWithArcs(
+                                      fileContentIter =
+                                        actualFileContent,
+                                      result =
+                                        //initialDiGraphArray,
+                                        /*new DiGraphArray(minKeyVal = 1,
+                                                         maxKeyVal =
+                                                           nodesInGraph),*/
+                                        DiGraphArray
+                                        .init(
+                                            minKeyVal = 1,
+                                            maxKeyVal =
+                                              nodesInGraph),
+                                      pattern =
+                                        """\d+""".r
+                                    )
+          /*println(
                    s"\n'arcs` are extracted from file" +
-                     s"\n'diGraphNodes.head' is:" +
-                     diGraphNodes.headOption //+
-                   //s"\n'diGraphSetsMap.nodes.tail.head' is:" +
-                   //diGraphNodes.tail.head
-                 )
+                     //s"\n'diGraphArray.nodes.head' is:" +
+                     //diGraphArray.nodes.head +
+                     s"\n'diGraphArray.nodes.tail.head' is:" +
+                     diGraphArray.nodes.tail.head
+                 )*/
 
-          val allReachableNodes:
+          val allSCCs:
           //Iterable[List[Int]] =
-          List[Int] =
-          //Stream[Int] =
-            traverse(
-                      graph = diGraphNodes,
-                      start = startFromNode)
-          //.view
-          //.sorted(Ordering[Int].reverse)
-          //.take(takeNumber)
-          //.toList
-          //.toStream
+          //List[Int] =
+          Stream[Int] =
+            tarjanOnArray(diGraphArray.nodes)
+            .view
+            .sorted(Ordering[Int].reverse)
+            .take(takeNumber)
+            //.toList
+            .toStream
           println(
                    s"\n'allSCCs.size' is:" +
-                     allReachableNodes.size +
+                     allSCCs.size +
                      /*s"\n'mapWithAdjacencyList.head' is:" +
                        directedGraphDynamic
                          .nodesWithAdjusted
@@ -4096,7 +4322,7 @@ class stronglyConnectedComponentsSuit
                      s"'nodesWithAdjusted`" +
                      s" are:" +
                      s"\n${
-                       allReachableNodes
+                       allSCCs
                        .take(takeNumber)
                        .mkString(",")
                      }"
@@ -4104,12 +4330,12 @@ class stronglyConnectedComponentsSuit
 
           assume(
                   //true == true,
-                  allReachableNodes
+                  allSCCs
                   .nonEmpty &&
-                    allReachableNodes
-                    .size == nodesInGraph,
-                  s"\n'allReachableNodes' must be 'nonEmpty' " +
-                    s"& equal to 'nodesInGraph'"
+                    allSCCs
+                    .size == expectedSCCsInDiGraph,
+                  s"\n'allSCCs' must be 'nonEmpty' " +
+                    s"& equal to 'expectedSCCsInDiGraph'"
                 )
         }
   ignore(
