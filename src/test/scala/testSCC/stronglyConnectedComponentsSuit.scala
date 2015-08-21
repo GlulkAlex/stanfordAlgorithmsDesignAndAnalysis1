@@ -4112,7 +4112,7 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'nodesInGraph'"
                   )
           }
-  test(
+  ignore(
         "71: 'tarjanOnArray' " +
           "should return " +
           "all SCCs sizes in 'Array[NodeFieldsArray]' graph"
@@ -4172,8 +4172,238 @@ class stronglyConnectedComponentsSuit
               "src/test/scala/" +
               "testSCC/"
           val fileName: String =
+          "SCC.txt"
+          //"tinyDG.txt"
+          //"tinyDAG.txt"
+            //"diGraphWith4SCCs"
+          /*There is
+          only one standard operation
+          which allows to
+          re-use the same `iterator`:
+          The call
+           */
+          //val (it1, it2) = it.duplicate
+          /*gives you
+          two `iterators`
+          which each return
+          exactly the same `elements` as
+          the iterator 'it'.
+          The two `iterators` work independently;
+          advancing one does not affect the other.
+          By contrast
+          the original iterator 'it' is
+          advanced to its `end`
+          by `duplicate` and
+          is thus rendered `unusable`.
+           */
+          val (actualFileContent, fileContentIter):
+          (Iterator[String], Iterator[String]) =
+          //val actualFileContent: Iterator[String] =
+          //Iterator.empty
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            /*reduce / control input size*/
+            .take(inputTakeNumber)
+            .duplicate
+          /*val firstFiveStrIter: Iterator[String] =
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            .take(25)*/
+
+          /*
+          Calling 'head' on a `buffered` `iterator`
+          will return
+          its first `element` but
+          will not `advance` the `iterator`.
+           */
+          val bit: BufferedIterator[String] =
+            fileContentIter
+            .buffered
+          def skipEmptyWords(it: BufferedIterator[String]) =
+            while (it.head.isEmpty) {it.next()}
+
+          val nodesInGraph: Int =
+            //actualFileContent.next().toInt
+          875714
+          val edgesInGraph: Int =
+            //actualFileContent.next().toInt
+          5105043
+          println(
+                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                     s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
+                   //s"\ntotal 'adjusted` for node '1':" +
+                   //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
+                   // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
+                   //s"\n'firstFiveStrIter`:"+
+                   //firstFiveStrIter.mkString(",")
+                 )
+
+          /*only '5' max matter*/
+          val takeNumber: Int = 5 //15
+          val nodesLimit: Int = Int.MinValue
+
+          /*val initialDiGraphArray: DiGraphArray =
+            new DiGraphArray(minKeyVal = 1,
+                             maxKeyVal =
+                               nodesInGraph)*/
+          /*println(
+                   s"\n'initialDiGraphArray.nodesSize` is:" +
+                     initialDiGraphArray.nodesSize +
+                     s"\n'initialDiGraphArray.nodes.length` is:" +
+                     initialDiGraphArray.nodes.length +
+                     s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                     initialDiGraphArray.nodes.tail.head
+                 )
+                initialDiGraphArray
+                .addEdge(
+                    arcTail = 0,
+                    arcHead = 1
+                        )
+                println(
+                           s"\n'initialDiGraphArray.nodes.head' is:" +
+                           initialDiGraphArray.nodes.head +
+                s"\n'initialDiGraphArray.nodes.tail.head' is:" +
+                           initialDiGraphArray.nodes.tail.head
+                       )*/
+
+          val diGraphArray: DiGraphArray =
+            fillDiGraphArrayWithArcs(
+                                      fileContentIter =
+                                        actualFileContent,
+                                      result =
+                                        //initialDiGraphArray,
+                                        /*new DiGraphArray(minKeyVal = 1,
+                                                         maxKeyVal =
+                                                           nodesInGraph),*/
+                                        DiGraphArray
+                                        .init(
+                                            minKeyVal = 1,
+                                            maxKeyVal =
+                                              nodesInGraph),
+                                      pattern =
+                                        """\d+""".r
+                                    )
+          println(
+                   s"\n'arcs` are extracted from file" /*+
+                     s"\n'diGraphArray.nodes.head' is:" +
+                     diGraphArray.nodes.head +
+                     s"\n'diGraphArray.nodes.tail.head' is:" +
+                     diGraphArray.nodes.tail.head*/
+                 )
+
+          val allSCCs:
+          //Iterable[List[Int]] =
+          //List[Int] =
+          Stream[Int] =
+            tarjanOnArray(diGraphArray.nodes)
+            .view
+            .sorted(Ordering[Int].reverse)
+            .take(takeNumber)
+            //.toList
+            .toStream
+          println(
+                   s"\n'allSCCs.size' is:" +
+                     allSCCs.size +
+                     /*s"\n'mapWithAdjacencyList.head' is:" +
+                       directedGraphDynamic
+                         .nodesWithAdjusted
+                       .head +
+                       s"\n'mapWithAdjacencyList.tail.head' is ${
+                         directedGraphDynamic
+                         .nodesWithAdjusted
+                         .tail.head
+                       }" +*/
+                     //s"\n'nodesWithAdjusted` is:" +
+                     s"\n`inputTakeNumber` is $inputTakeNumber" +
+                     s"\nfirst $takeNumber elements in " +
+                     s"'nodesWithAdjusted`" +
+                     s" are:" +
+                     s"\n${
+                       allSCCs
+                       .take(takeNumber)
+                       .mkString(",")
+                     }"
+                 )
+
+          assume(
+                  //true == true,
+                  allSCCs
+                  .nonEmpty &&
+                    allSCCs
+                    .sum == nodesInGraph,
+                    //.size == expectedSCCsInDiGraph,
+                  s"\n'allSCCs' must be 'nonEmpty' " +
+                    s"& equal to 'nodesInGraph'"
+                )
+        }
+
+  test(
+        "72: 'postOrderOnArray' " +
+          "should return " +
+          "right depth-first traversal post-order for graph"
+      ) {
+          val startFromNode: Int =
+          //8
+            7
+          val sourceSize: Int = 5105043
+          val expectedNodesSize: Int = 875714
+          val expectedArcsSize: Int = 5105043
+          /*all 'nodes', but only few / some 'arcs'*/
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int =
+          //250000 +
+          //250000 +
+            125000 +
+              125000 +
+              62500 +
+              62500 +
+              31250 +
+              31250 +
+              //31250 +
+              15625 +
+              15625 +
+              7812 +
+              7812 +
+              7812 +
+              7812 +
+              //7812 +
+              //3906 +
+              //3906 +
+              //3906 +
+              3906 +
+              1953 +
+              1953 +
+              976 +
+              //976 +
+              488 +
+              //488 +
+              //244 +
+              122 +
+              122 +
+              //122
+              61 +
+              //61 +
+              //30 +
+              //15 +
+              7
+          //500000
+          val expectedNodesInSCC: Int = 3
+          val expectedSCCsInDiGraph: Int = 5 //4
+          val expectedSize: Int = 4
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"
+          val fileName: String =
           //"SCC.txt"
           "tinyDG.txt"
+          //"tinyDAG.txt"
             //"diGraphWith4SCCs"
           /*There is
           only one standard operation
@@ -4243,31 +4473,7 @@ class stronglyConnectedComponentsSuit
 
           /*only '5' max matter*/
           val takeNumber: Int = 5 //15
-    val nodesLimit: Int = Int.MinValue
-
-          /*val initialDiGraphArray: DiGraphArray =
-            new DiGraphArray(minKeyVal = 1,
-                             maxKeyVal =
-                               nodesInGraph)*/
-          /*println(
-                   s"\n'initialDiGraphArray.nodesSize` is:" +
-                     initialDiGraphArray.nodesSize +
-                     s"\n'initialDiGraphArray.nodes.length` is:" +
-                     initialDiGraphArray.nodes.length +
-                     s"\n'initialDiGraphArray.nodes.tail.head' is:" +
-                     initialDiGraphArray.nodes.tail.head
-                 )
-                initialDiGraphArray
-                .addEdge(
-                    arcTail = 0,
-                    arcHead = 1
-                        )
-                println(
-                           s"\n'initialDiGraphArray.nodes.head' is:" +
-                           initialDiGraphArray.nodes.head +
-                s"\n'initialDiGraphArray.nodes.tail.head' is:" +
-                           initialDiGraphArray.nodes.tail.head
-                       )*/
+          val nodesLimit: Int = Int.MinValue
 
           val diGraphArray: DiGraphArray =
             fillDiGraphArrayWithArcs(
@@ -4288,57 +4494,101 @@ class stronglyConnectedComponentsSuit
                                     )
           println(
                    s"\n'arcs` are extracted from file" +
-                     s"\n'diGraphArray.nodes.head' is:" +
-                     diGraphArray.nodes.head +
-                     s"\n'diGraphArray.nodes.tail.head' is:" +
-                     diGraphArray.nodes.tail.head
+                   s"\ninitial 'diGraphArray` is:\n" +
+                     diGraphArray.nodes
+                     .take(15)
+                     .map(n =>
+                            n.nodeKey + "" +
+                              n.adjustedNodes.mkString("{",",","}"))
+                     .mkString(",") //+
+                   /*s"\n'diGraphArray.nodes.head' is:" +
+                   diGraphArray.nodes.head +
+                   s"\n'diGraphArray.nodes.tail.head' is:" +
+                   diGraphArray.nodes.tail.head*/
+                 )
+          val diGraphArrayReversed: DiGraphArray =
+            fillDiGraphArrayWithArcs(
+                                      fileContentIter =
+                                        fileContentIter.drop(2),
+                                      result =
+                                        //initialDiGraphArray,
+                                        /*new DiGraphArray(minKeyVal = 1,
+                                                         maxKeyVal =
+                                                           nodesInGraph),*/
+                                        DiGraphArray
+                                        .init(
+                                            minKeyVal = 1,
+                                            maxKeyVal =
+                                              nodesInGraph),
+                                      pattern =
+                                        """\d+""".r,
+                                      nonReversedArcs = false
+                                    )
+          println(
+                   s"\n'arcs` are extracted from file" +
+                   s"\n'diGraphArrayReversed` is:\n" +
+                     diGraphArrayReversed.nodes
+                     .take(15)
+                       .map(n =>
+                              n.nodeKey + "" +
+                                n.adjustedNodes.mkString("{",",","}"))
+                     .mkString(",")// +
+                   /*s"\n'diGraphArray.nodes.head' is:" +
+                   diGraphArray.nodes.head +
+                   s"\n'diGraphArray.nodes.tail.head' is:" +
+                   diGraphArray.nodes.tail.head*/
                  )
 
-          val allSCCs:
+          val graphPostOrder:
           //Iterable[List[Int]] =
           //List[Int] =
           Stream[Int] =
-            tarjanOnArray(diGraphArray.nodes)
-            .view
+            postOrderOnArray(diGraphArray.nodes)
+            /*.view
             .sorted(Ordering[Int].reverse)
             .take(takeNumber)
             //.toList
-            .toStream
+            .toStream*/
           println(
-                   s"\n'allSCCs.size' is:" +
-                     allSCCs.size +
-                     /*s"\n'mapWithAdjacencyList.head' is:" +
-                       directedGraphDynamic
-                         .nodesWithAdjusted
-                       .head +
-                       s"\n'mapWithAdjacencyList.tail.head' is ${
-                         directedGraphDynamic
-                         .nodesWithAdjusted
-                         .tail.head
-                       }" +*/
-                     //s"\n'nodesWithAdjusted` is:" +
-                     s"\n`inputTakeNumber` is $inputTakeNumber" +
-                     s"\nfirst $takeNumber elements in " +
-                     s"'nodesWithAdjusted`" +
-                     s" are:" +
-                     s"\n${
-                       allSCCs
-                       .take(takeNumber)
+                   s"\n'graphPostOrder.size' is:" +
+                     graphPostOrder.size +
+                     s"\n'graphPostOrder' is:\n${
+                       graphPostOrder
+                       .take(15)
+                       .mkString(",")
+                     }"
+                 )
+          val reversedGraphPostOrder:
+          //Iterable[List[Int]] =
+          //List[Int] =
+          Stream[Int] =
+            postOrderOnArray(diGraphArrayReversed.nodes)
+            /*.view
+            .sorted(Ordering[Int].reverse)
+            .take(takeNumber)
+            //.toList
+            .toStream*/
+          println(
+                   //s"\n'graphPostOrder.size' is:" +
+                     //graphPostOrder.size +
+                     s"\n'reversedGraphPostOrder' is:\n${
+                       reversedGraphPostOrder
+                       .take(15)
                        .mkString(",")
                      }"
                  )
 
           assume(
                   //true == true,
-                  allSCCs
+                  graphPostOrder
                   .nonEmpty &&
-                    allSCCs
-                    .sum == nodesInGraph,
-                    //.size == expectedSCCsInDiGraph,
+                    graphPostOrder
+                    .size == nodesInGraph,
                   s"\n'allSCCs' must be 'nonEmpty' " +
                     s"& equal to 'nodesInGraph'"
                 )
         }
+
   ignore(
           "100: 'convert decimal to binary' " +
             "should return " +
