@@ -5823,11 +5823,13 @@ object stronglyConnectedComponents {
         .toStream
       }
     }
+
     /*potentially may be very time consuming*/
     /*auxiliary method*/
     /*if in SCCs stack then must be explored already*/
+    /*must exclude self reference*/
     def findAdjustedInSCC_Key(
-                               //nodeKeyToCheck: Int,
+                               nodeKeyToCheck: Int,
                                /*nodeVal:
                                NodeFieldsArray,*/
                                //unExploredAdjustedNodes:
@@ -5845,6 +5847,7 @@ object stronglyConnectedComponents {
       } else {
         currentAdjustedNodes
         .view
+          .collect({case node if node != nodeKeyToCheck => node})
         /*potentially may be very time consuming*/
         /*
         better use `node`s field to trace membership
@@ -5990,8 +5993,10 @@ object stronglyConnectedComponents {
                                 exploredNodes = exploredNodes,
                                 unExploredNodes = unExploredNodes
                               )
+      /*must exclude self reference*/
       val possibleSCCsRootIndex: Option[Int] =
         findAdjustedInSCC_Key(
+                               nodeKeyToCheck = nodeKeyToCheck,
                                currentAdjustedNodes =
                                  nodeVal
                                  .adjustedNodes,
@@ -6016,9 +6021,10 @@ object stronglyConnectedComponents {
                 correspond to traverse order
                 `predecessor` -> `successor`
                 * */
-                .nodeIndex
+                //.nodeIndex
                 /*may change over time*/
-                //.nodeLowLink
+                /*must be 'nodeLowLink' to `back trace` to the right `root`*/
+                .nodeLowLink
                 )
           /*return value*/
           nodeVal.nodeLowLink
@@ -6109,7 +6115,8 @@ object stronglyConnectedComponents {
       .isEmpty*/
       ) {
         /*return value*/
-        findResult
+        //findResult
+        newFindResult
       } else {
         /*if any `unexplored` left / exist*/
         val nextAdjustedKey: Option[Int] =

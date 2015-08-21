@@ -4173,8 +4173,8 @@ class stronglyConnectedComponentsSuit
               "testSCC/"
           val fileName: String =
           //"SCC.txt"
-          //"tinyDG.txt"
-            "diGraphWith4SCCs"
+          "tinyDG.txt"
+            //"diGraphWith4SCCs"
           /*There is
           only one standard operation
           which allows to
@@ -4333,9 +4333,10 @@ class stronglyConnectedComponentsSuit
                   allSCCs
                   .nonEmpty &&
                     allSCCs
-                    .size == expectedSCCsInDiGraph,
+                    .sum == nodesInGraph,
+                    //.size == expectedSCCsInDiGraph,
                   s"\n'allSCCs' must be 'nonEmpty' " +
-                    s"& equal to 'expectedSCCsInDiGraph'"
+                    s"& equal to 'nodesInGraph'"
                 )
         }
   ignore(
