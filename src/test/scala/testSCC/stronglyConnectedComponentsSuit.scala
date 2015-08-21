@@ -4286,13 +4286,13 @@ class stronglyConnectedComponentsSuit
                                       pattern =
                                         """\d+""".r
                                     )
-          /*println(
+          println(
                    s"\n'arcs` are extracted from file" +
-                     //s"\n'diGraphArray.nodes.head' is:" +
-                     //diGraphArray.nodes.head +
+                     s"\n'diGraphArray.nodes.head' is:" +
+                     diGraphArray.nodes.head +
                      s"\n'diGraphArray.nodes.tail.head' is:" +
                      diGraphArray.nodes.tail.head
-                 )*/
+                 )
 
           val allSCCs:
           //Iterable[List[Int]] =
