@@ -228,4 +228,72 @@ object RandomGenerators {
       loop(generatedSeq = Seq.empty[Int])
     }
   }
+
+  /*
+  must return
+  generated connected directed graph with
+  defined:
+  >nodes number,
+  >arcs number,
+  >SCCs number
+  Properties:
+  graph directed - edge is arc & goes in one direction
+  parallel arcs - ? not allowed / deprecated ?
+  self-pointed arcs - allowed
+  nodes number >= SCCs number
+  arcs number >= nodes number - 1
+  SCCs contains at least one node
+  if nodes.size > 1 then has at least one loop
+  between SCCs arcs may be only in one direction not both
+  nodes key value must be sequential
+  starting from some base '0' or '1'
+  up to 'nodesSize'
+  Representation:
+  adjusted list or
+  list of nodes pairs (arcs / edges)
+  * */
+  def preDefinedDiGraph(
+                         nodesSize: Int,
+                         arcsSize: Int,
+                         totalSCCs_Size: Option[Int]
+                         ): Map[Int,Set[Int]] = {
+    assume(nodesSize > 0,"must be at least one node in graph")
+    assume(arcsSize >= nodesSize - 1,
+           "not enough arcs, graph must be connected")
+    if (totalSCCs_Size.isDefined) {
+      assume(totalSCCs_Size.get <= nodesSize &&
+               totalSCCs_Size.get > 0,
+             s"'totalSCCs_Size' may not be greater then 'nodesSize' and" +
+               s"must be positive")
+    }
+
+    var nodesInSCCs: Int = 0
+    var createdSCCs: Int = 0
+
+    /*until remains nodes not in SCCs*/
+    if (booleans.generate) {
+      /*create self pointer arc for current node*/
+    }
+
+    assume(
+            nodesSize - nodesInSCCs -
+              (totalSCCs_Size.getOrElse(0) - createdSCCs) >= 1,
+            s"SCCs size must be at least '1'"
+            )
+      /*current SCC size > 1*/
+      val currentSCC_Size: Int =
+        interval(
+                  lo = 1,
+                  hi=
+      nodesSize - nodesInSCCs - (totalSCCs_Size.getOrElse(0) - createdSCCs))
+      .generate
+    if (currentSCC_Size>1){
+      /*find at least 'currentSCC_Size' nodes not in `nodesInSCCs`
+      then make `loop` from them
+      * */
+    }
+
+    /*return value*/
+    Map.empty
+  }
 }
