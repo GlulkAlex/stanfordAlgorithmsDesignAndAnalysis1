@@ -11,13 +11,13 @@ import java.io.PrintWriter
 object FilesIO {
   /*if path & name OK this is enough*/
   def readFromFile(
-                fileName: String =
-                "QuickSort.txt",
-                filePath: String =
-                "/media/gluk-alex/GDI/Java/Scala/sbt/projects/" +
-                  "stanfordAlgorithmsDesignAndAnalysis1/src/test/scala/" +
-                  "testQuickSortComparisons/"
-                ): Iterator[String] = {
+                    fileName: String =
+                    "QuickSort.txt",
+                    filePath: String =
+                    "/media/gluk-alex/GDI/Java/Scala/sbt/projects/" +
+                      "stanfordAlgorithmsDesignAndAnalysis1/src/test/scala/" +
+                      "testQuickSortComparisons/"
+                    ): Iterator[String] = {
     //"/media/gluk-alex/GDI/Java/Scala/sbt/projects/
     // stanfordAlgorithmsDesignAndAnalysis1/src/
     // test/scala/testQuickSortComparisons"
@@ -42,7 +42,7 @@ object FilesIO {
                        fileName: String = "test.txt"
                        ) {
     val writer =
-      new PrintWriter(new File(fileName ))
+      new PrintWriter(new File(fileName))
 
     writer.write("Hello Scala")
     writer.close()
@@ -62,14 +62,14 @@ object FilesIO {
   }
 
   def writeToTextFile3(
-                       filePath: String = "",
-                       fileName: String = "test3.txt"
-                       ) {
+                        filePath: String = "",
+                        fileName: String = "test3.txt"
+                        ) {
     val writer =
       new PrintWriter(fileName)
 
     for (i <- 1 to 10) {
-      writer.print("%3d --> %d\n".format(i, i*i))
+      writer.print("%3d --> %d\n".format(i, i * i))
     }
 
     writer.close()
@@ -86,27 +86,27 @@ object FilesIO {
     ]}
    */
   def writeJSON_ToFile(
-                       filePath: String = "",
-                       fileName: String = "JSON.txt",
-                       fileContent: Seq[(Double, Double)]//String = ""
-                       ) {
+                        filePath: String = "",
+                        fileName: String = "JSON.txt",
+                        fileContent: Seq[(Double, Double)] //String = ""
+                        ) {
     val writer =
       new PrintWriter(filePath + fileName)
 
     writer
-      //println(f"$name%s is $height%2.2f meters tall")
-    .print(s"""{\"coordinates\":[\n""")
+    //println(f"$name%s is $height%2.2f meters tall")
+    .print( s"""{\"coordinates\":[\n""")
 
     for (elem <- fileContent) {
       val lastElem = fileContent.last
 
       if (elem == lastElem) {
         writer
-        .print(s"""{\"x\":\"${elem._1}\", \"y\":\"${elem._2}\"}\n""")
+        .print( s"""{\"x\":\"${elem._1}\", \"y\":\"${elem._2}\"}\n""")
       } else {
         writer
         //.print("%3d --> %d\n".format(i, i*i))
-        .print(s"""{\"x\":\"${elem._1}\", \"y\":\"${elem._2}\"},\n""")
+        .print( s"""{\"x\":\"${elem._1}\", \"y\":\"${elem._2}\"},\n""")
       }
     }
 
@@ -115,4 +115,40 @@ object FilesIO {
 
     writer.close()
   }
+
+  @scala.annotation.tailrec
+  def extractDigitsFromString(
+                               sourceStr: String,
+                               digits:
+                               //List[String] =
+                               List[Int] =
+                               List.empty,
+                               accum: String = ""
+                               ):
+  //List[String] = {
+  List[Int] = {
+    if (sourceStr.isEmpty) {
+      digits.reverse
+    } else {
+      val (digitsUpdated, accumUpdated): (List[Int], String) =
+        if (sourceStr.head.isDigit) {
+          (digits, accum + sourceStr.head)
+        } else /*if (sourceStr.head.isSpaceChar)*/ {
+          if (
+            accum.isEmpty
+          ) {
+            (digits, accum)
+          } else {
+            (accum.toInt +: digits, "")
+          }
+        }
+      /*recursion*/
+      extractDigitsFromString(
+                               sourceStr = sourceStr.tail,
+                               digits = digitsUpdated,
+                               accum = accumUpdated
+                             )
+    }
+  }
+
 }

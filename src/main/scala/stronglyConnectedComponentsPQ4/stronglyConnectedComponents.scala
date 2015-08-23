@@ -1129,7 +1129,8 @@ object stronglyConnectedComponents {
                                 pattern: Regex =
                                 """\d+""".r,
                                 //isArcsReversed: Boolean = false
-                                nonReversedArcs: Boolean = true
+                                nonReversedArcs: Boolean = true,
+                                progressCounter: Int = 0
                                 ): DiGraphArray = {
     if (fileContentIter.isEmpty) {
       /*return value*/
@@ -1145,9 +1146,12 @@ object stronglyConnectedComponents {
         /*may be leading 'space' then
       * delimiter one or double 'space'*/
         val List(first, second): List[Int] =
-          pattern
-          .findAllIn(nextStr)
+          //pattern
+          //.findAllIn(nextStr)
+          nextStr
+          .split(" ")
           .map(_.toInt)
+            /*fail here ? no way !*/
           .toList
         val List(arcTail, arcHead): List[Int] =
           if (nonReversedArcs) {
@@ -1157,6 +1161,9 @@ object stronglyConnectedComponents {
             List(second, first)
           }
         /*side effect*/
+        if (progressCounter % 50000 == 0) {
+          print(s"current progress $progressCounter arcs readied from file\r")
+        }
         result
         .addEdge(
             arcTail = arcTail,
@@ -1167,8 +1174,9 @@ object stronglyConnectedComponents {
       fillDiGraphArrayWithArcs(
                                 fileContentIter: Iterator[String],
                                 result = result,
-                                nonReversedArcs = nonReversedArcs
-                              )
+                                nonReversedArcs = nonReversedArcs,
+                                progressCounter = progressCounter + 1
+                                )
     }
   }
 
