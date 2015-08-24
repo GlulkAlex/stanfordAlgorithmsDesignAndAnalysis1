@@ -6829,6 +6829,14 @@ object stronglyConnectedComponents {
     /*return value*/
     postOrderBuffer.toStream
   }
+
+  /*TODO debug
+  Current progress: 11840000 `nodes` are added to `postOrder`
+  on input size
+  total 'nodesInGraph`:13
+  total 'edgesInGraph`:22
+  stuck after that
+  * */
   /*  a linear iterative process, with mutable state  */
   //input: graph G = (V, E)
   //output: depth-first traversal: pre-order, in-order, post-order
@@ -7324,6 +7332,9 @@ object stronglyConnectedComponents {
     postOrderBuffer.toStream
   }
 
+  /*TODO fails when post-order applies to the same graph
+  * not reversed
+  * */
   /*  a linear iterative process, with mutable state  */
   //input: graph G = (V, E)
   //output: depth-first traversal: all reachable nodes as SCCs
@@ -7373,6 +7384,8 @@ object stronglyConnectedComponents {
     } else {
       startNode.get
     }*/
+    var progressCounterNodes: Int = 0
+    var progressCounterSCCs: Int = 0
 
     /*auxiliary method*/
     def findUnExploredAdjusted(
@@ -7479,7 +7492,9 @@ object stronglyConnectedComponents {
                    /*`pre-order` list of reachable traversed nodes*/
                    findResult:
                    List[Int] =
-                   List.empty
+                   List.empty/*,
+                   progressCounterNodes: Int = 0,
+                   progressCounterSCCs: Int = 0*/
                    /*Stream[Int] =
                  Stream.empty*/
                    //): Int = {
@@ -7500,6 +7515,11 @@ object stronglyConnectedComponents {
           (unExploredNodesSet.isEmpty &&
             traceBackStack.isEmpty)
       ) {
+        /*side effect*/
+        /*side effect*/
+        print(" " * 200 + "\r")
+        print(s"Total `nodes` was explored in graph: $progressCounterNodes\n")
+        println(s"Total `SCCs` was explored in graph: $progressCounterSCCs")
         /*return value*/
         //nodeKeyToCheck +:
         findResult
@@ -7630,6 +7650,15 @@ object stronglyConnectedComponents {
             .empty*/
             findResult
           } else {
+            /*side effect*/
+            progressCounterNodes += 1
+            if (progressCounterNodes % 5000 == 0) {
+              print(
+                     s"Current progress: $progressCounterNodes " +
+                       s"`nodes` are processed`\r")
+            } else if (progressCounterNodes == 0) {
+              print(s"Starting graph processing ...\r")
+            }
             /*return value*/
             nodeKeyToCheck.get +: findResult
             /*List(findResult,
@@ -7674,6 +7703,13 @@ object stronglyConnectedComponents {
               nextBackTraceKey
               .isEmpty
           ) {
+            /*side effect*/
+            progressCounterSCCs += 1
+            if (progressCounterSCCs % 1000 == 0) {
+              print(
+                     s"Current SCCs progress: $progressCounterSCCs " +
+                       s"`SCCs` are discovered so far`\r")
+            }
             /*side effect*/
             graphSCCs =
               //findResult +:

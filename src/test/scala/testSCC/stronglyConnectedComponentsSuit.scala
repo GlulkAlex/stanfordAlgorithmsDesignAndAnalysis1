@@ -4632,7 +4632,7 @@ class stronglyConnectedComponentsSuit
                   )
           }
   /*TODO test & beBug*/
-  ignore(
+  test(
           "73: 'postOrderOnArray' then 'iterativeDFS_OnArray'" +
             "should return " +
             "right all SCCs in graph"
@@ -4646,9 +4646,9 @@ class stronglyConnectedComponentsSuit
             /*all 'nodes', but only few / some 'arcs'*/
             /*at least as big as `mockUp(14)`*/
             val inputTakeNumber: Int =
+              expectedArcsSize
             //250000 +
-            //250000 +
-              125000 +
+              /*125000 +
                 125000 +
                 62500 +
                 62500 +
@@ -4680,11 +4680,11 @@ class stronglyConnectedComponentsSuit
                 //61 +
                 //30 +
                 //15 +
-                7
+                7*/
             //500000
             val expectedNodesInSCC: Int = 3
-            val expectedSCCsInDiGraph: Int = 5 //4
-    val expectedSize: Int = 4
+            val expectedSCCsInDiGraph: Int = 5
+            val expectedSize: Int = 4
             val filePath: String =
               "/media/gluk-alex/" +
                 "GDI/Java/Scala/sbt/projects/" +
@@ -4740,11 +4740,11 @@ class stronglyConnectedComponentsSuit
             its first `element` but
             will not `advance` the `iterator`.
              */
-            val bit: BufferedIterator[String] =
+            /*val bit: BufferedIterator[String] =
               fileContentIter
               .buffered
             def skipEmptyWords(it: BufferedIterator[String]) =
-              while (it.head.isEmpty) {it.next()}
+              while (it.head.isEmpty) {it.next()}*/
 
             val nodesInGraph: Int =
               actualFileContent.next().toInt
@@ -4763,8 +4763,8 @@ class stronglyConnectedComponentsSuit
                    )
 
             /*only '5' max matter*/
-            val takeNumber: Int = 5 //15
-    val nodesLimit: Int = Int.MinValue
+            val takeNumber: Int = 5
+            val nodesLimit: Int = Int.MinValue
 
             val diGraphArray: DiGraphArray =
               fillDiGraphArrayWithArcs(
@@ -4784,7 +4784,7 @@ class stronglyConnectedComponentsSuit
                                           """\d+""".r
                                       )
             println(
-                     s"\n'arcs` are extracted from file" /*+
+                     s"'arcs` are extracted from file" /*+
                    s"\ninitial 'diGraphArray` is:\n" +
                      diGraphArray.nodes
                      .take(15)
@@ -4817,7 +4817,7 @@ class stronglyConnectedComponentsSuit
                                         nonReversedArcs = false
                                       )
             println(
-                     s"\nReversed 'arcs` are extracted from file" /*+
+                     s"Reversed 'arcs` are extracted from file" /*+
                    s"\n'diGraphArrayReversed` is:\n" +
                      diGraphArrayReversed.nodes
                      .take(15)
@@ -4857,7 +4857,11 @@ class stronglyConnectedComponentsSuit
             //Iterable[List[Int]] =
             //List[Int] =
             Stream[Int] =
-              postOrderOnArray(diGraphArrayReversed.nodes /*,Some(0)*/)
+              postOrderOnArray(
+                                //diGraphArrayReversed
+                                  diGraphArray
+                                .nodes /*,
+                                Some(0)*/)
             /*.view
             .sorted(Ordering[Int].reverse)
             .take(takeNumber)
@@ -4866,7 +4870,7 @@ class stronglyConnectedComponentsSuit
             println(
                      //s"\n'graphPostOrder.size' is:" +
                      //graphPostOrder.size +
-                     s"\n'reversedGraphPostOrder' is:\n${
+                     s"'reversedGraphPostOrder' is:\n${
                        reversedGraphPostOrder
                        .take(15)
                        .mkString(",")
@@ -4881,7 +4885,8 @@ class stronglyConnectedComponentsSuit
             //Stream[Stream[Int]] =
               iterativeDFS_OnArray(
                                     adjacencyList =
-                                      diGraphArray.nodes,
+                                      diGraphArrayReversed.nodes,
+                                      //diGraphArray.nodes,
                                     postOrderNodesStream =
                                       reversedGraphPostOrder
                                   )
@@ -4891,7 +4896,7 @@ class stronglyConnectedComponentsSuit
               .toList
             //.toStream
             println(
-                     s"\n'allSCCs.size' is:" +
+                     s"'allSCCs.size' is:" +
                        allSCCs.size +
                        /*s"\n'mapWithAdjacencyList.head' is:" +
                          directedGraphDynamic
@@ -4905,7 +4910,7 @@ class stronglyConnectedComponentsSuit
                        //s"\n'nodesWithAdjusted` is:" +
                        s"\n`inputTakeNumber` is $inputTakeNumber" +
                        s"\nfirst $takeNumber elements in " +
-                       s"'nodesWithAdjusted`" +
+                       s"'allSCCs`" +
                        s" are:" +
                        s"\n${
                          allSCCs
@@ -5093,7 +5098,7 @@ class stronglyConnectedComponentsSuit
                       s"& equal to 'nodesInGraph'"
                   )
           }
-  test(
+  ignore(
         "80: 'postOrderOnMap' " +
           "should return " +
           "right depth-first traversal post-order for graph"
@@ -5247,7 +5252,9 @@ class stronglyConnectedComponentsSuit
                  )
           println(
                    s"'arcs` are extracted from file" +
-                     s"\ninitial 'diGraphMap` is:\n" +
+                     s"\ninitial 'diGraphMap.size` is:\n" +
+                     diGraphMap.size +
+                     s"\n'diGraphMap` first '15' elements are:\n" +
                      diGraphMap
                      //.values
                      .view
@@ -5287,7 +5294,9 @@ class stronglyConnectedComponentsSuit
                  )
           println(
                    s"'arcs` are extracted from file" +
-                     s"\n'diGraphMapReversed` is:\n" +
+                     s"\n'diGraphMapReversed.size` is:\n" +
+                     diGraphMapReversed.size +
+                     s"\n'diGraphMapReversed` first 15 elements are:\n" +
                      diGraphMapReversed
                      .view
                      .take(15)
@@ -5313,7 +5322,10 @@ class stronglyConnectedComponentsSuit
           //Iterable[List[Int]] =
           //List[Int] =
           Stream[Int] =
-            postOrderOnMap(diGraphMap /*,Some(0)*/)
+            postOrderOnMap(
+                            //diGraphMapReversed
+                            diGraphMap /*,
+                            Some(0)*/)
           /*.view
           .sorted(Ordering[Int].reverse)
           .take(takeNumber)
