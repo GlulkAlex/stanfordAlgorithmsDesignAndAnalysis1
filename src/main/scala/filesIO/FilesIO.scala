@@ -2,6 +2,7 @@ package filesIO
 
 import scala.io._
 import scala.io.Source
+import scala.collection.mutable.Buffer
 import java.io._
 import java.io.PrintWriter
 
@@ -123,14 +124,23 @@ object FilesIO {
                                //List[String] =
                                List[Int] =
                                List.empty,
+                               /*Buffer[Int] =
+                               Buffer.empty,*/
                                accum: String = ""
                                ):
   //List[String] = {
+  //Buffer[Int] = {
   List[Int] = {
     if (sourceStr.isEmpty) {
-      digits.reverse
+      accum match {
+        case "" => digits
+        case a => digits :+ a.toInt
+        //.reverse
+      }
     } else {
-      val (digitsUpdated, accumUpdated): (List[Int], String) =
+      val (digitsUpdated, accumUpdated):
+      //(Buffer[Int], String) =
+      (List[Int], String) =
         if (sourceStr.head.isDigit) {
           (digits, accum + sourceStr.head)
         } else /*if (sourceStr.head.isSpaceChar)*/ {
@@ -139,7 +149,9 @@ object FilesIO {
           ) {
             (digits, accum)
           } else {
-            (accum.toInt +: digits, "")
+            //(digits += accum.toInt, "")
+            (digits :+ accum.toInt, "")
+            //(accum.toInt +: digits, "")
           }
         }
       /*recursion*/

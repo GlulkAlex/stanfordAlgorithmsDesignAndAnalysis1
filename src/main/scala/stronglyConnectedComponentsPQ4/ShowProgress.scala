@@ -20,8 +20,11 @@ object ShowProgress extends App{
     val timeDays: Long = timeHours / 24
     val days: Long = timeDays % 24
 
-    "days:"+days +"/hours:"+hours +
-      "/minutes:" + minutes +"/seconds:" + seconds + "/Millis:" + milliSeconds
+    "days:" + days +
+      "/hours:" + hours +
+      "/minutes:" + Console.YELLOW + minutes + Console.RESET +
+      "/seconds:" + Console.RED + seconds + Console.RESET +
+      "/Millis:" + Console.MAGENTA + milliSeconds + Console.RESET
   }
 
   println(

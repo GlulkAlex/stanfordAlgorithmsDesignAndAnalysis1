@@ -24,3 +24,26 @@ for {
   (nodeKey, nodeVal) <- map3
   if nodeVal == "2"
 } yield nodeKey
+map3
+.view
+.take(15)
+.map(
+//(k,v): (Int,NodeMapValFieldsStatic) =>
+{ case (k, v) =>
+  k + "" +
+    v
+    //.adjustedNodes
+    .mkString("{", ",", "}")
+}
+    )
+//.toIterable
+.mkString(",")
+map3
+.view
+.take(15)
+.collect(
+{ case (k, v) if (v.toInt % 2) != 0 =>
+    v
+}
+    )
+.toSet
