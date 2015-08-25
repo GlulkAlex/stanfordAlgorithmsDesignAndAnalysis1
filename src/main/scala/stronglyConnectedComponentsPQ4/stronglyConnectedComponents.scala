@@ -175,6 +175,10 @@ object stronglyConnectedComponents {
                                      //inStack: Boolean,
                                      doneOrder: Option[Int],
                                      //var groupLeader: Int
+                                   /*assume that
+                                   order of adjusted nodes
+                                   does not matter
+                                   */
                                      adjustedNodes: Set[Int]
                                      ) {
     override def toString =
@@ -6830,12 +6834,17 @@ object stronglyConnectedComponents {
     postOrderBuffer.toStream
   }
 
-  /*TODO debug
-  Current progress: 11840000 `nodes` are added to `postOrder`
-  on input size
-  total 'nodesInGraph`:13
-  total 'edgesInGraph`:22
-  stuck after that
+  /*To `traverse` any `tree` in `depth-first order`,
+  perform the following operations
+  `recursively` at each `node`:
+
+    Perform `pre-order` operation
+    For each i (with i = 1 to n) do:
+        Visit i-th, if present
+        Perform `in-order` operation
+    Perform `post-order` operation
+
+  where 'n' is the number of `child`(all adjusted) `nodes`.
   * */
   /*  a linear iterative process, with mutable state  */
   //input: graph G = (V, E)
@@ -6862,7 +6871,10 @@ object stronglyConnectedComponents {
     Stream[Int] =
       Stream.empty
     var exploredNodesSet: BitSet =
-      BitSet.empty
+    scala.collection
+    .mutable
+      .BitSet
+      .empty
     var unExploredNodesSet: Set[Int] =
     //Set.empty
       adjacencyList
@@ -6912,39 +6924,6 @@ object stronglyConnectedComponents {
          .contains(node) => node
                  })*/
         .toStream
-      }
-    }
-
-    /*potentially may be very time consuming*/
-    /*auxiliary method*/
-    /*if in SCCs stack then must be explored already*/
-    /*must exclude self reference*/
-    def findAdjustedInSCC_Key(
-                               nodeKeyToCheck: Int,
-                               /*nodeVal:
-                               NodeFieldsArray,*/
-                               //unExploredAdjustedNodes:
-                               //exploredAdjustedNodes:
-                               currentAdjustedNodes:
-                               scala.Stream[Int] =
-                               Stream.empty,
-                               /*SCCs members*/
-                               unCompletedSCCs: Stream[Int]
-                               ): Option[Int] = {
-      if (
-        currentAdjustedNodes
-        .isEmpty) {
-        None
-      } else {
-        currentAdjustedNodes
-        .view
-        .collect({ case node if node != nodeKeyToCheck => node })
-        /*potentially may be very time consuming*/
-        /*
-        better use `node`s field to trace membership
-         */
-        .intersect(unCompletedSCCs)
-        .headOption
       }
     }
 
@@ -7018,9 +6997,9 @@ object stronglyConnectedComponents {
       /*unDefined / ? unExplored ?*/
         //nodeVal
         //.nodeIndex == -1
-      !nodeVal
-        .isExplored
-          //unExploredNodesSet.contains(nodeKeyToCheck)
+      /*!nodeVal
+        .isExplored*/
+          unExploredNodesSet.contains(nodeKeyToCheck)
       ) {
         /*side effects*/
         /*set as `explored`*/
@@ -7033,10 +7012,16 @@ object stronglyConnectedComponents {
         //nodeVal.nodeLowLink = currentIndex
         //localIndex += 1
         //pathStack = nodeKeyToCheck +: pathStack
-        //nodeVal.isInStack = true
+        //nodeVal
+        //.isExplored = true
+        //.isInStack = true
         traceBackStack = nodeKeyToCheck +: traceBackStack
         unExploredNodesSet = unExploredNodesSet - nodeKeyToCheck
-        exploredNodesSet = exploredNodesSet + nodeKeyToCheck
+        /*Adds element 'x' to set 'xs' as a `side effect` and
+        returns 'xs' itself.
+        */
+        exploredNodesSet += nodeKeyToCheck
+        //exploredNodesSet = exploredNodesSet + nodeKeyToCheck
         /*`onStack`*/
         //nodeVal.nodeLowLink = 0
         /*return value*/
@@ -7158,6 +7143,9 @@ object stronglyConnectedComponents {
                  s"Current progress: $progressCounter " +
                    s"`nodes` are added to `postOrder`\r")
         } else if (progressCounter == 0) {
+          /*also current state may be stored on disk
+          * and preserved as JSON object in file
+          * */
           print(s"Starting graph order traversal ...\r")
         }
         /*side effect*/
@@ -7762,6 +7750,472 @@ object stronglyConnectedComponents {
                    findResult =
                      //nodeKeyToCheck +: findResult
                      newFindResult
+                 )
+      }
+    }
+
+    if (postOrderNodesRemains.nonEmpty) {
+      /*initialization*/
+      innerLoop(
+                 nodeKeyToCheck =
+                   postOrderNodesRemains
+                   .headOption
+                 //.head
+               )
+    }
+    /*return value*/
+    //postOrderBuffer.toStream
+    graphSCCs
+  }
+
+  /*  a linear iterative process, with mutable state  */
+  //input: graph G = (V, E)
+  //output: depth-first traversal: all reachable nodes as SCCs
+  def iterativeDFS_OnMap(
+                            adjacencyList: Map[Int, NodeMapValFieldsStatic],
+                            //ArrayBuffer[NodeFieldsArray],
+                            //Array[NodeFieldsArray],
+                            postOrderNodesStream: Stream[Int]
+                            ):
+  List[List[Int]] = {
+    //Stream[Stream[Int]] = {
+    //): Stream[Int] = {
+    /* must add node only once
+    only within one SCC
+     */
+    var graphSCCs:
+    List[List[Int]] =
+      List.empty
+    /*Stream[Stream[Int]] =
+       Stream.empty*/
+    var postOrderNodesRemains:
+    Stream[Int] =
+      postOrderNodesStream
+    /*used to trace back / track to `parent` / `predecessor` */
+    /*assume that 'traceBackStack' contain only first visited nodes
+    * so, one node can not be added twice
+    * only once added then deleted and never added again
+    * */
+    var traceBackStack:
+    List[Int] =
+      List.empty
+    /*Stream[Int] =
+      Stream.empty*/
+    var exploredNodesSet: BitSet =
+      collection.mutable
+      .BitSet
+      .empty
+    var unExploredNodesSet: Set[Int] =
+      postOrderNodesStream
+      .toSet
+    var progressCounterNodes: Int = 0
+    var progressCounterSCCs: Int = 0
+
+    /*auxiliary method*/
+    def findUnExploredAdjusted(
+                                adjustedNodes:
+                                Set[Int]
+                                /*scala.Stream[Int]*/ /*,
+                                exploredNodesSet: BitSet,
+                                unExploredNodesSet: Set[Int]*/
+                                ):
+    List[Int] = {
+      //Stream[Int] = {
+      if (
+      //nodeVal
+        adjustedNodes
+        .isEmpty) {
+        //Stream
+        List
+        .empty
+      } else {
+        adjustedNodes
+        .view
+        .collect({ case node if
+        //unExploredNodesSet
+        !exploredNodesSet
+         .contains(node) => node
+                 })
+        .toList
+        //.toStream
+      }
+    }
+
+    /*remove node from stack to enable back trace traversal*/
+    def unTraceCurrent(
+                        currentNodeKey: Int,
+                        /*nodeVal:
+                        NodeFieldsArray,*/
+                        currentTraceBack:
+                        List[Int] =
+                        //Stream[Int] =
+                        traceBackStack
+                        ):
+    List[Int] =
+    //Stream[Int] =
+      if (
+        currentTraceBack
+        .nonEmpty
+      //.headOption.isDefined
+      ) {
+        /*same as current node*/
+        if (
+          currentTraceBack
+          .head == currentNodeKey) {
+          /*reduce stack / remove current*/
+          /*side effect*/
+          traceBackStack = traceBackStack.tail
+          /*'!onStack'*/
+          //nodeVal.nodeLowLink = -1
+          currentTraceBack.tail
+        } else {
+          currentTraceBack
+        }
+      } else {
+        currentTraceBack
+      }
+
+    /*remove first explored from stream.heads & preserve order*/
+    def getNextUnexploredFromPreOrder /*(
+    nextNodeKeyToCheck: Int
+    )*/ :
+    Option[Int] = {
+      if (postOrderNodesRemains.isEmpty) {
+        None
+      } else {
+        val nodeKey: Int =
+          postOrderNodesRemains
+          .head
+        /*val nodeVal:
+        //NodeFieldsArray =
+          NodeMapValFieldsStatic =
+          adjacencyList(postOrderNodesRemains.head)*/
+
+        if (
+          /*nodeVal
+          .nodeKey == -1*/
+            //!exploredNodesSet
+          unExploredNodesSet
+            .contains(nodeKey)
+        ) {
+          //Some(nodeVal.nodeKey)
+          Some(nodeKey)
+        } else {
+          /*side effect*/
+          /*reduce head*/
+          postOrderNodesRemains = postOrderNodesRemains.tail
+          /*recursion*/
+          getNextUnexploredFromPreOrder
+        }
+      }
+    }
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   nodeKeyToCheck:
+                   //Int,
+                   Option[Int],
+                   //currentIndex: Int,
+                   /*stack*/
+                   /*unCompletedSCCs: Stream[Int] =
+                   Stream.empty,*/
+                   /*stack*/
+                   //backTrackPath
+                   /*traceBack: Stream[Int] =
+                   Stream.empty,*/
+                   /*exploredNodesSet: BitSet =
+                   BitSet.empty,
+                   unExploredNodesSet: Set[Int] =
+                   Set.empty,*/
+                   /*`pre-order` list of reachable traversed nodes*/
+                   findResult:
+                   List[Int] =
+                   List.empty/*,
+                   progressCounterNodes: Int = 0,
+                   progressCounterSCCs: Int = 0*/
+                   /*Stream[Int] =
+                 Stream.empty*/
+                   //): Int = {
+                   ):
+    List[Int] = {
+      //Stream[Int] = {
+      /*
+      cases:
+      >nodeVal.adjustedNodes.unExploredNodesSet.head
+      >>traceBack.head => SCC done
+      >>>unExploredNodesSet.head => next SCC
+      >Done
+       */
+      /*post condition ?*/
+      if (
+        nodeKeyToCheck.isEmpty ||
+          //postOrderNodesRemains.isEmpty ||
+          (unExploredNodesSet.isEmpty &&
+            traceBackStack.isEmpty)
+      ) {
+        /*side effect*/
+        /*side effect*/
+        print(" " * 200 + "\r")
+        print(s"Total `nodes` was explored in graph: $progressCounterNodes\n")
+        println(s"Total `SCCs` was explored in graph: $progressCounterSCCs")
+        /*return value*/
+        //nodeKeyToCheck +:
+        findResult
+        //newFindResult
+        /*} else if (
+                       nodeVal
+                         /* explored */
+                       .nodeIndex != -1
+        ) {
+          /*pick next if any left*/
+          //assume(unExploredNodesSet.nonEmpty && postOrderNodesRemains
+          .nonEmpty)
+          /*recursion*/
+          innerLoop(
+                     nodeKeyToCheck =
+                       postOrderNodesRemains
+                                      .head,
+                                      //.headOption,
+                     findResult = findResult
+                   )*/
+      } else {
+        /*if any `unexplored` left / exist*/
+        //assume(adjacencyList.get(nodeKeyToCheck).isDefined)
+        //assume(adjacencyList.isDefinedAt(nodeKeyToCheck))
+
+        val nodeKey: Int =
+          nodeKeyToCheck.get
+        /*!!!Warn!!!: 'DiGraphArray' has `empty` '0' element, just for shift*/
+        val nodeVal:
+        NodeMapValFieldsStatic =
+        //NodeFieldsArray =
+          adjacencyList(nodeKey)
+
+        //val (newCurrentIndex, newUnCompletedSCCs, newTraceBack):
+        //(Int, Stream[Int], Stream[Int]) =
+        val newFindResult:
+        List[Int] =
+
+        /*
+        first visit (just explored) or
+        `back trace` traversal
+        * */
+        if (
+        /*unDefined / ? unExplored ?*/
+          /*nodeVal
+          .nodeIndex == -1*/
+        //!exploredNodesSet
+          unExploredNodesSet
+          .contains(nodeKey)
+        ) {
+          /*side effects*/
+          /*set as `explored`*/
+          //nodeVal.nodeIndex = 0
+          //currentIndex
+          //localIndex
+          //Some(localIndex)
+          //nodeVal.nodeLowLink = currentIndex
+          //localIndex += 1
+          //pathStack = nodeKeyToCheck +: pathStack
+          //nodeVal.isInStack = true
+          traceBackStack = nodeKeyToCheck.get +: traceBackStack
+          unExploredNodesSet = unExploredNodesSet - nodeKeyToCheck.get
+          //postOrderNodesRemains = postOrderNodesRemains.tail
+          //exploredNodesSet = exploredNodesSet + nodeKeyToCheck.get
+          exploredNodesSet += nodeKey
+          /*`onStack`*/
+          //nodeVal.nodeLowLink = 0
+          /*return value*/
+          /*(currentIndex + 1,
+            nodeKeyToCheck +: unCompletedSCCs,
+            nodeKeyToCheck +: traceBack)*/
+          nodeKey +: findResult
+        } else {
+          /*
+          node visited second time,
+          that means it was `traced back` itself
+          and must be removed from 'traceBack.head'
+          */
+          /*return value*/
+          /*(currentIndex,
+            unCompletedSCCs,
+            traceBack
+            //unTraced
+            )*/
+          findResult
+        }
+        /*potentially may be time consuming*/
+        val unExploredAdjusted:
+        List[Int] =
+        //Stream[Int] =
+          findUnExploredAdjusted(
+                                  adjustedNodes =
+                                    nodeVal
+                                    .adjustedNodes /*,
+                                exploredNodesSet = exploredNodesSet,
+                                unExploredNodesSet = unExploredNodesSet*/
+                                )
+
+        /*val List(newFindResult, unCompletedSCCsUpdated, traceBackUpdated):
+        List[Stream[Int]] =*/
+        /*val newFindResult:
+        List[Int] =*/
+        //Stream[Int] =
+          if (
+          //nodeVal.nodeLowLink == nodeVal.nodeIndex &&
+            (nodeVal.adjustedNodes.isEmpty ||
+              unExploredAdjusted.isEmpty)
+          ) {
+            /*'traceBack' - reduced by one*/
+            /*'unCompletedSCCs' - reduced at least by one*/
+            /*'findResult' - inflated / increased at least by one*/
+            /*means that all successors are visited
+            * so, done with current node
+            * */
+            /*side effect*/
+            //postOrderBuffer += nodeKeyToCheck
+            // ??? graphSCCs = findResult +: graphSCCs
+            /*return value*/
+            /*initialization*/
+            /*createSCC_FromCollected(
+                                     listOfSCCs = findResult,
+                                     collectedNodes =
+                                       newUnCompletedSCCs,
+                                     //unCompletedSCCs,
+                                     //SCCsize = updatedSCC_Size,
+                                     //condition = condition,
+                                     nodeKeyToCheck = nodeKeyToCheck
+                                   ) :+*/
+            //traceBack
+            /*newTraceBack
+            .tail*/
+            unTraceCurrent(
+                            currentNodeKey =
+                              nodeKeyToCheck.get//,
+                            //nodeVal = nodeVal
+                            //currentTraceBack = newTraceBack
+                          )
+            /*return value*/
+            //Stream
+            /*List
+            .empty*/
+            findResult
+          } else {
+            /*side effect*/
+            progressCounterNodes += 1
+            if (progressCounterNodes % 5000 == 0) {
+              print(
+                     s"Current progress: $progressCounterNodes " +
+                       s"`nodes` are processed`\r")
+            } else if (progressCounterNodes == 0) {
+              print(s"Starting graph processing ...\r")
+            }
+            /*return value*/
+            nodeKeyToCheck.get +: findResult
+            /*List(findResult,
+                 //unCompletedSCCs,
+                 //traceBack
+                 newUnCompletedSCCs,
+                 newTraceBack
+                )*/
+          }
+
+        val nextAdjustedKey: Option[Int] =
+          unExploredAdjusted.headOption
+        /*
+        'traceBack' changes / reduced after new SCC created or
+        when no unexplored successors left, but not `root`
+        node visited second time, that means it was `traced back` itself
+        and must be removed from 'traceBack.head'
+         */
+        val nextBackTraceKey: Option[Int] =
+          if (nextAdjustedKey.isEmpty) {
+            if (
+            //traceBackUpdated
+              traceBackStack
+              .isEmpty) {
+              None
+            } else {
+              /* SCC done */
+              traceBackStack
+              //traceBackUpdated
+              .headOption
+            }
+          } else /*if (traceBackUpdated.nonEmpty)*/ {
+            /*return value*/
+            None
+          }
+        val (nextUnExploredKey,findResultUpdated):
+        (Option[Int],List[Int]) =
+        /*not the case, ruled out by above check*/
+          if (
+          //unExploredNodesSet.
+            nextAdjustedKey
+            .isEmpty &&
+              nextBackTraceKey
+              .isEmpty
+          ) {
+            /*side effect*/
+            progressCounterSCCs += 1
+            if (progressCounterSCCs % 1000 == 0) {
+              print(
+                     s"Current SCCs progress: $progressCounterSCCs " +
+                       s"`SCCs` are discovered so far`\r")
+            }
+            /*side effect*/
+            /*add next new SCC only when all available successors explored*/
+            graphSCCs =
+              //findResult +:
+              newFindResult +:
+                graphSCCs
+            //unExploredNodesSet
+            /*!!!unexplored only!!!*/
+            /*postOrderNodesRemains
+            .headOption*/
+            /*return value*/
+            (getNextUnexploredFromPreOrder, List.empty)
+          } else /*if (nextBackTraceKey.nonEmpty)*/ {
+            (None, newFindResult)
+          }
+        /*assume(nextAdjustedKey.isDefined ||
+                 nextBackTraceKey.isDefined ||
+                 nextUnExploredKey.isDefined,
+               "value for 'nextNodeKeyToCheck' must be defined")*/
+        val nextNodeKeyToCheck:
+        //Int =
+        Option[Int] =
+          List(nextAdjustedKey, nextBackTraceKey, nextUnExploredKey)
+          .collect({ case Some(x) => x })
+          .headOption
+        //.head
+        /*recursion*/
+        innerLoop(
+                   /*it depends*/
+                   nodeKeyToCheck = nextNodeKeyToCheck,
+                   //newTraceBack.head,
+                   //traceBackUpdated.head,
+                   /*it depends*/
+                   /*currentIndex = newCurrentIndex,
+                   unCompletedSCCs =
+                     //newUnCompletedSCCs,
+                     unCompletedSCCsUpdated,
+                   traceBack =
+                     //newTraceBack, //.tail,
+                     traceBackUpdated,
+                   /*it depends*/
+                   exploredNodesSet =
+                     exploredNodesSet +
+                       nextNodeKeyToCheck,
+                   //newTraceBack.head,
+                   /*it depends*/
+                   unExploredNodesSet =
+                     unExploredNodesSet -
+                       nextNodeKeyToCheck,*/
+                   //newTraceBack.head,
+                   findResult =
+                     //nodeKeyToCheck +: findResult
+                     //newFindResult
+                       findResultUpdated
                  )
       }
     }

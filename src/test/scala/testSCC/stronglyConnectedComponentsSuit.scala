@@ -4632,10 +4632,10 @@ class stronglyConnectedComponentsSuit
                   )
           }
   /*TODO test & beBug*/
-  test(
+  ignore(
           "73: 'postOrderOnArray' then 'iterativeDFS_OnArray'" +
             "should return " +
-            "right all SCCs in graph"
+            "all SCCs in graph"
         ) {
             val startFromNode: Int =
             //8
@@ -5218,7 +5218,8 @@ class stronglyConnectedComponentsSuit
           val takeNumber: Int = 5
           val nodesLimit: Int = Int.MinValue
 
-          lazy val startTime: java.util.Date = Calendar.getInstance().getTime()
+          lazy val startTime: java.util.Date =
+            Calendar.getInstance().getTime()
           lazy val timeStamp1: Long = System.currentTimeMillis
           /*Date and Time Pattern */
           val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
@@ -5397,6 +5398,370 @@ startTimeStamp6) +
                   s"\n'allSCCs' must be 'nonEmpty' " +
                     s"& equal to 'nodesInGraph'"
                 )
+        }
+  test(
+        "81: 'postOrderOnMap' " +
+        "then 'iterativeDFS_OnMap'" +
+        "should return " +
+        "all SCCs in graph"
+      ) {
+          val startFromNode: Int =
+          //8
+            7
+          val sourceSize: Int = 5105043
+          val expectedNodesSize: Int = 875714
+          val expectedArcsSize: Int = 5105043
+          /*all 'nodes', but only few / some 'arcs'*/
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int =
+            expectedArcsSize
+          //500000
+          //250000 +
+          /*125000 +
+          62500 +
+          //31250 +
+          15625 +
+          //7812 +
+          //3906 +
+          1953 +
+          //976 +
+          //488 +
+          //244 +
+          //122
+          //61 +
+          //30 +
+          //15 +
+          7*/
+
+          val expectedNodesInSCC: Int = 3
+          val expectedSCCsInDiGraph: Int = 5
+          val expectedSize: Int = 4
+          val filePath: String =
+            "/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"
+          val fileName: String =
+          //"SCC.txt"
+            "tinyDG.txt"
+          //"tinyDAG.txt"
+          //"diGraphWith4SCCs"
+          /*There is
+          only one standard operation
+          which allows to
+          re-use the same `iterator`:
+          The call
+           */
+          //val (it1, it2) = it.duplicate
+          /*gives you
+          two `iterators`
+          which each return
+          exactly the same `elements` as
+          the iterator 'it'.
+          The two `iterators` work independently;
+          advancing one does not affect the other.
+          By contrast
+          the original iterator 'it' is
+          advanced to its `end`
+          by `duplicate` and
+          is thus rendered `unusable`.
+           */
+          val (actualFileContent, fileContentIter):
+          (Iterator[String], Iterator[String]) =
+          //val actualFileContent: Iterator[String] =
+          //Iterator.empty
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+            .duplicate
+          /*val firstFiveStrIter: Iterator[String] =
+            readFromFile(
+                          fileName = fileName,
+                          filePath = filePath
+                        )
+            .take(25)*/
+          if (inputTakeNumber >= expectedArcsSize) {
+            println(s"fetching all($expectedArcsSize) available arcs")
+          }
+
+          /*
+          Calling 'head' on a `buffered` `iterator`
+          will return
+          its first `element` but
+          will not `advance` the `iterator`.
+           */
+          /*val bit: BufferedIterator[String] =
+            fileContentIter
+            .buffered
+          def skipEmptyWords(it: BufferedIterator[String]) =
+            while (it.head.isEmpty) {it.next()}*/
+
+          val nodesInGraph: Int =
+            actualFileContent.next().toInt
+          //875714
+          val edgesInGraph: Int =
+            actualFileContent.next().toInt
+          //5105043
+          println(
+                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                     s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
+                   //s"\ntotal 'adjusted` for node '1':" +
+                   //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
+                   // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
+                   //s"\n'firstFiveStrIter`:"+
+                   //firstFiveStrIter.mkString(",")
+                 )
+
+          /*only '5' max matter*/
+          val takeNumber: Int = 5
+          val nodesLimit: Int = Int.MinValue
+
+          lazy val startTime: java.util.Date =
+            Calendar.getInstance().getTime()
+          lazy val timeStamp1: Long = System.currentTimeMillis
+          /*Date and Time Pattern */
+          val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
+          lazy val startStampString = timeStampFormat.format(startTime)
+          println(s"'makeAdjacencyListMapFromArcs' started at:" +
+                    startStampString)
+          println(s"timeStamp1:" + timeStamp1)
+          //println
+
+          //val mapWithAdjacencyList:
+          val diGraphMap:
+          Map[Int, NodeMapValFieldsStatic] =
+            makeAdjacencyListMapFromArcs(
+                                          fileContentIter =
+                                            actualFileContent
+                                        )
+          /*fails in IDE REPL, same as 'startTime'*/
+          lazy val endTime = Calendar.getInstance().getTime()
+          lazy val timeStamp2: Long = System.currentTimeMillis()
+          lazy val endStampString = timeStampFormat.format(startTime)
+          val timeDifference: Long =
+            timeStamp2 - timeStamp1
+          println(s"Done at:" + endStampString)
+          println(s"timeStamp2:" + timeStamp2)
+          println(s"time difference is:" +
+                    (timeStamp2 - timeStamp1) + " Millis")
+          println(s"time difference is:" +
+                    convertLongToTimeString(
+                                             timeNumberMillis =
+                                               timeDifference)
+                 )
+          println(
+                   s"'arcs` are extracted from file" +
+                     s"\ninitial 'diGraphMap.size` is:\n" +
+                     diGraphMap.size +
+                     s"\n'diGraphMap` first '15' elements are:\n" +
+                     diGraphMap
+                     //.values
+                     .view
+                     .take(15)
+                     .map(
+                     /*(k,v): (Int,NodeMapValFieldsStatic) =>*/
+                      { case (k, v) =>
+                       k + "" +
+                         v.adjustedNodes.mkString("{", ",", "}")
+                     }
+                         )
+                     .mkString(",") //+
+                   /*s"\n'diGraphArray.nodes.head' is:" +
+                   diGraphArray.nodes.head +
+                   s"\n'diGraphArray.nodes.tail.head' is:" +
+                   diGraphArray.nodes.tail.head*/
+                 )
+
+          lazy val timeStamp3: Long = System.currentTimeMillis
+          println(s"Start at 'timeStamp3':" + timeStamp3)
+          val diGraphMapReversed:
+          Map[Int, NodeMapValFieldsStatic] =
+            makeAdjacencyListMapFromArcs(
+                                          fileContentIter =
+                                            fileContentIter,
+                                          //.drop(2)
+                                          nonReversedArcs = false
+                                        )
+          lazy val timeStamp4: Long = System.currentTimeMillis()
+          println(s"Done at 'timeStamp4':" + timeStamp2)
+          println(s"time difference is:" +
+                    (timeStamp4 - timeStamp3) + " Millis")
+          println(s"time difference is:" +
+                    convertLongToTimeString(
+                                             timeNumberMillis =
+                                               timeStamp4 - timeStamp3)
+                 )
+          println(
+                   s"'arcs` are extracted from file" +
+                     s"\n'diGraphMapReversed.size` is:\n" +
+                     diGraphMapReversed.size +
+                     s"\n'diGraphMapReversed` first 15 elements are:\n" +
+                     diGraphMapReversed
+                     .view
+                     .take(15)
+                     .map(
+                     /*(k,v): (Int,NodeMapValFieldsStatic) => */
+                     { case (k, v) =>
+                       k + "" +
+                         v.adjustedNodes.mkString("{", ",", "}")
+                     }
+                         )
+                     .mkString(",") // +
+                   /*s"\n'diGraphArray.nodes.head' is:" +
+                   diGraphArray.nodes.head +
+                   s"\n'diGraphArray.nodes.tail.head' is:" +
+                   diGraphArray.nodes.tail.head*/
+                 )
+
+          lazy val startTimeStamp5: Long = System.currentTimeMillis
+          println(s"Start at 'startTimeStamp5':" + startTimeStamp5)
+
+          //1,3,2,4,5,0,11,9,12,10,8,6,7
+          val graphPostOrder:
+          //Iterable[List[Int]] =
+          //List[Int] =
+          Stream[Int] =
+            postOrderOnMap(
+                            //diGraphMapReversed
+                            diGraphMap /*,
+                            Some(0)*/)
+          /*.view
+          .sorted(Ordering[Int].reverse)
+          .take(takeNumber)
+          //.toList
+          .toStream*/
+
+          lazy val endTimeStamp5: Long = System.currentTimeMillis()
+          println(s"Done at 'endTimeStamp5':" + endTimeStamp5)
+          println(
+                   s"Time difference is:" +
+                     (endTimeStamp5 - startTimeStamp5) + " Millis, or :" +
+                     convertLongToTimeString(
+                                              timeNumberMillis =
+                                                endTimeStamp5 -
+startTimeStamp5) +
+                     s" elapsed"
+                 )
+          println(
+                   s"\n'graphPostOrder.size' is:" +
+                     graphPostOrder.size +
+                     s"\n'graphPostOrder' is:\n${
+                       graphPostOrder
+                       .take(15)
+                       .mkString(",")
+                     }"
+                 )
+
+          lazy val startTimeStamp6: Long = System.currentTimeMillis
+          println(s"Start at 'startTimeStamp6':" + startTimeStamp6)
+          //8,7,6,10,12,9,11,3,5,4,2,0,1
+          val reversedGraphPostOrder:
+          //Iterable[List[Int]] =
+          //List[Int] =
+          Stream[Int] =
+            postOrderOnMap(diGraphMapReversed /*,Some(0)*/)
+          /*.view
+          .sorted(Ordering[Int].reverse)
+          .take(takeNumber)
+          //.toList
+          .toStream*/
+
+          lazy val endTimeStamp6: Long = System.currentTimeMillis()
+          println(s"Done at 'endTimeStamp6':" + endTimeStamp6)
+          println(
+                   s"Time difference is:" +
+                     (endTimeStamp6 - startTimeStamp6) + " Millis, or :" +
+                     convertLongToTimeString(
+                                              timeNumberMillis =
+                                                endTimeStamp6 -
+startTimeStamp6) +
+                     s" elapsed"
+                 )
+          println(
+                   //s"\n'graphPostOrder.size' is:" +
+                   //graphPostOrder.size +
+                   s"\n'reversedGraphPostOrder' is:\n${
+                     reversedGraphPostOrder
+                     .take(15)
+                     .mkString(",")
+                   }"
+                 )
+
+                lazy val startTimeStamp7: Long = System.currentTimeMillis
+                println(s"Start at 'startTimeStamp7':" + startTimeStamp7)
+                println(
+                         s"starting collecting 'allSCCs' ...")
+                val allSCCs:
+                //Iterable[List[Int]] =
+                Iterable[List[Int]] =
+                //Stream[Stream[Int]] =
+                  iterativeDFS_OnMap(
+                                        adjacencyList =
+                                          //diGraphMap,
+                                        diGraphMapReversed,
+                                        postOrderNodesStream =
+                                          //reversedGraphPostOrder
+                                            graphPostOrder
+                  .reverse
+                                      )
+                  .view
+                  //.sorted(Ordering[Int].reverse)
+                  .sortBy(_.length)
+                  .take(takeNumber)
+                  .toList
+                //.toStream
+
+                lazy val endTimeStamp7: Long = System.currentTimeMillis()
+                println(s"Done at 'endTimeStamp7':" + endTimeStamp7)
+                println(
+                         s"Time difference is:" +
+                           (endTimeStamp7 - startTimeStamp7) + " Millis, or :" +
+                           convertLongToTimeString(
+                                                    timeNumberMillis =
+                                                      endTimeStamp7 -
+                                                        startTimeStamp7) +
+                           s" elapsed"
+                       )
+                println(
+                         s"'allSCCs.size' is:" +
+                           allSCCs.size +
+                           /*s"\n'mapWithAdjacencyList.head' is:" +
+                             directedGraphDynamic
+                               .nodesWithAdjusted
+                             .head +
+                             s"\n'mapWithAdjacencyList.tail.head' is ${
+                               directedGraphDynamic
+                               .nodesWithAdjusted
+                               .tail.head
+                             }" +*/
+                           //s"\n'nodesWithAdjusted` is:" +
+                           s"\n`inputTakeNumber` is $inputTakeNumber" +
+                           s"\nfirst $takeNumber elements in " +
+                           s"'allSCCs`" +
+                           s" are:" +
+                           s"\n${
+                             allSCCs
+                             .take(takeNumber)
+                             .map(n => n.mkString("{", ",", "}"))
+                             .mkString(",")
+                           }"
+                       )
+
+                assume(
+                        //true == true,
+                        allSCCs
+                        .nonEmpty &&
+                          allSCCs
+                          .flatMap(_.map(_ => 1))
+                          .sum == nodesInGraph,
+                        //.size == expectedSCCsInDiGraph,
+                        s"\n'allSCCs' must be 'nonEmpty' " +
+                          s"& total SCCs size equal to 'nodesInGraph'"
+                      )
         }
 
   ignore(
