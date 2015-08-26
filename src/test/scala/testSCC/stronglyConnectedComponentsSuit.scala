@@ -2805,7 +2805,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeDifference)
+                                                 timeDifference,
+                                               colored = false
+                                             )
                    )
 
             println(
@@ -5066,7 +5068,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeDifference)
+                                                 timeDifference,
+                                               colored = false
+                                             )
                    )
             println(
                      s"\n'arcs` are extracted from file" /*+
@@ -5250,7 +5254,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeDifference)
+                                                 timeDifference,
+                                               colored = false
+                                             )
                    )
             println(
                      s"'arcs` are extracted from file" +
@@ -5292,7 +5298,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeStamp4 - timeStamp3)
+                                                 timeStamp4 - timeStamp3,
+                                               colored = false
+                                             )
                    )
             println(
                      s"'arcs` are extracted from file" +
@@ -5349,7 +5357,8 @@ class stronglyConnectedComponentsSuit
                        convertLongToTimeString(
                                                 timeNumberMillis =
                                                   endTimeStamp5 -
-                                                    startTimeStamp5
+                                                    startTimeStamp5,
+                                                colored = false
                                               ) +
                        s" elapsed"
                    )
@@ -5391,7 +5400,8 @@ class stronglyConnectedComponentsSuit
                        convertLongToTimeString(
                                                 timeNumberMillis =
                                                   endTimeStamp6 -
-                                                    startTimeStamp6
+                                                    startTimeStamp6,
+                                                colored = false
                                               ) +
                        s" elapsed"
                    )
@@ -5452,6 +5462,7 @@ class stronglyConnectedComponentsSuit
           val expectedSCCsInDiGraph: Int = 5
           val expectedSize: Int = 4
           val filePath: String =
+            //"/home/gluk-alex/Documents/sbt_projects/"
             "/media/gluk-alex/" +
               "GDI/Java/Scala/sbt/projects/" +
               "stanfordAlgorithmsDesignAndAnalysis1/" +
@@ -5491,7 +5502,7 @@ class stronglyConnectedComponentsSuit
                           filePath = filePath
                         )
             /*reduce / control input size*/
-            //.take(inputTakeNumber)
+            .take(inputTakeNumber)
             .duplicate
 
           val nodesInGraph: Int =
@@ -5527,10 +5538,10 @@ class stronglyConnectedComponentsSuit
           lazy val startTime: java.util.Date =
             Calendar.getInstance().getTime()
           lazy val startStampString = timeStampFormat.format(startTime)
-          println(s"'makeAdjacencyListMapFromArcs' started at:" +
+          println(s"'makeSetsMapFromArcs' for 'diGraphMap' started at:" +
                     startStampString)
-          lazy val startTimeStamp1: Long = System.currentTimeMillis
-          println(s"Start at 'startTimeStamp1':" + startTimeStamp1)
+          /*lazy*/ val startTimeStamp1: Long = System.currentTimeMillis
+          //println(s"Start at 'startTimeStamp1':" + startTimeStamp1)
 
           //val mapWithAdjacencyList:
           /*lazy*/ val diGraphMap:
@@ -5540,29 +5551,32 @@ class stronglyConnectedComponentsSuit
                                    actualFileContent
                                )
           lazy val endTime = Calendar.getInstance().getTime()
-          lazy val endStampString = timeStampFormat.format(endTime)
+          lazy val endStampString =
+            timeStampFormat
+            .format(endTime)
           println(s"Done at:" + endStampString)
-          lazy val endTimeStamp1: Long = System.currentTimeMillis()
-          println(s"Done at 'endTimeStamp1':" + endTimeStamp1)
+          /*lazy*/ val endTimeStamp1: Long = System.currentTimeMillis()
+          //println(s"Done at 'endTimeStamp1':" + endTimeStamp1)
           println(
                    s"Time difference is:" +
                      (endTimeStamp1 - startTimeStamp1) + " Millis, or :" +
                      convertLongToTimeString(
                                               timeNumberMillis =
                                                 endTimeStamp1 -
-                                                  startTimeStamp1
+                                                  startTimeStamp1,
+                                              colored = false
                                             ) +
                      s" elapsed"
                  )
           println(
                    s"'arcs` are extracted from file" +
-                     s"\ninitial 'diGraphMap.size` is:" +
-                     diGraphMap.size +
-                     s"\n'diGraphMap` first '15' elements are:\n" +
+                     //s"\ninitial 'diGraphMap.size` is:" +
+                     //diGraphMap.size +
+                     s"\n'diGraphMap` first '3' elements are:\n" +
                      diGraphMap
                      //.values
                      .view
-                     .take(15)
+                     .take(3)
                      .map(
                      /*(k,v): (Int,NodeMapValFieldsStatic) =>*/
                       { case (k, v) =>
@@ -5577,9 +5591,17 @@ class stronglyConnectedComponentsSuit
                    diGraphArray.nodes.tail.head*/
                  )
 
-          lazy val timeStamp3: Long = System.currentTimeMillis
-          println(s"Start at 'timeStamp3':" + timeStamp3)
-          lazy val diGraphMapReversed:
+          /*lazy*/ val timeStamp3: Long = System.currentTimeMillis
+          //println(s"Start at 'timeStamp3':" + timeStamp3)
+          lazy val startTime2: java.util.Date =
+            Calendar.getInstance().getTime()
+                lazy val startStampString2 =
+                  timeStampFormat
+                  .format(startTime2)
+          println(s"'makeSetsMapFromArcs' for 'diGraphMapReversed' " +
+                    s"started at:" +
+                          startStampString2)
+          /*lazy*/ val diGraphMapReversed:
           Map[Int, Set[Int]] =
             makeSetsMapFromArcs(
                                  fileContentIter =
@@ -5587,26 +5609,30 @@ class stronglyConnectedComponentsSuit
                                  //.drop(2)
                                  nonReversedArcs = false
                                )
-          lazy val timeStamp4: Long = System.currentTimeMillis()
-          println(s"Done at 'timeStamp4':" + timeStamp2)
-          println(s"time difference is:" +
-                    (timeStamp4 - timeStamp3) + " Millis")
+                lazy val endTime2 = Calendar.getInstance().getTime()
+                lazy val endStampString2 = timeStampFormat.format(endTime2)
+                println(s"Done at:" + endStampString2)
+          /*lazy*/ val timeStamp4: Long = System.currentTimeMillis()
+          //println(s"Done at 'timeStamp4':" + timeStamp2)
+          /*println(s"time difference is:" +
+                    (timeStamp4 - timeStamp3) + " Millis")*/
           println(s"time difference is:" +
                     convertLongToTimeString(
                                              timeNumberMillis =
-                                               timeStamp4 - timeStamp3)
+                                               timeStamp4 - timeStamp3,
+                                             colored = false
+                                           )
                  )
           println(
                    s"'arcs` are extracted from file" +
-                     s"\n'diGraphMapReversed.size` is:" +
-                     diGraphMapReversed.size +
-                     s"\n'diGraphMapReversed` first 15 elements are:\n" +
+                     //s"\n'diGraphMapReversed.size` is:" +
+                     //diGraphMapReversed.size +
+                     s"\n'diGraphMapReversed` first 13 elements are:\n" +
                      diGraphMapReversed
                      .view
-                     .take(15)
+                     .take(13)
                      .map(
-                     /*(k,v): (Int,NodeMapValFieldsStatic) => */ { case (k,
-                     v) =>
+                     { case (k, v) =>
                        k + "" +
                          v.mkString("{", ",", "}")
                      }
@@ -5623,42 +5649,54 @@ class stronglyConnectedComponentsSuit
           lazy val startStampString3 =
             timeStampFormat
             .format(startTime3)
-          println(s"'makeAdjacencyListMapFromArcs' started at:" +
+          println(s"'makeTransposeSetsMapFromSetsMap' started at:" +
                     startStampString3)
-          lazy val startTimeStamp3: Long = System.currentTimeMillis
-          println(s"Start at 'startTimeStamp1':" + startTimeStamp3)
+          /*lazy*/ val startTimeStamp3: Long = System.currentTimeMillis
+          //println(s"Start at 'startTimeStamp3':" + startTimeStamp3)
+
+          val unReversedBitSet:
+          collection
+          .mutable
+          .BitSet =
+            collection.mutable.BitSet.empty ++
+            diGraphMap
+            .keySet
+            //.keysIterator
 
           //val mapWithAdjacencyList:
           /*lazy*/ val diGraphMapReversed2:
           Map[Int, Set[Int]] =
             makeTransposeSetsMapFromSetsMap(
-                                             sourceMap = diGraphMap
+                                             sourceMap = diGraphMap,
+                                             unReversed =
+                                               unReversedBitSet
                                            )
           lazy val endTime3 = Calendar.getInstance().getTime()
           lazy val endStampString3 =
             timeStampFormat
             .format(endTime3)
           println(s"Done at:" + endStampString3)
-          lazy val endTimeStamp3: Long = System.currentTimeMillis()
-          println(s"Done at 'endTimeStamp3':" + endTimeStamp3)
+          /*lazy*/ val endTimeStamp3: Long = System.currentTimeMillis()
+          //println(s"Done at 'endTimeStamp3':" + endTimeStamp3)
           println(
                    s"Time difference is:" +
                      (endTimeStamp3 - startTimeStamp3) + " Millis, or :" +
                      convertLongToTimeString(
                                               timeNumberMillis =
                                                 endTimeStamp3 -
-                                                  startTimeStamp3
+                                                  startTimeStamp3,
+                                              colored = false
                                             ) +
                      s" elapsed"
                  )
           println(
                    s"'arcs` are extracted from file" +
-                     s"\n'diGraphMapReversed2.size` is:" +
-                     diGraphMapReversed2.size +
-                     s"\n'diGraphMapReversed2` first 15 elements are:\n" +
+                     //s"\n'diGraphMapReversed2.size` is:" +
+                     //diGraphMapReversed2.size +
+                     s"\n'diGraphMapReversed2` first 13 elements are:\n" +
                      diGraphMapReversed2
                      .view
-                     .take(15)
+                     .take(13)
                      .map(
                      { case (k, v) =>
                        k + "" +
@@ -5837,7 +5875,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeDifference)
+                                                 timeDifference,
+                                               colored = false
+                                             )
                    )
             /*println(
                      s"'arcs` are extracted from file" +
@@ -5879,7 +5919,9 @@ class stronglyConnectedComponentsSuit
             println(s"time difference is:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeStamp4 - timeStamp3)
+                                                 timeStamp4 - timeStamp3,
+                                               colored = false
+                                             )
                    )
             /*println(
                      s"'arcs` are extracted from file" +
@@ -5932,7 +5974,8 @@ class stronglyConnectedComponentsSuit
                        convertLongToTimeString(
                                                 timeNumberMillis =
                                                   endTimeStamp5 -
-                                                    startTimeStamp5
+                                                    startTimeStamp5,
+                                                colored = false
                                               ) +
                        s" elapsed"
                    )
@@ -5968,7 +6011,8 @@ class stronglyConnectedComponentsSuit
                        convertLongToTimeString(
                                                 timeNumberMillis =
                                                   endTimeStamp6 -
-                                                    startTimeStamp6
+                                                    startTimeStamp6,
+                                                colored = false
                                               ) +
                        s" elapsed"
                    )
@@ -6018,7 +6062,9 @@ class stronglyConnectedComponentsSuit
                        convertLongToTimeString(
                                                 timeNumberMillis =
                                                   endTimeStamp7 -
-                                                    startTimeStamp7) +
+                                                    startTimeStamp7,
+                                                colored = false
+                                              ) +
                        s" elapsed"
                    )
             println(

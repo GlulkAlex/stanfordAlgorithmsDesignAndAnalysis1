@@ -1564,10 +1564,6 @@ object stronglyConnectedComponents {
     }
   }
 
-  /*
-  TODO fix it
-  skip nodes with 'empty' adjusted
-   */
   /*must replace / swap 'tailNode' & / with 'headNode'*/
   /*must keep tracking nodes that are not in adjusted
   * as they will be nodes without adjusted
@@ -1581,9 +1577,17 @@ object stronglyConnectedComponents {
                                          Set[Int]] =
                                        Map.empty,
                                      tailsOnlySet: Set[Int] =
-                                     Set.empty
-                                       ): Map[Int,
-    Set[Int]] = {
+                                     Set.empty,
+                                     /*must be 'sourceMap.keySet'*/
+                                     unReversed:
+                                     collection
+                                     .mutable
+                                     .BitSet /*=
+                                     collection
+                                     .mutable
+                                       BitSet.empty*/,
+                                       progressCounter: Int = 0
+                                       ): Map[Int, Set[Int]] = {
     /*for {
       (tailNode, adjustedSet) <-sourceMap
       headNode <- adjustedSet
@@ -1598,15 +1602,28 @@ object stronglyConnectedComponents {
                    updatedMap: Map[Int,
                      Set[Int]],
                  //stopCondition: Boolean = false
-                   tailsOnlySetRemains: Set[Int]
+                   tailsOnlySetRemains: Set[Int],
+                   unReversedRemains:
+                   collection
+                   .mutable
+                   .BitSet /*=
+                   collection
+                   .mutable
+                   .BitSet
+                   .empty*/
                    ):
-    (Map[Int, Set[Int]],Set[Int]) = {
+    (Map[Int, Set[Int]], collection.mutable.BitSet) = {
+    //(Map[Int, Set[Int]], Set[Int]) = {
       if (
         //stopCondition
-        adjustedSetRemains.isEmpty
+        adjustedSetRemains
+        .isEmpty
       ) {
         /*return value*/
-        (updatedMap, tailsOnlySetRemains)
+        (updatedMap,
+          unReversedRemains
+          //tailsOnlySetRemains
+          )
       } else {
         val currentHeadKey: Int =
         //if (adjustedSetRemains.nonEmpty) {
@@ -1616,7 +1633,10 @@ object stronglyConnectedComponents {
           currentTailNodeKey
         }*/
         val tailsOnlySetUpdated: Set[Int] =
-          tailsOnlySetRemains - currentHeadKey
+        /*? expensive / time consuming computation ?*/
+          tailsOnlySetRemains //- currentHeadKey
+        /*side effect*/
+        unReversedRemains -= currentHeadKey
         val currentHeadNodeSet:
         Set[Int] =
         //Option[Set[Int]] =
@@ -1641,7 +1661,8 @@ object stronglyConnectedComponents {
                    /*updatedMap +=
                    currentHeadKey -> currentHeadNodeSet + currentTailNodeKey*/
                    //stopCondition = adjustedSetRemains.isEmpty
-                   tailsOnlySetRemains = tailsOnlySetUpdated
+                   tailsOnlySetRemains = tailsOnlySetUpdated,
+                   unReversedRemains = unReversedRemains
                  )
       }
     }
@@ -1649,23 +1670,42 @@ object stronglyConnectedComponents {
     @scala.annotation.tailrec
     def addTails(
                   tailsOnlySetRemains: Set[Int],
+                  unReversedRemains:
+                  collection
+                  .mutable
+                  .BitSet,
                   updatedMap: Map[Int, Set[Int]]
                    ): Map[Int, Set[Int]] = {
       if (
         //stopCondition
-        tailsOnlySetRemains.isEmpty
+        //tailsOnlySetRemains
+          unReversedRemains
+        .isEmpty
       ) {
         /*return value*/
         updatedMap
       } else {
+        /*side effect*/
+        /*if (progressCounter % 500000 == 0) {
+          print(s"Current progress: $progressCounter arcs are readied from " +
+                  s"file\r")
+        } else if (progressCounter == 0) {
+          print(s"Starting reading arcs from file ...\r")
+        }*/
         /*recursion*/
         addTails(
                    tailsOnlySetRemains =
-                     tailsOnlySetRemains.tail,
+                     tailsOnlySetRemains
+                     /*.tail*/,
+                   unReversedRemains =
+                     unReversedRemains
+                     .tail,
                    updatedMap =
                      updatedMap
                      .updated(
-                         tailsOnlySetRemains.head,
+                         //tailsOnlySetRemains
+                           unReversedRemains
+                         .head,
                          Set.empty)
                  )
       }
@@ -1673,27 +1713,42 @@ object stronglyConnectedComponents {
 
     if (
       sourceMap.isEmpty &&
-      tailsOnlySet.isEmpty
+      //tailsOnlySet
+        unReversed
+      .isEmpty
     ) {
+      /*side effect*/
+      print(" " * 200 + "\r")
+      print(s"Total: $progressCounter arcs was reversed from 'sourceMap'\n")
       /*return value*/
       resultMap
     } else if (
                  sourceMap.isEmpty &&
-               tailsOnlySet.nonEmpty
+               //tailsOnlySet
+                   unReversed
+               .nonEmpty
            ) {
       /*return value*/
-      addTails(tailsOnlySet, resultMap)
+      addTails(
+                tailsOnlySet,
+                unReversedRemains = unReversed,
+                resultMap
+              )
     } else {
       val (tailNodeKey, adjustedSet): (Int, Set[Int]) =
-        sourceMap.head
+        sourceMap
+        .head
       val tailsOnlySetChecked: Set[Int] =
-      if (resultMap.contains(tailNodeKey)) {
+      /*? expensive / time consuming computation ?*/
+      //if (resultMap.contains(tailNodeKey)) {
         tailsOnlySet
-      } else {
+      /*} else {
       tailsOnlySet + tailNodeKey
-      }
-      val (resultMapUpdated, tailsOnlySetUpdated):
-      (Map[Int, Set[Int]], Set[Int]) =
+      }*/
+      /*val (resultMapUpdated, tailsOnlySetUpdated):
+      (Map[Int, Set[Int]], Set[Int]) =*/
+      val (resultMapUpdated, unReversedUpdated):
+      (Map[Int, Set[Int]], collection.mutable.BitSet) =
       if (adjustedSet.nonEmpty) {
         innerLoop(
                    currentTailNodeKey =
@@ -1702,18 +1757,33 @@ object stronglyConnectedComponents {
                      adjustedSet,
                    updatedMap =
                      resultMap,
-                   tailsOnlySetChecked
+                   tailsOnlySetChecked,
+                   unReversedRemains = unReversed
                  )
       } else {
-        (resultMap,
-          tailsOnlySetChecked)
+        (
+          resultMap,
+          unReversed
+          //tailsOnlySetChecked
+          )
+      }
+      val progressCounterUpdated: Int = progressCounter + 1
+      /*side effect*/
+      if (progressCounterUpdated % 500000 == 0) {
+        print(s"Current progress: $progressCounterUpdated arcs are reversed\r")
+      } else if (progressCounterUpdated <= 1) {
+        print(s"Starting reversing arcs from 'sourceMap' ...\r")
       }
       /*recursion*/
       makeTransposeSetsMapFromSetsMap(
                                        sourceMap = sourceMap.tail,
                                        resultMap =
                                          resultMapUpdated,
-                                       tailsOnlySet = tailsOnlySetUpdated
+                                       tailsOnlySet =
+                                         tailsOnlySet,
+                                         //tailsOnlySetUpdated,
+                                       unReversed = unReversedUpdated,
+                                       progressCounter = progressCounterUpdated
                                      )
     }
   }

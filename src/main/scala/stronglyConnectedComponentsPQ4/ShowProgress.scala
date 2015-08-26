@@ -9,7 +9,10 @@ import java.util.Date
  */
 object ShowProgress extends App{
 
-  def convertLongToTimeString(timeNumberMillis: Long):String = {
+  def convertLongToTimeString(
+                               timeNumberMillis: Long,
+                             colored: Boolean = true
+                               ):String = {
     val milliSeconds: Long = timeNumberMillis % 1000
     val timeSeconds: Long = timeNumberMillis / 1000
     val seconds: Long = timeSeconds % 60
@@ -20,11 +23,19 @@ object ShowProgress extends App{
     val timeDays: Long = timeHours / 24
     val days: Long = timeDays % 24
 
-    "days:" + days +
-      "/hours:" + hours +
-      "/minutes:" + Console.YELLOW + minutes + Console.RESET +
-      "/seconds:" + Console.RED + seconds + Console.RESET +
-      "/Millis:" + Console.MAGENTA + milliSeconds + Console.RESET
+    if (colored) {
+      "days:" + days +
+        "/hours:" + hours +
+        "/minutes:" + Console.YELLOW + minutes + Console.RESET +
+        "/seconds:" + Console.RED + seconds + Console.RESET +
+        "/Millis:" + Console.MAGENTA + milliSeconds + Console.RESET
+    } else {
+      "/" + days + ":days" +
+        "/" + hours + ":h" +
+        "/" + minutes + ":m" +
+        "/" + seconds + ":s" +
+        "/" + milliSeconds +":milliSeconds"
+    }
   }
 
   println(
