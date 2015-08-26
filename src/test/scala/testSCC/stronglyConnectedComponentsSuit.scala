@@ -5554,10 +5554,10 @@ class stronglyConnectedComponentsSuit
                                             ) +
                      s" elapsed"
                  )
-          /*println(
+          println(
                    s"'arcs` are extracted from file" +
-                     //s"\ninitial 'diGraphMap.size` is:\n" +
-                     //diGraphMap.size +
+                     s"\ninitial 'diGraphMap.size` is:" +
+                     diGraphMap.size +
                      s"\n'diGraphMap` first '15' elements are:\n" +
                      diGraphMap
                      //.values
@@ -5567,7 +5567,7 @@ class stronglyConnectedComponentsSuit
                      /*(k,v): (Int,NodeMapValFieldsStatic) =>*/
                       { case (k, v) =>
                        k + "" +
-                         v.adjustedNodes.mkString("{", ",", "}")
+                         v.mkString("{", ",", "}")
                      }
                          )
                      .mkString(",") //+
@@ -5575,7 +5575,7 @@ class stronglyConnectedComponentsSuit
                    diGraphArray.nodes.head +
                    s"\n'diGraphArray.nodes.tail.head' is:" +
                    diGraphArray.nodes.tail.head*/
-                 )*/
+                 )
 
           lazy val timeStamp3: Long = System.currentTimeMillis
           println(s"Start at 'timeStamp3':" + timeStamp3)

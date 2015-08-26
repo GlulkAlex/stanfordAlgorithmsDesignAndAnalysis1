@@ -1569,6 +1569,9 @@ object stronglyConnectedComponents {
   skip nodes with 'empty' adjusted
    */
   /*must replace / swap 'tailNode' & / with 'headNode'*/
+  /*must keep tracking nodes that are not in adjusted
+  * as they will be nodes without adjusted
+  * */
   @scala.annotation.tailrec
   def makeTransposeSetsMapFromSetsMap(
                                        sourceMap: Map[Int,
@@ -1576,7 +1579,9 @@ object stronglyConnectedComponents {
                                        resultMap:
                                        Map[Int,
                                          Set[Int]] =
-                                       Map.empty
+                                       Map.empty,
+                                     tailsOnlySet: Set[Int] =
+                                     Set.empty
                                        ): Map[Int,
     Set[Int]] = {
     /*for {
@@ -1585,21 +1590,33 @@ object stronglyConnectedComponents {
     } yield {
       headNode -> Set(tailNode)
     }*/
+    /*? must be with post condition & work at least once ?*/
     @scala.annotation.tailrec
     def innerLoop(
                    currentTailNodeKey: Int,
                    adjustedSetRemains: Set[Int],
                    updatedMap: Map[Int,
-                     Set[Int]]
-                   ): Map[Int,
-      Set[Int]] = {
-      if (adjustedSetRemains.isEmpty) {
+                     Set[Int]],
+                 //stopCondition: Boolean = false
+                   tailsOnlySetRemains: Set[Int]
+                   ):
+    (Map[Int, Set[Int]],Set[Int]) = {
+      if (
+        //stopCondition
+        adjustedSetRemains.isEmpty
+      ) {
         /*return value*/
-        updatedMap
+        (updatedMap, tailsOnlySetRemains)
       } else {
         val currentHeadKey: Int =
+        //if (adjustedSetRemains.nonEmpty) {
           adjustedSetRemains
           .head
+        /*} else {
+          currentTailNodeKey
+        }*/
+        val tailsOnlySetUpdated: Set[Int] =
+          tailsOnlySetRemains - currentHeadKey
         val currentHeadNodeSet:
         Set[Int] =
         //Option[Set[Int]] =
@@ -1610,36 +1627,93 @@ object stronglyConnectedComponents {
         /*recursion*/
         innerLoop(
                    currentTailNodeKey: Int,
-                   adjustedSetRemains = adjustedSetRemains.tail,
+                   adjustedSetRemains =
+                     //if (adjustedSetRemains.nonEmpty) {
+                       adjustedSetRemains.tail
+                     /*} else {
+                       adjustedSetRemains
+                     }*/,
                    updatedMap =
                      updatedMap
                      .updated(
                          currentHeadKey,
-                         currentHeadNodeSet + currentTailNodeKey)
+                         currentHeadNodeSet + currentTailNodeKey),
                    /*updatedMap +=
                    currentHeadKey -> currentHeadNodeSet + currentTailNodeKey*/
+                   //stopCondition = adjustedSetRemains.isEmpty
+                   tailsOnlySetRemains = tailsOnlySetUpdated
                  )
       }
     }
 
-    if (sourceMap.isEmpty) {
+    @scala.annotation.tailrec
+    def addTails(
+                  tailsOnlySetRemains: Set[Int],
+                  updatedMap: Map[Int, Set[Int]]
+                   ): Map[Int, Set[Int]] = {
+      if (
+        //stopCondition
+        tailsOnlySetRemains.isEmpty
+      ) {
+        /*return value*/
+        updatedMap
+      } else {
+        /*recursion*/
+        addTails(
+                   tailsOnlySetRemains =
+                     tailsOnlySetRemains.tail,
+                   updatedMap =
+                     updatedMap
+                     .updated(
+                         tailsOnlySetRemains.head,
+                         Set.empty)
+                 )
+      }
+    }
+
+    if (
+      sourceMap.isEmpty &&
+      tailsOnlySet.isEmpty
+    ) {
       /*return value*/
       resultMap
+    } else if (
+                 sourceMap.isEmpty &&
+               tailsOnlySet.nonEmpty
+           ) {
+      /*return value*/
+      addTails(tailsOnlySet, resultMap)
     } else {
       val (tailNodeKey, adjustedSet): (Int, Set[Int]) =
         sourceMap.head
+      val tailsOnlySetChecked: Set[Int] =
+      if (resultMap.contains(tailNodeKey)) {
+        tailsOnlySet
+      } else {
+      tailsOnlySet + tailNodeKey
+      }
+      val (resultMapUpdated, tailsOnlySetUpdated):
+      (Map[Int, Set[Int]], Set[Int]) =
+      if (adjustedSet.nonEmpty) {
+        innerLoop(
+                   currentTailNodeKey =
+                     tailNodeKey,
+                   adjustedSetRemains =
+                     adjustedSet,
+                   updatedMap =
+                     resultMap,
+                   tailsOnlySetChecked
+                 )
+      } else {
+        (resultMap,
+          tailsOnlySetChecked)
+      }
       /*recursion*/
       makeTransposeSetsMapFromSetsMap(
                                        sourceMap = sourceMap.tail,
                                        resultMap =
-                                         innerLoop(
-                                                    currentTailNodeKey =
-                                                      tailNodeKey,
-                                                    adjustedSetRemains =
-                                                      adjustedSet,
-                                                    updatedMap =
-                                                      resultMap
-                                                  )
+                                         resultMapUpdated,
+                                       tailsOnlySet = tailsOnlySetUpdated
                                      )
     }
   }
