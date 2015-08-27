@@ -47,3 +47,30 @@ map3
 }
     )
 .toSet
+val map4 =
+(0 to 9)
+.zip(('A' to 'Z'))
+.toMap
+val map4Iter =
+map4
+.sliding(3,3)
+val nextSlide1: Map[Int, Char] =
+map4Iter.next
+map4Iter.next
+map4Iter.next
+map4Iter.next
+val strFromIter4 =
+map4
+.sliding(3,3)
+.map(chunk => {
+  //val linesChunk: String =
+    chunk
+    .map({ case (key, value) =>
+        key.toString + value
+         }
+        ).mkString("\n")
+}
+        )
+val slideFromIter1 =
+strFromIter4.next
+slideFromIter1.length

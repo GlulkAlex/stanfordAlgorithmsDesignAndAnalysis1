@@ -5748,8 +5748,10 @@ class stronglyConnectedComponentsSuit
   'graphPostOrder' as stream of Int (one line per value)
   '875714' lines total
    */
-  ignore(
-          "82: 'writeAdjustedListToTextFile' " +
+  test(
+          "82: " +
+            //"'writeAdjustedListToTextFile' " +
+            "'writeAdjustedListToTextFileByChunk' " +
             "should " +
             "write graph's Adjusted List To Text File"
         ) {
@@ -5784,30 +5786,29 @@ class stronglyConnectedComponentsSuit
             val expectedNodesInSCC: Int = 3
             val expectedSCCsInDiGraph: Int = 5
             val expectedSize: Int = 4
-            val filePath: String =
+            val outPutFilePath: String =
+              "/home/gluk-alex/Documents/"
+                  val outPutFileName: String =
+                    "graphPostOrder.txt"
+                  //"diGraphMapReversed.txt"
+                  val inPutFilePath: String =
             //"/home/gluk-alex/Documents/sbt_projects/"
               "/media/gluk-alex/" +
                 "GDI/Java/Scala/sbt/projects/" +
                 "stanfordAlgorithmsDesignAndAnalysis1/" +
                 "src/test/scala/" +
                 "testSCC/"
-            val fileName: String =
+            val inPutFileName: String =
             //"SCC.txt"
-            //"tinyDG.txt"
+            "tinyDG.txt"
             //"tinyDAG.txt"
-              "diGraphWith4SCCs"
-            /*There is
-            only one standard operation
-            which allows to
-            re-use the same `iterator`:
-            The call
-             */
+              //"diGraphWith4SCCs"
             lazy val (actualFileContent, fileContentIter):
             (Iterator[String], Iterator[String]) =
             //Iterator.empty
               readFromFile(
-                            fileName = fileName,
-                            filePath = filePath
+                            fileName = inPutFileName,
+                            filePath = inPutFilePath
                           )
               /*reduce / control input size*/
               //.take(inputTakeNumber)
@@ -5830,14 +5831,14 @@ class stronglyConnectedComponentsSuit
               while (it.head.isEmpty) {it.next()}*/
 
             val nodesInGraph: Int =
-              if (fileName == "SCC.txt") {
+              if (inPutFileName == "SCC.txt") {
                 expectedNodesSize
                 //875714
               } else {
                 actualFileContent.next().toInt
               }
             val edgesInGraph: Int =
-              if (fileName == "SCC.txt") {
+              if (inPutFileName == "SCC.txt") {
                 expectedArcsSize
                 //5105043
               } else {
@@ -5871,9 +5872,10 @@ class stronglyConnectedComponentsSuit
             Map[Int, Set[Int]] =
               makeSetsMapFromArcs(
                                    fileContentIter =
-                                     fileContentIter,
+                                     fileContentIter//,
                                    //.drop(2)
-                                   nonReversedArcs = false
+                                   /*for 'diGraphMap'*/
+                                   //nonReversedArcs = false
                                  )
             lazy val timeStamp4: Long = System.currentTimeMillis()
             lazy val endTime1: java.util.Date =
@@ -5925,14 +5927,29 @@ class stronglyConnectedComponentsSuit
                        startStampString2
                    )
 
+            /*
+            DONE batch mode appending to existing file will be helpful
+             */
             /*side effect*/
-            writeAdjustedListToTextFile(
-                                         filePath =
+            /*writeAdjustedListToTextFile(
+                                         outPutFilePath =
                                            "/home/gluk-alex/Documents/",
-                                         fileName =
-                                           "diGraphMapReversed.txt",
+                                         outPutFileName =
+                                           //"diGraphMapReversed.txt",
+                                           "diGraphMap.txt",
                                          adjacencyList = diGraphMapReversed
-                                       )
+                                       )*/
+                  writeAdjustedListToTextFileByChunk(
+                                                      filePath =
+                                                        outPutFilePath,
+                    //"/home/gluk-alex/Documents/",
+                  fileName =
+                                                        outPutFileName,
+                  //"graphPostOrder.txt",
+                  //"diGraphMapReversed.txt",
+                  adjacencyList = diGraphMapReversed,
+                  chunkSize = 5
+                  )
 
             /*lazy*/ val endTimeStamp5: Long = System.currentTimeMillis()
             /*lazy*/ val endTime2: java.util.Date =
@@ -5956,8 +5973,13 @@ class stronglyConnectedComponentsSuit
             Iterator[String] =
             //Iterator.empty
               readFromFile(
-                            filePath = "/home/gluk-alex/Documents/",
-                            fileName = "diGraphMapReversed.txt"
+                            filePath =
+                              outPutFilePath,
+                              //"/home/gluk-alex/Documents/",
+                            fileName =
+                              outPutFileName
+                              //"diGraphMapReversed.txt"
+                  //"graphPostOrder.txt"
                           )
 
             assume(
@@ -6097,6 +6119,9 @@ class stronglyConnectedComponentsSuit
                       s"& 'source' size equal to 'actualFileContentIter'"
                   )
           }
+  /*
+  TODO replace 'makeSetsMapFromArcs' with 'makeSetsMapFromNodesWithAdjusted'
+   */
   ignore(
           "84: 'writeStreamToTextFile' " +
             "should " +
@@ -6129,18 +6154,18 @@ class stronglyConnectedComponentsSuit
             val expectedSize: Int = 4
             val filePath: String =
             //"/home/gluk-alex/Documents/"
-            //"/home/gluk-alex/Documents/sbt_projects/"
-              "/media/gluk-alex/" +
+            "/home/gluk-alex/Documents/sbt_projects/"
+              /*"/media/gluk-alex/" +
                 "GDI/Java/Scala/sbt/projects/" +
                 "stanfordAlgorithmsDesignAndAnalysis1/" +
                 "src/test/scala/" +
-                "testSCC/"
+                "testSCC/"*/
             val fileName: String =
             //"graphPostOrder.txt"
-            //"SCC.txt"
+            "SCC.txt"
             //"tinyDG.txt"
             //"tinyDAG.txt"
-              "diGraphWith4SCCs"
+              //"diGraphWith4SCCs"
             lazy val (actualFileContent, fileContentIter):
             (Iterator[String], Iterator[String]) =
             //Iterator.empty
@@ -6186,8 +6211,6 @@ class stronglyConnectedComponentsSuit
             lazy val startStampString = timeStampFormat.format(startTime)
             println(s"'makeAdjacencyListMapFromArcs' started at:" +
                       startStampString)
-            println(s"timeStamp1:" + timeStamp1)
-            //println
 
             //val mapWithAdjacencyList:
             /*lazy*/ val diGraphMap:
@@ -6230,9 +6253,13 @@ class stronglyConnectedComponentsSuit
                      s"\n'diGraphArray.nodes.tail.head' is:" +
                      diGraphArray.nodes.tail.head*/
                    )*/
+            /*lazy*/ val startTime2: java.util.Date =
+              Calendar.getInstance().getTime()
+                  /*lazy*/ val startStampString2 =
+                    timeStampFormat.format(startTime2)
             /*lazy*/ val startTimeStamp2: Long = System.currentTimeMillis
             println(s"'postOrderOnMap' Start at:" +
-                      startTimeStamp2)
+                      startStampString2)
             lazy val graphPostOrder:
             //Iterable[List[Int]] =
             //List[Int] =
@@ -6248,8 +6275,13 @@ class stronglyConnectedComponentsSuit
               //.reverse
               .toStream
 
-            lazy val endTimeStamp2: Long = System.currentTimeMillis()
-            println(s"Done at:" + endTimeStamp2)
+            /*lazy*/ val endTimeStamp2: Long = System.currentTimeMillis()
+                  /*lazy*/ val endTime2: java.util.Date =
+                    Calendar.getInstance().getTime()
+                  lazy val endStampString2 =
+                    timeStampFormat
+                    .format(endTime2)
+            println(s"Done at:" + endStampString2)
             println(
                      s"Time difference is:" +
                        (endTimeStamp2 - startTimeStamp2) + " Millis, or :" +
@@ -6329,7 +6361,9 @@ class stronglyConnectedComponentsSuit
                       s"'graphPostOrder.size'"
                   )
           }
-  test(
+  /*assume("diGraphMapReversed.txt" exist with right content)*/
+  /*assume("graphPostOrder.txt" exist with right content)*/
+  ignore(
         "85: 'makeSetsMapFromNodesWithAdjusted' " +
           "then 'iterativeDFS_OnMap'" +
           "should return " +
@@ -6500,12 +6534,13 @@ class stronglyConnectedComponentsSuit
                      startStampString3
                  )
           /*
-          TODO replace 'Iterable[List[Int]]' with 'Iterable[Int]'
+          DONE replace 'Iterable[List[Int]]' with 'Iterable[Int]'
           because interested only in SCCs size
            */
+          //{8},{7,6},{4,5},{3,1,2}
           val allSCCs:
           //Iterable[List[Int]] =
-          Iterable[List[Int]] =
+          Iterable[Int] =
           //Stream[Stream[Int]] =
             iterativeDFS_OnMap(
                                 adjacencyList =
@@ -6517,9 +6552,9 @@ class stronglyConnectedComponentsSuit
                                 //.reverse
                               )
             .view
-            //.sorted(Ordering[Int].reverse)
-            .sortBy(_.length)
-            //.take(takeNumber)
+            .sorted(Ordering[Int].reverse)
+            //.sortBy(_.length)
+            .take(takeNumber)
             .toList
           //.toStream
 
@@ -6561,7 +6596,7 @@ class stronglyConnectedComponentsSuit
                      s"\n${
                        allSCCs
                        .take(takeNumber)
-                       .map(n => n.mkString("{", ",", "}"))
+                       //.map(n => n.mkString("{", ",", "}"))
                        .mkString(",")
                      }"
                  )
@@ -6570,7 +6605,7 @@ class stronglyConnectedComponentsSuit
                   allSCCs
                   .nonEmpty &&
                     allSCCs
-                    .flatMap(_.map(_ => 1))
+                    //.flatMap(_.map(_ => 1))
                     .sum ==
                       //nodesInGraph,
                       //graphPostOrder.size ||
@@ -6900,12 +6935,12 @@ class stronglyConnectedComponentsSuit
             println(
                      s"starting collecting 'allSCCs' ...")
             /*
-            TODO replace 'Iterable[List[Int]]' with 'Iterable[Int]'
+            DONE replace 'Iterable[List[Int]]' with 'Iterable[Int]'
             because interested only in SCCs size
              */
             val allSCCs:
             //Iterable[List[Int]] =
-            Iterable[List[Int]] =
+            Iterable[Int] =
             //Stream[Stream[Int]] =
               iterativeDFS_OnMap(
                                   adjacencyList =
@@ -6917,9 +6952,9 @@ class stronglyConnectedComponentsSuit
                                   //.reverse
                                 )
               .view
-              //.sorted(Ordering[Int].reverse)
-              .sortBy(_.length)
-              //.take(takeNumber)
+              .sorted(Ordering[Int].reverse)
+              //.sortBy(_.length)
+              .take(takeNumber)
               .toList
             //.toStream
 
@@ -6956,7 +6991,7 @@ class stronglyConnectedComponentsSuit
                        s"\n${
                          allSCCs
                          .take(takeNumber)
-                         .map(n => n.mkString("{", ",", "}"))
+                         //.map(n => n.mkString("{", ",", "}"))
                          .mkString(",")
                        }"
                    )
@@ -6966,7 +7001,7 @@ class stronglyConnectedComponentsSuit
                     allSCCs
                     .nonEmpty &&
                       allSCCs
-                      .flatMap(_.map(_ => 1))
+                      //.flatMap(_.map(_ => 1))
                       .sum == nodesInGraph,
                     //.size == expectedSCCsInDiGraph,
                     s"\n'allSCCs' must be 'nonEmpty' " +

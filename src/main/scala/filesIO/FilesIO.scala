@@ -3,8 +3,12 @@ package filesIO
 import scala.io._
 import scala.io.Source
 import scala.collection.mutable.Buffer
+import scala.util.{Try, Success, Failure}
 import java.io._
 import java.io.PrintWriter
+import java.io.FileReader
+import java.io.FileNotFoundException
+import java.io.IOException
 
 /**
  * Created by gluk-alex on 7/25/15.
@@ -143,6 +147,13 @@ object FilesIO {
                                    Map.empty
                                    ) {
     val writer =
+    /*
+    'PrintWriter(String fileName, String csn)'
+    Creates
+    a new 'PrintWriter',
+    without automatic `line flushing`,
+    with the specified `file name` and `charset`.
+     */
       new PrintWriter(filePath + fileName)
     //var lastLine: String = ""
     var isFirstLine: Boolean = true
@@ -154,14 +165,21 @@ object FilesIO {
         if (isFirstLine) {
           isFirstLine = false
 
-          key + "," + adjustedSet.mkString(",")// + "EOL"
+          key + "," + adjustedSet.mkString(",") // + "EOL"
         } else {
-          "\n" + key + "," + adjustedSet.mkString(",")// + "EOL"
+          if (adjustedSet.nonEmpty) {
+            "\n" + key + "," + adjustedSet.mkString(",") // + "EOL"
+          } else {
+            "\n" + key
+          }
         }
-
+      /*
+      Prints a String and then terminates the line.
+      println(String x)
+       */
       writer
       .print(lastLine)
-    //}
+               //}
              }
             )
     //writer
@@ -170,15 +188,69 @@ object FilesIO {
     .close()
   }
 
+  def writeAdjustedListToTextFileByChunk(
+                                          filePath: String =
+                                          "/home/gluk-alex/Documents/",
+                                          fileName: String =
+                                          "graphPostOrder.txt",
+                                          //"diGraphMapReversed.txt",
+                                          adjacencyList:
+                                          Map[Int, Set[Int]] =
+                                          Map.empty,
+                                          chunkSize: Int = 1
+                                          ) {
+    val mapIter: Iterator[Map[Int, Set[Int]]] =
+      adjacencyList
+      .sliding(chunkSize, chunkSize)
+    //val linesChunk: String = ""
+    //var isFirstLine: Boolean = true
+    var isFirstChunk: Boolean = true
+
+    mapIter
+    .foreach(chunk => {
+      val linesChunk: String =
+        chunk
+        .map({ case (key, adjustedSet) => //{
+          /*side effect*/
+          //val nextLine: String =
+            if (adjustedSet.nonEmpty) {
+              key + "," + adjustedSet.mkString(",") // + "\n"
+            } else {
+              key + ""
+            }
+               //}
+             }
+            ).mkString("\n")
+      /*side effect*/
+      if (isFirstChunk) {
+        //append = false
+        isFirstChunk = false
+      } else {
+        //append = true
+
+      }
+      appendBatchOfDataToExistingFile(
+                                       filePath =
+        "/home/gluk-alex/Documents/",
+      fileName =
+      "graphPostOrder.txt",
+      //"diGraphMapReversed.txt",
+      linesChunk = linesChunk,
+                                       append = true
+      )
+    }
+            )
+  }
+
   def writeStreamToTextFile(
-                                   filePath: String =
-                                   "/home/gluk-alex/Documents/",
-                                   fileName: String =
-                                   "graphPostOrder.txt",
-                                   sourceStream:
-                                   Stream[Int] =
-                                   Stream.empty
-                                   ) {
+                             filePath: String =
+                             "/home/gluk-alex/Documents/",
+                             fileName: String =
+                             "graphPostOrder.txt",
+                             sourceStream:
+                             Stream[Int] =
+                             Stream.empty
+                             ) {
     val writer =
       new PrintWriter(filePath + fileName)
     var isFirstLine: Boolean = true
@@ -197,7 +269,7 @@ object FilesIO {
 
       writer
       .print(nextLine)
-    //}
+               //}
              }
             )
 
@@ -249,6 +321,137 @@ object FilesIO {
                                accum = accumUpdated
                              )
     }
+  }
+
+  def appendBatchOfDataToExistingFile(
+                                       filePath: String =
+                                       "/home/gluk-alex/Documents/",
+                                       fileName: String =
+                                       "graphPostOrder.txt",
+                                       //"diGraphMapReversed.txt",
+                                       /*adjacencyListBatched:
+                                       Iterator[Map[Int, Set[Int]]] =
+                                       Iterator.empty*/
+                                       /*adjacencyListSlide:
+                                     Map[Int, Set[Int]] =
+                                     Map.empty*/
+                                       linesChunk: String,
+                                       append: Boolean = true
+                                       ): Unit = {
+    //val buf = new StringBuilder
+    //val buf: Buffer[String] = Buffer.empty
+
+    //buf.appendAll(('A' to 'Z').map(_.toString))
+    //('A' to 'Z').toBuffer
+
+    /*val slideContent: String =
+      adjacencyListSlide
+        .view
+      .map({ case (key, adjustedSet) =>
+            if (adjustedSet.nonEmpty) {
+              key + "," + adjustedSet.mkString(",")  + "\n"
+            } else {
+              key + "\n"
+            }
+          })
+        /*to drop last "\n"*/
+        .init
+    .toString()*/
+
+    val fw: FileWriter =
+      new FileWriter(
+                      /*param: 'fileName' - String The system-dependent
+                      filename*/
+                      filePath + fileName,
+                      /*'append' - boolean
+                      if true, then
+                      data will be written to the `end` of the file
+                      rather than the `beginning`.
+                      */
+                      append
+                      //true
+                    )
+
+    try {
+      fw
+      .write(
+          //slideContent
+          if (append) {
+            /*not continue existing line, but start from new*/
+            "\n" + linesChunk
+          } else {
+            linesChunk
+          }
+            )
+    }
+    finally fw.close()
+  }
+
+  /*from
+  http://stackoverflow.com/questions/6870145/how-do-i-append-to-a-file-in-scala
+   */
+  def appendToExistingFile {
+    /*The Java FileWriter constructor is called like this:
+    'new FileWriter(String s, boolean append)'
+    This simple constructor indicates that
+    you want to write to the file in `append` `mode`.
+    */
+    val fw: FileWriter =
+      new FileWriter(
+                      "test.txt",
+                      true
+                    )
+
+    //fw.write("This line appended to file!")
+    try {
+      fw
+      .write(/* your stuff */ "my file content")
+    }
+    finally fw.close()
+  }
+
+  /*from
+  http://alvinalexander.com/java/edu/qanda/pjqa00009.shtml
+   */
+  /*
+  Suppose checkbook.dat currently contains these two entries:
+  >398:08291998:Joe's Car Shop:101.00
+  >399:08301998:Papa John's Pizza:16.50
+   */
+  def appendToExistingFile2: Unit = {
+    var bw: BufferedWriter = null
+
+    try {
+      // APPEND MODE SET HERE
+      bw = new BufferedWriter(new FileWriter("checkbook.dat", true))
+      bw
+      .write("400:08311998:Inprise Corporation:249.95")
+      bw
+      .newLine()
+      bw
+      .flush()
+    } catch {
+      case ex: FileNotFoundException => {
+        println("Missing file exception")
+      }
+      case ex: IOException           => {
+        println("IO Exception")
+        ex
+        .printStackTrace()
+      }
+    } finally {
+      // always close the file
+      if (bw != null) {
+        try {
+          bw.close()
+        } catch {
+          // just ignore it
+          case ex: IOException => {
+            println("IO Exception")
+          }
+        }
+      }
+    } // end try/catch/finally
   }
 
 }

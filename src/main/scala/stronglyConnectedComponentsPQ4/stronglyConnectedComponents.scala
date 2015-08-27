@@ -8261,15 +8261,17 @@ object stronglyConnectedComponents {
                           //Array[NodeFieldsArray],
                           postOrderNodesStream: Stream[Int]
                           ):
-  List[List[Int]] = {
+  //List[List[Int]] = {
     //Stream[Stream[Int]] = {
-    //): Stream[Int] = {
+    Stream[Int] = {
     /* must add node only once
     only within one SCC
      */
     var graphSCCs:
-    List[List[Int]] =
-      List.empty
+    Stream[Int] =
+      Stream.empty
+    /*List[List[Int]] =
+      List.empty*/
     /*Stream[Stream[Int]] =
        Stream.empty*/
     /*will be reduced by 'head' until not empty
@@ -8417,15 +8419,16 @@ object stronglyConnectedComponents {
                    Set.empty,*/
                    /*`pre-order` list of reachable traversed nodes*/
                    findResult:
-                   List[Int] =
-                   List.empty /*,
+                   Int = 0
+                   /*List[Int] =
+                   List.empty*/ /*,
                    progressCounterNodes: Int = 0,
                    progressCounterSCCs: Int = 0*/
                    /*Stream[Int] =
                  Stream.empty*/
-                   //): Int = {
                    ):
-    List[Int] = {
+    Int = {
+    //List[Int] = {
       //Stream[Int] = {
       /*
       cases:
@@ -8483,7 +8486,8 @@ object stronglyConnectedComponents {
         //val (newCurrentIndex, newUnCompletedSCCs, newTraceBack):
         //(Int, Stream[Int], Stream[Int]) =
         val newFindResult:
-        List[Int] =
+        Int =
+        //List[Int] =
 
         /*
         first visit (just explored) or
@@ -8519,7 +8523,8 @@ object stronglyConnectedComponents {
             /*(currentIndex + 1,
               nodeKeyToCheck +: unCompletedSCCs,
               nodeKeyToCheck +: traceBack)*/
-            nodeKey +: findResult
+            //nodeKey +: findResult
+            findResult + 1
           } else {
             /*
             node visited second time,
@@ -8606,7 +8611,8 @@ object stronglyConnectedComponents {
             print(s"Starting graph processing ...\r")
           }
           /*return value*/
-          nodeKeyToCheck.get +: findResult
+          //nodeKeyToCheck.get +: findResult
+          findResult + 1
           /*List(findResult,
                //unCompletedSCCs,
                //traceBack
@@ -8641,7 +8647,10 @@ object stronglyConnectedComponents {
             None
           }
         val (nextUnExploredKey, findResultUpdated):
-        (Option[Int], List[Int]) =
+        (Option[Int],
+          Int
+          //List[Int]
+          ) =
         /*not the case, ruled out by above check*/
           if (
           //unExploredNodesSet.
@@ -8668,7 +8677,10 @@ object stronglyConnectedComponents {
             /*postOrderNodesRemains
             .headOption*/
             /*return value*/
-            (getNextUnexploredFromPreOrder, List.empty)
+            (getNextUnexploredFromPreOrder,
+              0
+              //List.empty
+              )
           } else /*if (nextBackTraceKey.nonEmpty)*/ {
             (None, newFindResult)
           }
