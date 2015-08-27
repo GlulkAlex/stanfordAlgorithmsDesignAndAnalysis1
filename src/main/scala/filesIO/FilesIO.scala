@@ -10,6 +10,19 @@ import java.io.PrintWriter
  * Created by gluk-alex on 7/25/15.
  */
 object FilesIO {
+  /*
+            Calling 'head' on a `buffered` `iterator`
+            will return
+            its first `element` but
+            will not `advance` the `iterator`.
+             */
+  /*val bit: BufferedIterator[String] =
+    fileContentIter
+    .buffered
+  def skipEmptyWords(it: BufferedIterator[String]) =
+    while (it.head.isEmpty) {it.next()}
+    */
+
   /*if path & name OK this is enough*/
   def readFromFile(
                     fileName: String =
@@ -153,6 +166,41 @@ object FilesIO {
             )
     //writer
     //.print(lastLine.dropRight(4))
+    writer
+    .close()
+  }
+
+  def writeStreamToTextFile(
+                                   filePath: String =
+                                   "/home/gluk-alex/Documents/",
+                                   fileName: String =
+                                   "graphPostOrder.txt",
+                                   sourceStream:
+                                   Stream[Int] =
+                                   Stream.empty
+                                   ) {
+    val writer =
+      new PrintWriter(filePath + fileName)
+    var isFirstLine: Boolean = true
+
+    sourceStream
+    .foreach({ case digit => //{
+      /*side effect*/
+      val nextLine =
+        if (isFirstLine) {
+          isFirstLine = false
+
+          digit
+        } else {
+          "\n" + digit
+        }
+
+      writer
+      .print(nextLine)
+    //}
+             }
+            )
+
     writer
     .close()
   }

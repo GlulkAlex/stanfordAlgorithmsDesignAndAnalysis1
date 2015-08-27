@@ -1474,6 +1474,7 @@ object stronglyConnectedComponents {
       empty string lines at the end of input file after actual arcs
       */
       if (
+        /**/
         nextDigitsPair.isEmpty ||
           nextDigitsPair.length < 2
       //false
@@ -1561,6 +1562,69 @@ object stronglyConnectedComponents {
                              progressCounter = progressCounter + 1
                            )
       }
+    }
+  }
+
+  /*assume that 'Iterator' contains only well formed formatted lines*/
+  @scala.annotation.tailrec
+  def makeSetsMapFromNodesWithAdjusted(
+                           fileContentIter: Iterator[String],
+                           resultMap: Map[Int,
+                             Set[Int]] =
+                           Map.empty,
+                           progressCounter: Int = 0
+                           ): Map[Int, Set[Int]] = {
+    if (fileContentIter.isEmpty) {
+      /*side effect*/
+      print(" " * 200 + "\r")
+      print(s"Total: $progressCounter nodes with adjusted " +
+              s"was readied from file\n")
+      //println
+      /*return value*/
+      resultMap
+    } else /*if (adjacencyList.hasNext)*/ {
+      val nextStr: String =
+        fileContentIter
+        /*to converge to empty iterator eventually*/
+        .next()
+      val digitsLine:
+      List[Int] =
+      nextStr
+      .split(",")
+      .view
+      .map(_.toInt)
+      .toList
+      /*side effect*/
+      if (progressCounter % 500000 == 0) {
+        print(s"Current progress: $progressCounter nodes are readied from " +
+                s"file\r")
+      } else if (progressCounter == 0) {
+        print(s"Starting reading nodes from file ...\r")
+      }
+
+        //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
+        val mapKey: Int =
+          digitsLine
+          .head
+        val mapValue: Set[Int] =
+          digitsLine
+      .tail
+      .toSet
+        val resultMapUpdated: Map[Int, Set[Int]] =
+            resultMap
+            .updated(
+                key = mapKey,
+                //adjustedNodes
+                value =
+                  mapValue
+                    )
+        /*recursion*/
+      makeSetsMapFromNodesWithAdjusted(
+                             fileContentIter: Iterator[String],
+                             resultMap =
+                               resultMapUpdated,
+                             progressCounter = progressCounter + 1
+                           )
     }
   }
 
@@ -1772,7 +1836,7 @@ object stronglyConnectedComponents {
       if (progressCounterUpdated % 500000 == 0) {
         print(s"Current progress: $progressCounterUpdated arcs are reversed\r")
       } else if (progressCounterUpdated <= 1) {
-        print(s"Starting reversing arcs from 'sourceMap' ...\r")
+        println(s"Starting reversing arcs from 'sourceMap' ...\r")
       }
       /*recursion*/
       makeTransposeSetsMapFromSetsMap(
