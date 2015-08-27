@@ -49,7 +49,10 @@ object FilesIO {
     writer.close()
   }
 
-  def writeToTextFile2(filePath: String = "", fileName: String = "test2.txt") {
+  def writeToTextFile2(
+                        filePath: String = "",
+                        fileName: String = "test2.txt"
+                        ) {
     val writer =
       new PrintWriter(fileName)
 
@@ -117,6 +120,43 @@ object FilesIO {
     writer.close()
   }
 
+  def writeAdjustedListToTextFile(
+                                   filePath: String =
+                                   "/home/gluk-alex/Documents/",
+                                   fileName: String =
+                                   "diGraphMapReversed.txt",
+                                   adjacencyList:
+                                   Map[Int, Set[Int]] =
+                                   Map.empty
+                                   ) {
+    val writer =
+      new PrintWriter(filePath + fileName)
+    //var lastLine: String = ""
+    var isFirstLine: Boolean = true
+
+    adjacencyList
+    .foreach({ case (key, adjustedSet) => //{
+      /*side effect*/
+      val lastLine =
+        if (isFirstLine) {
+          isFirstLine = false
+
+          key + "," + adjustedSet.mkString(",")// + "EOL"
+        } else {
+          "\n" + key + "," + adjustedSet.mkString(",")// + "EOL"
+        }
+
+      writer
+      .print(lastLine)
+    //}
+             }
+            )
+    //writer
+    //.print(lastLine.dropRight(4))
+    writer
+    .close()
+  }
+
   @scala.annotation.tailrec
   def extractDigitsFromString(
                                sourceStr: String,
@@ -134,7 +174,7 @@ object FilesIO {
     if (sourceStr.isEmpty) {
       accum match {
         case "" => digits
-        case a => digits :+ a.toInt
+        case a  => digits :+ a.toInt
         //.reverse
       }
     } else {
