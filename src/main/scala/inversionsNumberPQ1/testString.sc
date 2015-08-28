@@ -1,4 +1,103 @@
 import scala.util.matching.Regex
+val digitsStr: String =
+"\t875714 542453  1   23 7 \n"
+@scala.annotation.tailrec
+def collectDigits(
+                   str: String,
+                 result: List[Int] =
+                 List.empty
+                   ): List[Int] ={
+  if (str.isEmpty) {
+    result
+  } else {
+    val takeSome: String =
+      str
+      .takeWhile(_.isDigit)
+    val (strRemains, resultUpdated):
+    (String, List[Int]) =
+    if (takeSome.isEmpty) {
+      (
+        str
+      .dropWhile(!_.isDigit),
+        result
+        )
+    } else /*if (takeSome.nonEmpty)*/ {
+      (
+        str
+        .drop(takeSome.length)
+        .dropWhile(!_.isDigit),
+        result :+ takeSome.toInt
+        )
+    }
+
+    collectDigits(
+                   str=strRemains,
+                   result=resultUpdated
+    )
+  }
+}
+val collectedDigits =
+collectDigits(digitsStr)
+val strPartition =
+digitsStr
+.partition(!_.isDigit)
+val takeSome1 =
+  digitsStr
+.takeWhile(_.isDigit)
+val dropSome =
+  digitsStr.drop(takeSome1.length)
+.dropWhile(!_.isDigit)
+val takeSome2 =
+dropSome
+.takeWhile(_.isDigit)
+val srtSlideIter =
+  digitsStr
+.sliding(2)
+val collectFromSlideIter =
+  srtSlideIter
+.collect({
+           case slide if
+           slide.head.isDigit &&
+           slide.tail.nonEmpty &&
+           !slide.tail.head.isDigit=>
+             slide.head// + ","
+           case slide if slide.head.isDigit =>
+             slide.head//.getNumericValue
+         })
+.toList
+val slideAggregated =
+  collectFromSlideIter
+  .aggregate(List.empty[Int])(
+      (list, char) => char match {
+        case digit: Char if digit.isDigit =>
+          list :+ digit.getNumericValue
+        case _ => list
+      },
+      _ ++ _)
+val strGroups =
+digitsStr
+.groupBy(_.isDigit)
+val aggregatedStr1 =
+  digitsStr
+.aggregate(List.empty[Int])(
+    (list, char) => char match {
+      case digit: Char if digit.isDigit =>
+        list :+ digit.getNumericValue
+      case _ => list
+    },
+    _ ++ _)
+val aggregatedStr2 =
+  digitsStr
+  .aggregate(List.empty[Int])(
+      (list, char) => char match {
+        case digit: Char if digit.isDigit =>
+          list :+ digit.getNumericValue
+        case _ => list
+          //List(-1)//.empty[Int]
+      },
+      (l1,l2) =>
+        l2//.union(-1 +: l2)
+                             )
 val nodeKey: Int = -1
 s"""key($nodeKey)""" +
   s"""i:$nodeKey/""" +

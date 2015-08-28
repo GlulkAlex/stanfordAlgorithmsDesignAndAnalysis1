@@ -205,39 +205,46 @@ object FilesIO {
     //val linesChunk: String = ""
     //var isFirstLine: Boolean = true
     var isFirstChunk: Boolean = true
-
+    /*?not / none constant size of stack ?*/
     mapIter
     .foreach(chunk => {
+      /*may be very big, have enormous length*/
       val linesChunk: String =
         chunk
         .map({ case (key, adjustedSet) => //{
           /*side effect*/
           //val nextLine: String =
-            if (adjustedSet.nonEmpty) {
-              key + "," + adjustedSet.mkString(",") // + "\n"
-            } else {
-              key + ""
-            }
+          if (adjustedSet.nonEmpty) {
+            key + "," + adjustedSet.mkString(",") // + "\n"
+          } else {
+            key + ""
+          }
                //}
              }
             ).mkString("\n")
       /*side effect*/
-      if (isFirstChunk) {
-        //append = false
-        isFirstChunk = false
-      } else {
-        //append = true
-
-      }
+      val append: Boolean =
+        if (isFirstChunk) {
+          //append = false
+          isFirstChunk = false
+          false
+        } else {
+          //append = true
+          true
+        }
       appendBatchOfDataToExistingFile(
                                        filePath =
-        "/home/gluk-alex/Documents/",
-      fileName =
-      "graphPostOrder.txt",
-      //"diGraphMapReversed.txt",
-      linesChunk = linesChunk,
-                                       append = true
-      )
+                                         filePath,
+                                         //"/home/gluk-alex/Documents/",
+                                       fileName =
+                                         fileName,
+                                         //"graphPostOrder.txt",
+                                       //"diGraphMapReversed.txt",
+                                       linesChunk = linesChunk,
+                                       append =
+                                         //true
+                                         append
+                                     )
     }
             )
   }
@@ -323,6 +330,46 @@ object FilesIO {
     }
   }
 
+  @scala.annotation.tailrec
+  def collectDigits(
+                     str: String,
+                     result: List[Int] =
+                     List.empty
+                     ): List[Int] ={
+    if (str.isEmpty) {
+      result
+    } else {
+      val takeSome: String =
+        str
+        .takeWhile(_.isDigit)
+      val (strRemains, resultUpdated):
+      (String, List[Int]) =
+        if (takeSome.isEmpty) {
+          (
+            str
+            .dropWhile(!_.isDigit),
+            result
+            )
+        } else /*if (takeSome.nonEmpty)*/ {
+          (
+            str
+            .drop(takeSome.length)
+            .dropWhile(!_.isDigit),
+            result :+ takeSome.toInt
+            )
+        }
+
+      collectDigits(
+                     str=strRemains,
+                     result=resultUpdated
+                   )
+    }
+  }
+/*
+An exception or error caused a run to abort: Java heap space
+java.lang.OutOfMemoryError: Java heap space
+? Garbage Collector ?
+ */
   def appendBatchOfDataToExistingFile(
                                        filePath: String =
                                        "/home/gluk-alex/Documents/",

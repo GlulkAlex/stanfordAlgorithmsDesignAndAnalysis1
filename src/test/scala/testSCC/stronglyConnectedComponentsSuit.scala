@@ -2706,6 +2706,7 @@ class stronglyConnectedComponentsSuit
                       s"equal to 'expectedNumberOfCCs'"
                   )
           }
+  /*running time from 22 to 51 seconds*/
   ignore(
           "60: 'makeAdjacencyListMapFromArcs' " +
             "should return " +
@@ -2775,9 +2776,11 @@ class stronglyConnectedComponentsSuit
             val takeNumber: Int = 15
             val nodesLimit: Int = Int.MinValue
 
-            lazy val startTime: java.util.Date = Calendar.getInstance()
-                                                 .getTime()
-            lazy val timeStamp1: Long = System.currentTimeMillis
+            /*lazy*/ val startTime: java.util.Date =
+              Calendar
+              .getInstance()
+              .getTime()
+            /*lazy*/ val timeStamp1: Long = System.currentTimeMillis
             /*Date and Time Pattern */
             val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
             lazy val startStampString = timeStampFormat.format(startTime)
@@ -2799,7 +2802,7 @@ class stronglyConnectedComponentsSuit
             val timeDifference: Long =
               timeStamp2 - timeStamp1
             println(s"Done at:" + endStampString)
-            println(s"timeStamp2:" + timeStamp2)
+            //println(s"timeStamp2:" + timeStamp2)
             println(s"time difference is:" +
                       (timeStamp2 - timeStamp1) + " Millis")
             println(s"time difference is:" +
@@ -2810,7 +2813,7 @@ class stronglyConnectedComponentsSuit
                                              )
                    )
 
-            println(
+            /*println(
                      s"Max 'adjustedNodes.size' in 'mapWithAdjacencyList' is:" +
                        mapWithAdjacencyList
                        //.values
@@ -2837,7 +2840,7 @@ class stronglyConnectedComponentsSuit
                      .take(takeNumber)
                      .mkString("\n")
                    }"*/
-                   )
+                   )*/
 
             assume(
                     //true == true,
@@ -5748,249 +5751,275 @@ class stronglyConnectedComponentsSuit
   'graphPostOrder' as stream of Int (one line per value)
   '875714' lines total
    */
-  test(
-          "82: " +
-            //"'writeAdjustedListToTextFile' " +
-            "'writeAdjustedListToTextFileByChunk' " +
-            "should " +
-            "write graph's Adjusted List To Text File"
-        ) {
-            val startFromNode: Int =
-            //8
-              7
-            val sourceSize: Int = 5105043
-            val expectedNodesSize: Int = 875714
-            val expectedArcsSize: Int = 5105043
-            /*all 'nodes', but only few / some 'arcs'*/
-            /*at least as big as `mockUp(14)`*/
-            val inputTakeNumber: Int =
+  /*
+  'makeSetsMapFromArcs' is too slow,
+  must be 22 to 45 seconds instead of 4 to 6 minutes
+   */
+  ignore(
+        "82: " +
+          //"'writeAdjustedListToTextFile' " +
+          "'writeAdjustedListToTextFileByChunk' " +
+          "should " +
+          "write graph's Adjusted List To Text File"
+      ) {
+          val startFromNode: Int =
+          //8
+            7
+          val sourceSize: Int = 5105043
+          val expectedNodesSize: Int = 875714
+          val expectedArcsSize: Int = 5105043
+          /*all 'nodes', but only few / some 'arcs'*/
+          /*at least as big as `mockUp(14)`*/
+          val inputTakeNumber: Int =
+            expectedArcsSize
+          //500000
+          //250000 +
+          /*125000 +
+          62500 +
+          //31250 +
+          15625 +
+          //7812 +
+          //3906 +
+          1953 +
+          //976 +
+          //488 +
+          //244 +
+          //122
+          //61 +
+          //30 +
+          //15 +
+          7*/
+
+          val expectedNodesInSCC: Int = 3
+          val expectedSCCsInDiGraph: Int = 5
+          val expectedSize: Int = 4
+          val outPutFilePath: String =
+            "/home/gluk-alex/Documents/"
+          val outPutFileName: String =
+          //"graphPostOrder.txt"
+            //"diGraphMap.txt"
+          "diGraphMapReversed.txt"
+          val inPutFilePath: String =
+            "/home/gluk-alex/Documents/sbt_projects/"
+          /*"/media/gluk-alex/" +
+            "GDI/Java/Scala/sbt/projects/" +
+            "stanfordAlgorithmsDesignAndAnalysis1/" +
+            "src/test/scala/" +
+            "testSCC/"*/
+          val inPutFileName: String =
+            "SCC.txt"
+          //"tinyDG.txt"
+          //"tinyDAG.txt"
+          //"diGraphWith4SCCs"
+    /*!!!Warn!!! ? possible memory leak ? &
+    ? second copy may slow another / other computations ?
+    ? as it consumes heap space ?
+    */
+          lazy val (actualFileContent, fileContentIter):
+          (Iterator[String], Iterator[String]) =
+          //Iterator.empty
+            readFromFile(
+                          fileName = inPutFileName,
+                          filePath = inPutFilePath
+                        )
+            /*reduce / control input size*/
+            //.take(inputTakeNumber)
+            .duplicate
+
+          /*if (inputTakeNumber >= expectedArcsSize) {
+            println(s"fetching all($expectedArcsSize) available arcs")
+          }*/
+
+          /*
+          Calling 'head' on a `buffered` `iterator`
+          will return
+          its first `element` but
+          will not `advance` the `iterator`.
+           */
+          /*val bit: BufferedIterator[String] =
+            fileContentIter
+            .buffered
+          def skipEmptyWords(it: BufferedIterator[String]) =
+            while (it.head.isEmpty) {it.next()}*/
+
+          val nodesInGraph: Int =
+            if (inPutFileName == "SCC.txt") {
+              expectedNodesSize
+              //875714
+            } else {
+              actualFileContent.next().toInt
+            }
+          val edgesInGraph: Int =
+            if (inPutFileName == "SCC.txt") {
               expectedArcsSize
-            //500000
-            //250000 +
-            /*125000 +
-            62500 +
-            //31250 +
-            15625 +
-            //7812 +
-            //3906 +
-            1953 +
-            //976 +
-            //488 +
-            //244 +
-            //122
-            //61 +
-            //30 +
-            //15 +
-            7*/
+              //5105043
+            } else {
+              actualFileContent.next().toInt
+            }
+          println(
+                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                     s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
+                   //s"\ntotal 'adjusted` for node '1':" +
+                   //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
+                   // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
+                   //s"\n'firstFiveStrIter`:"+
+                   //firstFiveStrIter.mkString(",")
+                 )
 
-            val expectedNodesInSCC: Int = 3
-            val expectedSCCsInDiGraph: Int = 5
-            val expectedSize: Int = 4
-            val outPutFilePath: String =
-              "/home/gluk-alex/Documents/"
-                  val outPutFileName: String =
-                    "graphPostOrder.txt"
-                  //"diGraphMapReversed.txt"
-                  val inPutFilePath: String =
-            //"/home/gluk-alex/Documents/sbt_projects/"
-              "/media/gluk-alex/" +
-                "GDI/Java/Scala/sbt/projects/" +
-                "stanfordAlgorithmsDesignAndAnalysis1/" +
-                "src/test/scala/" +
-                "testSCC/"
-            val inPutFileName: String =
-            //"SCC.txt"
-            "tinyDG.txt"
-            //"tinyDAG.txt"
-              //"diGraphWith4SCCs"
-            lazy val (actualFileContent, fileContentIter):
-            (Iterator[String], Iterator[String]) =
-            //Iterator.empty
-              readFromFile(
-                            fileName = inPutFileName,
-                            filePath = inPutFilePath
-                          )
-              /*reduce / control input size*/
-              //.take(inputTakeNumber)
-              .duplicate
+          /*only '5' max matter*/
+          val takeNumber: Int = 5
+          //val nodesLimit: Int = Int.MinValue
 
-            /*if (inputTakeNumber >= expectedArcsSize) {
-              println(s"fetching all($expectedArcsSize) available arcs")
-            }*/
+          /*lazy*/ val startTime1: java.util.Date =
+            Calendar.getInstance().getTime()
+          /*lazy*/ val startTimeStamp1: Long =
+            System
+            .currentTimeMillis
+          /*Date and Time Pattern */
+          val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
+          lazy val startStampString1 =
+            timeStampFormat
+            .format(startTime1)
+          println(s"'makeSetsMapFromArcs' started at:" +
+                    startStampString1)
+          /*lazy*/ val diGraphMapReversed:
+          Map[Int, Set[Int]] =
+          makeSetsMapFromArcs(
+                               fileContentIter =
+                                 fileContentIter,
+                               //.drop(2)
+                               /*for 'diGraphMap' == true*/
+                               nonReversedArcs = false
+                             )
+            /*makeAdjacencyListMapFromArcs(
+                                          fileContentIter =
+                                            actualFileContent,
+                                          /*pattern =
+                                            """\d+""".r,*/
+                                          nonReversedArcs = true
+                                        )
+            .mapValues(_.adjustedNodes)*/
+          lazy val endTimeStamp1: Long =
+            System
+            .currentTimeMillis()
+          lazy val endTime1: java.util.Date =
+            Calendar.getInstance().getTime()
+          lazy val endStampString1 =
+            timeStampFormat
+            .format(endTime1)
+          println(s"'makeSetsMapFromArcs' Done at:" + endStampString1)
+          println(s"time difference is:" +
+                    (endTimeStamp1 - startTimeStamp1) + " Millis or:" +
+                    convertLongToTimeString(
+                                             timeNumberMillis =
+                                               endTimeStamp1 -
+                                                 startTimeStamp1,
+                                             colored = false
+                                           )
+                 )
 
-            /*
-            Calling 'head' on a `buffered` `iterator`
-            will return
-            its first `element` but
-            will not `advance` the `iterator`.
-             */
-            /*val bit: BufferedIterator[String] =
-              fileContentIter
-              .buffered
-            def skipEmptyWords(it: BufferedIterator[String]) =
-              while (it.head.isEmpty) {it.next()}*/
+          /*println(
+                   s"'arcs` are extracted from file" +
+                     //s"\n'diGraphMapReversed.size` is:\n" +
+                     //diGraphMapReversed.size +
+                     s"\n'diGraphMapReversed` first 15 elements are:\n" +
+                     diGraphMapReversed
+                     .view
+                     .take(15)
+                     .map(
+                     /*(k,v): (Int,NodeMapValFieldsStatic) => */
+                     { case (k, v) =>
+                       k + "" +
+                         v.adjustedNodes.mkString("{", ",", "}")
+                     }
+                         )
+                     .mkString(",") // +
+                   /*s"\n'diGraphArray.nodes.head' is:" +
+                   diGraphArray.nodes.head +
+                   s"\n'diGraphArray.nodes.tail.head' is:" +
+                   diGraphArray.nodes.tail.head*/
+                 )*/
 
-            val nodesInGraph: Int =
-              if (inPutFileName == "SCC.txt") {
-                expectedNodesSize
-                //875714
-              } else {
-                actualFileContent.next().toInt
-              }
-            val edgesInGraph: Int =
-              if (inPutFileName == "SCC.txt") {
-                expectedArcsSize
-                //5105043
-              } else {
-                actualFileContent.next().toInt
-              }
-            println(
-                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
-                       s"\ntotal 'edgesInGraph`:$edgesInGraph" //+
-                     //s"\ntotal 'adjusted` for node '1':" +
-                     //List(1,2,5,6,7,3,8,4,47646,47647,13019,47648,47649,
-                     // 47650,7700,47651,47652,511596,1,9,10,11,12,13,14).size +
-                     //s"\n'firstFiveStrIter`:"+
-                     //firstFiveStrIter.mkString(",")
-                   )
+          /*lazy*/ val startTime2: java.util.Date =
+            Calendar.getInstance().getTime()
+          /*lazy*/ val startStampString2 =
+            timeStampFormat.format(startTime2)
+          /*lazy*/ val startTimeStamp5: Long =
+            System
+            .currentTimeMillis
+          println(
+                   s"'writeAdjustedListToTextFile' " +
+                     s"Start at:" +
+                     //startTimeStamp5
+                     startStampString2
+                 )
 
-            /*only '5' max matter*/
-            val takeNumber: Int = 5
-            //val nodesLimit: Int = Int.MinValue
+          /*
+          DONE batch mode appending to existing file will be helpful
+           */
+          /*side effect*/
+          /*writeAdjustedListToTextFile(
+                                       outPutFilePath =
+                                         "/home/gluk-alex/Documents/",
+                                       outPutFileName =
+                                         //"diGraphMapReversed.txt",
+                                         "diGraphMap.txt",
+                                       adjacencyList = diGraphMapReversed
+                                     )*/
+          writeAdjustedListToTextFileByChunk(
+                                              filePath =
+                                                outPutFilePath,
+                                              //"/home/gluk-alex/Documents/",
+                                              fileName =
+                                                outPutFileName,
+                                              //"graphPostOrder.txt",
+                                              //"diGraphMapReversed.txt",
+                                              adjacencyList =
+                                                diGraphMapReversed,
+          /*What is faster ?small or big?*/
+                                              chunkSize = 1000
+                                            )
 
-            lazy val startTime1: java.util.Date =
-              Calendar.getInstance().getTime()
-            lazy val timeStamp1: Long = System.currentTimeMillis
-            /*Date and Time Pattern */
-            val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
-            lazy val startStampString1 = timeStampFormat.format(startTime1)
-            println(s"'makeSetsMapFromArcs' started at:" +
-                      startStampString1)
+          lazy val endTimeStamp5: Long = System.currentTimeMillis()
+          lazy val endTime2: java.util.Date =
+            Calendar.getInstance().getTime()
+          lazy val endStampString2 =
+            timeStampFormat
+            .format(endTime2)
+          println(s"Done at:" + endStampString2)
+          println(
+                   s"Time difference is:" +
+                     (endTimeStamp5 - startTimeStamp5) + " Millis, or :" +
+                     convertLongToTimeString(
+                                              timeNumberMillis =
+                                                endTimeStamp5 -
+                                                  startTimeStamp5,
+                                              colored = false
+                                            ) +
+                     s" elapsed"
+                 )
+          lazy val actualFileContentIter:
+          Iterator[String] =
+          //Iterator.empty
+            readFromFile(
+                          filePath =
+                            outPutFilePath,
+                          //"/home/gluk-alex/Documents/",
+                          fileName =
+                            outPutFileName
+                          //"diGraphMapReversed.txt"
+                          //"graphPostOrder.txt"
+                        )
 
-            lazy val timeStamp3: Long = System.currentTimeMillis
-            lazy val diGraphMapReversed:
-            Map[Int, Set[Int]] =
-              makeSetsMapFromArcs(
-                                   fileContentIter =
-                                     fileContentIter//,
-                                   //.drop(2)
-                                   /*for 'diGraphMap'*/
-                                   //nonReversedArcs = false
-                                 )
-            lazy val timeStamp4: Long = System.currentTimeMillis()
-            lazy val endTime1: java.util.Date =
-              Calendar.getInstance().getTime()
-            lazy val endStampString1 = timeStampFormat.format(endTime1)
-            println(s"'makeSetsMapFromArcs' Done at:" + endStampString1)
-            println(s"time difference is:" +
-                      (timeStamp4 - timeStamp3) + " Millis or:" +
-                      convertLongToTimeString(
-                                               timeNumberMillis =
-                                                 timeStamp4 - timeStamp3,
-                                               colored = false
-                                             )
-                   )
-
-            /*println(
-                     s"'arcs` are extracted from file" +
-                       //s"\n'diGraphMapReversed.size` is:\n" +
-                       //diGraphMapReversed.size +
-                       s"\n'diGraphMapReversed` first 15 elements are:\n" +
-                       diGraphMapReversed
-                       .view
-                       .take(15)
-                       .map(
-                       /*(k,v): (Int,NodeMapValFieldsStatic) => */
-                       { case (k, v) =>
-                         k + "" +
-                           v.adjustedNodes.mkString("{", ",", "}")
-                       }
-                           )
-                       .mkString(",") // +
-                     /*s"\n'diGraphArray.nodes.head' is:" +
-                     diGraphArray.nodes.head +
-                     s"\n'diGraphArray.nodes.tail.head' is:" +
-                     diGraphArray.nodes.tail.head*/
-                   )*/
-
-            /*lazy*/ val startTime2: java.util.Date =
-              Calendar.getInstance().getTime()
-            /*lazy*/ val startStampString2 =
-              timeStampFormat.format(startTime2)
-            /*lazy*/ val startTimeStamp5: Long =
-              System
-              .currentTimeMillis
-            println(
-                     s"'writeAdjustedListToTextFile' " +
-                       s"Start at:" +
-                       //startTimeStamp5
-                       startStampString2
-                   )
-
-            /*
-            DONE batch mode appending to existing file will be helpful
-             */
-            /*side effect*/
-            /*writeAdjustedListToTextFile(
-                                         outPutFilePath =
-                                           "/home/gluk-alex/Documents/",
-                                         outPutFileName =
-                                           //"diGraphMapReversed.txt",
-                                           "diGraphMap.txt",
-                                         adjacencyList = diGraphMapReversed
-                                       )*/
-                  writeAdjustedListToTextFileByChunk(
-                                                      filePath =
-                                                        outPutFilePath,
-                    //"/home/gluk-alex/Documents/",
-                  fileName =
-                                                        outPutFileName,
-                  //"graphPostOrder.txt",
-                  //"diGraphMapReversed.txt",
-                  adjacencyList = diGraphMapReversed,
-                  chunkSize = 5
-                  )
-
-            /*lazy*/ val endTimeStamp5: Long = System.currentTimeMillis()
-            /*lazy*/ val endTime2: java.util.Date =
-              Calendar.getInstance().getTime()
-            lazy val endStampString2 =
-              timeStampFormat
-              .format(endTime2)
-            println(s"Done at:" + endStampString2)
-            println(
-                     s"Time difference is:" +
-                       (endTimeStamp5 - startTimeStamp5) + " Millis, or :" +
-                       convertLongToTimeString(
-                                                timeNumberMillis =
-                                                  endTimeStamp5 -
-                                                    startTimeStamp5,
-                                                colored = false
-                                              ) +
-                       s" elapsed"
-                   )
-            lazy val actualFileContentIter:
-            Iterator[String] =
-            //Iterator.empty
-              readFromFile(
-                            filePath =
-                              outPutFilePath,
-                              //"/home/gluk-alex/Documents/",
-                            fileName =
-                              outPutFileName
-                              //"diGraphMapReversed.txt"
-                  //"graphPostOrder.txt"
-                          )
-
-            assume(
+          assume(
+                  actualFileContentIter
+                  .nonEmpty &&
                     actualFileContentIter
-                    .nonEmpty &&
-                      actualFileContentIter
-                      .size == diGraphMapReversed.size,
-                    s"\n'actualFileContentIter' must be 'nonEmpty' " +
-                      s"& 'source' size equal to 'actualFileContentIter'"
-                  )
-          }
+                    .size == diGraphMapReversed.size,
+                  s"\n'actualFileContentIter' must be 'nonEmpty' " +
+                    s"& 'source' size equal to 'actualFileContentIter'"
+                )
+        }
   ignore(
           "83: 'makeSetsMapFromNodesWithAdjusted' " +
             "should " +
@@ -6120,9 +6149,10 @@ class stronglyConnectedComponentsSuit
                   )
           }
   /*
-  TODO replace 'makeSetsMapFromArcs' with 'makeSetsMapFromNodesWithAdjusted'
+  DONE replace 'makeSetsMapFromArcs' with 'makeSetsMapFromNodesWithAdjusted'
+  not sure that it is helpful, try pure 'sbt' instead
    */
-  ignore(
+  test(
           "84: 'writeStreamToTextFile' " +
             "should " +
             "write 'postOrder' of graph's nodes to file"
@@ -6154,24 +6184,43 @@ class stronglyConnectedComponentsSuit
             val expectedSize: Int = 4
             val filePath: String =
             //"/home/gluk-alex/Documents/"
-            "/home/gluk-alex/Documents/sbt_projects/"
-              /*"/media/gluk-alex/" +
-                "GDI/Java/Scala/sbt/projects/" +
-                "stanfordAlgorithmsDesignAndAnalysis1/" +
-                "src/test/scala/" +
-                "testSCC/"*/
+              "/home/gluk-alex/Documents/sbt_projects/"
+            /*"/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"*/
             val fileName: String =
             //"graphPostOrder.txt"
-            "SCC.txt"
+              "SCC.txt"
             //"tinyDG.txt"
             //"tinyDAG.txt"
-              //"diGraphWith4SCCs"
+            //"diGraphWith4SCCs"
+            val outPutFilePath: String =
+              "/home/gluk-alex/Documents/"
+                  val outPutFileName: String =
+                  "graphPostOrder.txt"
+                  //"diGraphMap.txt"
+                    //"diGraphMapReversed.txt"
+                  val inPutFilePath: String =
+                    "/home/gluk-alex/Documents/sbt_projects/"
+                  /*"/media/gluk-alex/" +
+                    "GDI/Java/Scala/sbt/projects/" +
+                    "stanfordAlgorithmsDesignAndAnalysis1/" +
+                    "src/test/scala/" +
+                    "testSCC/"*/
+                  val inPutFileName: String =
+                    "diGraphMap.txt"
+                    //"SCC.txt"
+                  //"tinyDG.txt"
+                  //"tinyDAG.txt"
+                  //"diGraphWith4SCCs"
             lazy val (actualFileContent, fileContentIter):
             (Iterator[String], Iterator[String]) =
             //Iterator.empty
               readFromFile(
-                            fileName = fileName,
-                            filePath = filePath
+                            fileName = inPutFileName,
+                            filePath = outPutFilePath
                           )
               /*reduce / control input size*/
               //.take(inputTakeNumber)
@@ -6215,10 +6264,14 @@ class stronglyConnectedComponentsSuit
             //val mapWithAdjacencyList:
             /*lazy*/ val diGraphMap:
             Map[Int, Set[Int]] =
-              makeSetsMapFromArcs(
+              /*makeSetsMapFromArcs(
                                    fileContentIter =
                                      actualFileContent
-                                 )
+                                 )*/
+                  makeSetsMapFromNodesWithAdjusted(
+                                                    fileContentIter =
+                                                      actualFileContent
+                                                  )
             lazy val endTime1 = Calendar.getInstance().getTime()
             lazy val timeStamp2: Long = System.currentTimeMillis()
             lazy val endStampString1 = timeStampFormat.format(endTime1)
@@ -6255,8 +6308,8 @@ class stronglyConnectedComponentsSuit
                    )*/
             /*lazy*/ val startTime2: java.util.Date =
               Calendar.getInstance().getTime()
-                  /*lazy*/ val startStampString2 =
-                    timeStampFormat.format(startTime2)
+            /*lazy*/ val startStampString2 =
+              timeStampFormat.format(startTime2)
             /*lazy*/ val startTimeStamp2: Long = System.currentTimeMillis
             println(s"'postOrderOnMap' Start at:" +
                       startStampString2)
@@ -6276,11 +6329,11 @@ class stronglyConnectedComponentsSuit
               .toStream
 
             /*lazy*/ val endTimeStamp2: Long = System.currentTimeMillis()
-                  /*lazy*/ val endTime2: java.util.Date =
-                    Calendar.getInstance().getTime()
-                  lazy val endStampString2 =
-                    timeStampFormat
-                    .format(endTime2)
+            /*lazy*/ val endTime2: java.util.Date =
+              Calendar.getInstance().getTime()
+            lazy val endStampString2 =
+              timeStampFormat
+              .format(endTime2)
             println(s"Done at:" + endStampString2)
             println(
                      s"Time difference is:" +
@@ -6322,6 +6375,7 @@ class stronglyConnectedComponentsSuit
                                      "/home/gluk-alex/Documents/",
                                    fileName =
                                      "graphPostOrder.txt",
+                                   //outPutFileName,
                                    sourceStream = graphPostOrder
                                  )
 
@@ -6348,14 +6402,20 @@ class stronglyConnectedComponentsSuit
             Iterator[String] =
             //Iterator.empty
               readFromFile(
-                            filePath = "/home/gluk-alex/Documents/",
-                            fileName = "diGraphMapReversed.txt"
+                            filePath =
+                              outPutFilePath,
+                              //"/home/gluk-alex/Documents/",
+                            fileName =
+                              //"diGraphMapReversed.txt"
+                                outPutFileName
                           )
             assume(
                     actualFileContentIter
                     .nonEmpty &&
                       actualFileContentIter
-                      .size == graphPostOrder.size,
+                      .size == graphPostOrder.size ||
+                      actualFileContentIter
+                      .size == diGraphMap.size,
                     s"\n'actualFileContentIter' must be 'nonEmpty' " +
                       s"& actualFileContentIter.size equal to " +
                       s"'graphPostOrder.size'"
@@ -6364,256 +6424,256 @@ class stronglyConnectedComponentsSuit
   /*assume("diGraphMapReversed.txt" exist with right content)*/
   /*assume("graphPostOrder.txt" exist with right content)*/
   ignore(
-        "85: 'makeSetsMapFromNodesWithAdjusted' " +
-          "then 'iterativeDFS_OnMap'" +
-          "should return " +
-          "all SCCs in graph"
-      ) {
-          val sourceSize: Int = 5105043
-          val expectedNodesSize: Int = 875714
-          val expectedArcsSize: Int = 5105043
-          /*all 'nodes', but only few / some 'arcs'*/
-          /*at least as big as `mockUp(14)`*/
-          val inputTakeNumber: Int =
-            expectedArcsSize
-          //500000
-          //250000 +
-          /*125000 +
-          62500 +
-          //31250 +
-          15625 +
-          //7812 +
-          //3906 +
-          1953 +
-          //976 +
-          //488 +
-          //244 +
-          //122
-          //61 +
-          //30 +
-          //15 +
-          7*/
-          val expectedSize: Int = 4
-          val filePath: String =
-            "/home/gluk-alex/Documents/"
-          //"/home/gluk-alex/Documents/sbt_projects/"
-          /*"/media/gluk-alex/" +
-            "GDI/Java/Scala/sbt/projects/" +
-            "stanfordAlgorithmsDesignAndAnalysis1/" +
-            "src/test/scala/" +
-            "testSCC/"*/
-          val fileName: String =
-            "diGraphMapReversed.txt"
-          //"SCC.txt"
-          //"tinyDG.txt"
-          //"tinyDAG.txt"
-          //"diGraphWith4SCCs"
-          lazy val (actualFileContent, fileContentIter):
-          (Iterator[String], Iterator[String]) =
-          //Iterator.empty
-            readFromFile(
-                          fileName = fileName,
-                          filePath = filePath
-                        )
-            /*reduce / control input size*/
-            //.take(inputTakeNumber)
-            .duplicate
-          val nodesInGraph: Int =
-            expectedNodesSize
-          //875714
-          val edgesInGraph: Int =
-            expectedArcsSize
-          //5105043
-          println(
-                   s"\ntotal 'nodesInGraph`:$nodesInGraph" +
-                     s"\ntotal 'edgesInGraph`:$edgesInGraph"
-                 )
+          "85: 'makeSetsMapFromNodesWithAdjusted' " +
+            "then 'iterativeDFS_OnMap'" +
+            "should return " +
+            "all SCCs in graph"
+        ) {
+            val sourceSize: Int = 5105043
+            val expectedNodesSize: Int = 875714
+            val expectedArcsSize: Int = 5105043
+            /*all 'nodes', but only few / some 'arcs'*/
+            /*at least as big as `mockUp(14)`*/
+            val inputTakeNumber: Int =
+              expectedArcsSize
+            //500000
+            //250000 +
+            /*125000 +
+            62500 +
+            //31250 +
+            15625 +
+            //7812 +
+            //3906 +
+            1953 +
+            //976 +
+            //488 +
+            //244 +
+            //122
+            //61 +
+            //30 +
+            //15 +
+            7*/
+            val expectedSize: Int = 4
+            val filePath: String =
+              "/home/gluk-alex/Documents/"
+            //"/home/gluk-alex/Documents/sbt_projects/"
+            /*"/media/gluk-alex/" +
+              "GDI/Java/Scala/sbt/projects/" +
+              "stanfordAlgorithmsDesignAndAnalysis1/" +
+              "src/test/scala/" +
+              "testSCC/"*/
+            val fileName: String =
+              "diGraphMapReversed.txt"
+            //"SCC.txt"
+            //"tinyDG.txt"
+            //"tinyDAG.txt"
+            //"diGraphWith4SCCs"
+            lazy val (actualFileContent, fileContentIter):
+            (Iterator[String], Iterator[String]) =
+            //Iterator.empty
+              readFromFile(
+                            fileName = fileName,
+                            filePath = filePath
+                          )
+              /*reduce / control input size*/
+              //.take(inputTakeNumber)
+              .duplicate
+            val nodesInGraph: Int =
+              expectedNodesSize
+            //875714
+            val edgesInGraph: Int =
+              expectedArcsSize
+            //5105043
+            println(
+                     s"\ntotal 'nodesInGraph`:$nodesInGraph" +
+                       s"\ntotal 'edgesInGraph`:$edgesInGraph"
+                   )
 
-          val takeNumber: Int = 5
-          /*lazy*/ val startTime1: java.util.Date =
-            Calendar.getInstance().getTime()
-          /*lazy*/ val startTimeStamp1: Long =
-            System.currentTimeMillis
-          /*Date and Time Pattern */
-          val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
-          lazy val startStampString1 =
-            timeStampFormat
-            .format(startTime1)
-          println(s"'makeSetsMapFromNodesWithAdjusted' started at:" +
-                    startStampString1)
-          lazy val diGraphMapReversed:
-          Map[Int, Set[Int]] =
-            makeSetsMapFromNodesWithAdjusted(
-                                              fileContentIter =
-                                                //fileContentIter
-                                                actualFileContent
-                                            )
-          /*lazy*/ val endTimeStamp1: Long =
-            System.currentTimeMillis()
-          /*lazy*/ val endTime1: java.util.Date =
-            Calendar.getInstance().getTime()
-          lazy val endStampString1 = timeStampFormat.format(endTime1)
-          println(s"'makeSetsMapFromNodesWithAdjusted' Done at:" +
-                    endStampString1)
-          println(s"time difference is:" +
-                    (endTimeStamp1 - startTimeStamp1) + " Millis or:" +
-                    convertLongToTimeString(
-                                             timeNumberMillis =
-                                               endTimeStamp1 -
-                                                 startTimeStamp1,
-                                             colored = false
-                                           )
-                 )
+            val takeNumber: Int = 5
+            /*lazy*/ val startTime1: java.util.Date =
+              Calendar.getInstance().getTime()
+            /*lazy*/ val startTimeStamp1: Long =
+              System.currentTimeMillis
+            /*Date and Time Pattern */
+            val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
+            lazy val startStampString1 =
+              timeStampFormat
+              .format(startTime1)
+            println(s"'makeSetsMapFromNodesWithAdjusted' started at:" +
+                      startStampString1)
+            lazy val diGraphMapReversed:
+            Map[Int, Set[Int]] =
+              makeSetsMapFromNodesWithAdjusted(
+                                                fileContentIter =
+                                                  //fileContentIter
+                                                  actualFileContent
+                                              )
+            /*lazy*/ val endTimeStamp1: Long =
+              System.currentTimeMillis()
+            /*lazy*/ val endTime1: java.util.Date =
+              Calendar.getInstance().getTime()
+            lazy val endStampString1 = timeStampFormat.format(endTime1)
+            println(s"'makeSetsMapFromNodesWithAdjusted' Done at:" +
+                      endStampString1)
+            println(s"time difference is:" +
+                      (endTimeStamp1 - startTimeStamp1) + " Millis or:" +
+                      convertLongToTimeString(
+                                               timeNumberMillis =
+                                                 endTimeStamp1 -
+                                                   startTimeStamp1,
+                                               colored = false
+                                             )
+                   )
 
-          println(
-                   s"'nodes` are extracted from file" +
-                     //s"\n'diGraphMapReversed.size` is:\n" +
-                     //diGraphMapReversed.size +
-                     s"\n'diGraphMapReversed` first 15 elements are:\n" +
-                     diGraphMapReversed
-                     .view
-                     .take(15)
-                     .map(
-                     { case (k, v) =>
-                       k + "" +
-                         v.mkString("{", ",", "}")
-                     }
-                         )
-                     .mkString(",") // +
-                   /*s"\n'diGraphArray.nodes.head' is:" +
-                   diGraphArray.nodes.head +
-                   s"\n'diGraphArray.nodes.tail.head' is:" +
-                   diGraphArray.nodes.tail.head*/
-                 )
+            println(
+                     s"'nodes` are extracted from file" +
+                       //s"\n'diGraphMapReversed.size` is:\n" +
+                       //diGraphMapReversed.size +
+                       s"\n'diGraphMapReversed` first 15 elements are:\n" +
+                       diGraphMapReversed
+                       .view
+                       .take(15)
+                       .map(
+                       { case (k, v) =>
+                         k + "" +
+                           v.mkString("{", ",", "}")
+                       }
+                           )
+                       .mkString(",") // +
+                     /*s"\n'diGraphArray.nodes.head' is:" +
+                     diGraphArray.nodes.head +
+                     s"\n'diGraphArray.nodes.tail.head' is:" +
+                     diGraphArray.nodes.tail.head*/
+                   )
 
-          /*lazy*/ val startTime2: java.util.Date =
-            Calendar.getInstance().getTime()
-          /*lazy*/ val startTimeStamp2: Long =
-            System.currentTimeMillis
-          lazy val startStampString2 =
-            timeStampFormat
-            .format(startTime2)
-          println(s"read 'graphPostOrder' from file started at:" +
-                    startStampString2)
-          val graphPostOrder: Stream[Int] =
-            readFromFile(
-                          filePath = "/home/gluk-alex/Documents/",
-                          fileName = "graphPostOrder.txt"
-                        )
-            .toStream
-            .view
-            .map(_.toInt)
-            .toStream
-          /*lazy*/ val endTimeStamp2: Long =
-            System.currentTimeMillis()
-          /*lazy*/ val endTime2: java.util.Date =
-            Calendar.getInstance().getTime()
-          lazy val endStampString2 =
-            timeStampFormat.format(endTime2)
-          println(s"Done at:" +
-                    endStampString2)
-          println(s"time difference is:" +
-                    (endTimeStamp2 - startTimeStamp2) + " Millis or:" +
-                    convertLongToTimeString(
-                                             timeNumberMillis =
-                                               endTimeStamp2 -
-                                                 startTimeStamp2,
-                                             colored = false
-                                           )
-                 )
+            /*lazy*/ val startTime2: java.util.Date =
+              Calendar.getInstance().getTime()
+            /*lazy*/ val startTimeStamp2: Long =
+              System.currentTimeMillis
+            lazy val startStampString2 =
+              timeStampFormat
+              .format(startTime2)
+            println(s"read 'graphPostOrder' from file started at:" +
+                      startStampString2)
+            val graphPostOrder: Stream[Int] =
+              readFromFile(
+                            filePath = "/home/gluk-alex/Documents/",
+                            fileName = "graphPostOrder.txt"
+                          )
+              .toStream
+              .view
+              .map(_.toInt)
+              .toStream
+            /*lazy*/ val endTimeStamp2: Long =
+              System.currentTimeMillis()
+            /*lazy*/ val endTime2: java.util.Date =
+              Calendar.getInstance().getTime()
+            lazy val endStampString2 =
+              timeStampFormat.format(endTime2)
+            println(s"Done at:" +
+                      endStampString2)
+            println(s"time difference is:" +
+                      (endTimeStamp2 - startTimeStamp2) + " Millis or:" +
+                      convertLongToTimeString(
+                                               timeNumberMillis =
+                                                 endTimeStamp2 -
+                                                   startTimeStamp2,
+                                               colored = false
+                                             )
+                   )
 
-          val startTime3: java.util.Date =
-            Calendar.getInstance().getTime()
-          /*lazy*/ val startTimeStamp3: Long =
-            System.currentTimeMillis
-          lazy val startStampString3 =
-            timeStampFormat
-            .format(startTime2)
-          println(
-                   s"Starting collecting 'allSCCs' ... at:" +
-                     startStampString3
-                 )
-          /*
-          DONE replace 'Iterable[List[Int]]' with 'Iterable[Int]'
-          because interested only in SCCs size
-           */
-          //{8},{7,6},{4,5},{3,1,2}
-          val allSCCs:
-          //Iterable[List[Int]] =
-          Iterable[Int] =
-          //Stream[Stream[Int]] =
-            iterativeDFS_OnMap(
-                                adjacencyList =
-                                  diGraphMapReversed,
-                                //diGraphMap,
-                                postOrderNodesStream =
-                                  graphPostOrder
-                                //reversedGraphPostOrder
-                                //.reverse
-                              )
-            .view
-            .sorted(Ordering[Int].reverse)
-            //.sortBy(_.length)
-            .take(takeNumber)
-            .toList
-          //.toStream
+            val startTime3: java.util.Date =
+              Calendar.getInstance().getTime()
+            /*lazy*/ val startTimeStamp3: Long =
+              System.currentTimeMillis
+            lazy val startStampString3 =
+              timeStampFormat
+              .format(startTime2)
+            println(
+                     s"Starting collecting 'allSCCs' ... at:" +
+                       startStampString3
+                   )
+            /*
+            DONE replace 'Iterable[List[Int]]' with 'Iterable[Int]'
+            because interested only in SCCs size
+             */
+            //{8},{7,6},{4,5},{3,1,2}
+            val allSCCs:
+            //Iterable[List[Int]] =
+            Iterable[Int] =
+            //Stream[Stream[Int]] =
+              iterativeDFS_OnMap(
+                                  adjacencyList =
+                                    diGraphMapReversed,
+                                  //diGraphMap,
+                                  postOrderNodesStream =
+                                    graphPostOrder
+                                  //reversedGraphPostOrder
+                                  //.reverse
+                                )
+              .view
+              .sorted(Ordering[Int].reverse)
+              //.sortBy(_.length)
+              .take(takeNumber)
+              .toList
+            //.toStream
 
-          /*lazy*/ val endTimeStamp3: Long =
-            System.currentTimeMillis()
-          /*lazy*/ val endTime3: java.util.Date =
-            Calendar.getInstance().getTime()
-          lazy val endStampString3 =
-            timeStampFormat.format(endTime3)
-          println(s"Done at:" +
-                    endStampString3)
-          println(s"time difference is:" +
-                    (endTimeStamp3 - startTimeStamp3) + " Millis or:" +
-                    convertLongToTimeString(
-                                             timeNumberMillis =
-                                               endTimeStamp3 -
-                                                 startTimeStamp3,
-                                             colored = false
-                                           ) +
-                    s" elapsed"
-                 )
-          println(
-                   //s"'allSCCs.size' is:" +
-                   //allSCCs.size +
-                   /*s"\n'mapWithAdjacencyList.head' is:" +
-                     directedGraphDynamic
-                       .nodesWithAdjusted
-                     .head +
-                     s"\n'mapWithAdjacencyList.tail.head' is ${
+            /*lazy*/ val endTimeStamp3: Long =
+              System.currentTimeMillis()
+            /*lazy*/ val endTime3: java.util.Date =
+              Calendar.getInstance().getTime()
+            lazy val endStampString3 =
+              timeStampFormat.format(endTime3)
+            println(s"Done at:" +
+                      endStampString3)
+            println(s"time difference is:" +
+                      (endTimeStamp3 - startTimeStamp3) + " Millis or:" +
+                      convertLongToTimeString(
+                                               timeNumberMillis =
+                                                 endTimeStamp3 -
+                                                   startTimeStamp3,
+                                               colored = false
+                                             ) +
+                      s" elapsed"
+                   )
+            println(
+                     //s"'allSCCs.size' is:" +
+                     //allSCCs.size +
+                     /*s"\n'mapWithAdjacencyList.head' is:" +
                        directedGraphDynamic
-                       .nodesWithAdjusted
-                       .tail.head
-                     }" +*/
-                   //s"\n'nodesWithAdjusted` is:" +
-                   s"\n`inputTakeNumber` is $inputTakeNumber" +
-                     s"\nfirst $takeNumber elements in " +
-                     s"'allSCCs`" +
-                     s" are:" +
-                     s"\n${
-                       allSCCs
-                       .take(takeNumber)
-                       //.map(n => n.mkString("{", ",", "}"))
-                       .mkString(",")
-                     }"
-                 )
+                         .nodesWithAdjusted
+                       .head +
+                       s"\n'mapWithAdjacencyList.tail.head' is ${
+                         directedGraphDynamic
+                         .nodesWithAdjusted
+                         .tail.head
+                       }" +*/
+                     //s"\n'nodesWithAdjusted` is:" +
+                     s"\n`inputTakeNumber` is $inputTakeNumber" +
+                       s"\nfirst $takeNumber elements in " +
+                       s"'allSCCs`" +
+                       s" are:" +
+                       s"\n${
+                         allSCCs
+                         .take(takeNumber)
+                         //.map(n => n.mkString("{", ",", "}"))
+                         .mkString(",")
+                       }"
+                   )
 
-          assume(
-                  allSCCs
-                  .nonEmpty &&
+            assume(
                     allSCCs
-                    //.flatMap(_.map(_ => 1))
-                    .sum ==
-                      //nodesInGraph,
-                      //graphPostOrder.size ||
-                    diGraphMapReversed.size,
-                  s"\n'allSCCs' must be 'nonEmpty' " +
-                    s"& total SCCs size equal to 'nodesInGraph'"
-                )
-        }
+                    .nonEmpty &&
+                      allSCCs
+                      //.flatMap(_.map(_ => 1))
+                      .sum ==
+                        //nodesInGraph,
+                        //graphPostOrder.size ||
+                        diGraphMapReversed.size,
+                    s"\n'allSCCs' must be 'nonEmpty' " +
+                      s"& total SCCs size equal to 'nodesInGraph'"
+                  )
+          }
 
   ignore(
           "86: 'postOrderOnMap' " +
