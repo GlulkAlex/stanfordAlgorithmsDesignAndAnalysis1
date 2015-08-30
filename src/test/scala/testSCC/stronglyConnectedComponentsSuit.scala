@@ -6252,14 +6252,17 @@ class stronglyConnectedComponentsSuit
             /*only '5' max matter*/
             val takeNumber: Int = 5
             //val nodesLimit: Int = Int.MinValue
-            lazy val startTime: java.util.Date =
+            /*lazy*/ val startDateTime1:
+            java.util.Date =
               Calendar.getInstance().getTime()
-            lazy val timeStamp1: Long = System.currentTimeMillis
+            /*lazy*/ val startTimeStamp1: Long =
+              System.currentTimeMillis
             /*Date and Time Pattern */
             val timeStampFormat = new SimpleDateFormat("HH:mm:ss.SSS")
-            lazy val startStampString = timeStampFormat.format(startTime)
+            lazy val startStampString1 =
+              timeStampFormat.format(startDateTime1)
             println(s"'makeAdjacencyListMapFromArcs' started at:" +
-                      startStampString)
+                      startStampString1)
 
             //val mapWithAdjacencyList:
             /*lazy*/ val diGraphMap:
@@ -6272,15 +6275,16 @@ class stronglyConnectedComponentsSuit
                                                     fileContentIter =
                                                       actualFileContent
                                                   )
-            lazy val endTime1 = Calendar.getInstance().getTime()
-            lazy val timeStamp2: Long = System.currentTimeMillis()
-            lazy val endStampString1 = timeStampFormat.format(endTime1)
+            lazy val endDateTime1 = Calendar.getInstance().getTime()
+            lazy val endTimeStamp1: Long = System.currentTimeMillis()
+            lazy val endStampString1 = timeStampFormat.format(endDateTime1)
             println(s"Done at:" + endStampString1)
             println(s"time difference is:" +
-                      (timeStamp2 - timeStamp1) + " Millis or:" +
+                      (endTimeStamp1 - startTimeStamp1) + " Millis or:" +
                       convertLongToTimeString(
                                                timeNumberMillis =
-                                                 timeStamp2 - timeStamp1,
+                                                 endTimeStamp1 -
+                                                   startTimeStamp1,
                                                colored = false
                                              )
                    )
@@ -6306,11 +6310,13 @@ class stronglyConnectedComponentsSuit
                      s"\n'diGraphArray.nodes.tail.head' is:" +
                      diGraphArray.nodes.tail.head*/
                    )*/
-            /*lazy*/ val startTime2: java.util.Date =
+            /*lazy*/ val startTime2:
+            java.util.Date =
               Calendar.getInstance().getTime()
             /*lazy*/ val startStampString2 =
               timeStampFormat.format(startTime2)
-            /*lazy*/ val startTimeStamp2: Long = System.currentTimeMillis
+            /*lazy*/ val startTimeStamp2: Long =
+              System.currentTimeMillis
             println(s"'postOrderOnMap' Start at:" +
                       startStampString2)
             lazy val graphPostOrder:

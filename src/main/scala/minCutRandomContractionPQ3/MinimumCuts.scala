@@ -303,7 +303,7 @@ object MinimumCuts {
                         //.toInt
                         trailsUpperBound: Int = 0
                         ) = {
-    assume(adjacencyList.nonEmpty,s"'adjacencyList' shouid be `nonEmpty`")
+    assume(adjacencyList.nonEmpty,s"'adjacencyList' should be `nonEmpty`")
     /*val graphComponents: Vector[VvsE] =
       extractGraphVandE(adjacencyList: Vector[String])*/
     val (graphEdges, graphNodes): (Vector[Edge], Vector[Int]) =
