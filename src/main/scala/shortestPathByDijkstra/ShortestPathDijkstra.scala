@@ -546,9 +546,10 @@ object ShortestPathDijkstra {
                            distances:
                            collection.immutable.
                            Map[Int, Int] =
+                           collection.immutable.
                            Map.empty,
                            /*start node*/
-                           sourceNode: Int
+                           sourceNode: Int = 1
                            ):
   collection.immutable.
   Map[Int, Int] = {
