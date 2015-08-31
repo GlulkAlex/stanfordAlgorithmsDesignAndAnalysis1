@@ -1,5 +1,7 @@
 package shortestPathByDijkstra
 
+import scala.collection.mutable
+
 /**
  * Created by gluk-alex on 8/29/15.
  */
@@ -99,7 +101,8 @@ object ShortestPathDijkstra {
                            )
 
   val inputSample1: String =
-  "12	78,5753	17,4602	62,5676	16,8068	60,5933	67,371	71,6734	53,7001	72,3626	" +
+  "12	78,5753	17,4602	62,5676	16,8068	60,5933	67,371	" +
+    "71,6734	53,7001	72,3626	" +
     "34,6690	59,761	18,1520	128,7542	38,6699	57,9416"
 
   val inputSample2: String =
@@ -111,10 +114,18 @@ object ShortestPathDijkstra {
   val edgeSample1: String = "12	17,4602"
   val edgeSample2: String = "17\t12,4602"
 
-  val edgesMapSample:
+  val edgesMapSample1:
   Map[Int, WeightedEdge] = Map(
                                 12 -> WeightedEdge(12,17,4602),
                                 17 -> WeightedEdge(17,12,4602)
+                              )
+  val edgesMapSample2:
+  Map[String, Int] = Map(
+                                "12>17" -> 4602
+                              )
+  val edgesMapSample3:
+  Map[Edge, Int] = Map(
+                        Edge(12,17) -> 4602
                               )
 
   val allNodesSet: Set[Int]  =
@@ -131,70 +142,416 @@ object ShortestPathDijkstra {
 
   /*assume that 'Iterator' contains only well formed formatted lines*/
   @scala.annotation.tailrec
-  def makeSetsMapFromNodesWithAdjusted(
+  def makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
                                         fileContentIter: Iterator[String],
-                                        resultMap:
-                                        collection.mutable
-                                        .Map[Int,
+                                        resultSetsMap:
+                                        collection.mutable.Map[Int,
                                           Set[Int]] =
+                                        collection.mutable.Map.empty,
+                                        resultEdgesMap:
+                                        collection.mutable.Map[Edge,
+                                          Int] =
                                         collection.mutable.Map.empty,
                                         progressCounter: Int = 0
                                         ):
-  collection.mutable.
-  Map[Int, Set[Int]] = {
+  //collection.mutable.
+  //Map[Int, Set[Int]] = {
+  (collection.mutable.Map[Int, Set[Int]],
+    collection.mutable.Map[Edge, Int]) = {
 
-    if (fileContentIter.isEmpty) {
-      /*side effect*/
-      print(" " * 200 + "\r")
-      print(s"Total: $progressCounter nodes with adjusted " +
-              s"was readied from file\n")
-      //println
-      /*return value*/
-      resultMap
-    } else /*if (adjacencyList.hasNext)*/ {
-      val nextStr: String =
-        fileContentIter
-        /*to converge to empty iterator eventually*/
-        .next()
-      val digitsLine:
-      List[Int] =
-        nextStr
-        .split(",")
-        .view
-        .map(_.toInt)
-        .toList
-      /*side effect*/
-      if (progressCounter % 500000 == 0) {
-        print(s"Current progress: $progressCounter nodes are readied from " +
-                s"file\r")
-      } else if (progressCounter == 0) {
-        print(s"Starting reading nodes from file ...\r")
-      }
+      if (fileContentIter.isEmpty) {
+        /*side effect*/
+        print(" " * 200 + "\r")
+        print(s"Total: $progressCounter nodes with adjusted " +
+                s"was readied from file\n")
+        //println
+        /*return value*/
+        (resultSetsMap, resultEdgesMap)
+      } else /*if (adjacencyList.hasNext)*/ {
+        val nextStr: String =
+          fileContentIter
+          /*to converge to empty iterator eventually*/
+          .next()
+        val digitsLine:
+        List[String] =
+        //List[Int] =
+          nextStr
+          .split("\t")
+          //.split(",")
+          //.view
+          //.map(_.toInt)
+          .toList
+        /*side effect*/
+        if (progressCounter % 500000 == 0) {
+          print(s"Current progress: $progressCounter nodes are readied from " +
+                  s"file\r")
+        } else if (progressCounter == 0) {
+          print(s"Starting reading nodes from file ...\r")
+        }
 
-      //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
-      val mapKey: Int =
-        digitsLine
-        .head
-      val mapValue: Set[Int] =
+        //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
+        val mapKey: Int =
+          digitsLine
+          .head
+          .toInt
+        /*val mapValue: Set[Int] =
+          digitsLine
+          .tail
+          .toSet*/
+        var nodeEdgesMap: Map[Edge,Int] = Map.empty
+        var mapValue:
+        //collection.mutable.
+        Set[Int] =
+          //collection.mutable.
+          Set.empty
+        /*side effect*/
         digitsLine
         .tail
-        .toSet
-      val resultMapUpdated: collection.mutable.Map[Int, Set[Int]] =
-        resultMap
-        .updated(
-            key = mapKey,
-            //adjustedNodes
-            value =
-              mapValue
-                )
-      /*recursion*/
-      makeSetsMapFromNodesWithAdjusted(
-                                        fileContentIter: Iterator[String],
-                                        resultMap =
-                                          resultMapUpdated,
-                                        progressCounter = progressCounter + 1
-                                      )
-    }
+        .foreach {
+                   str =>
+                     //val nodeWithWheight:
+                     val List(node, wheight):
+                     List[Int] =
+                       str
+                       .split(",")
+                       .map(_.toInt)
+                       .toList
+                     /*side effect*/
+                     mapValue += node
+                     /*side effect*/
+                     if (
+                       nodeEdgesMap
+                       .contains(Edge(mapKey, node)) ||
+                         nodeEdgesMap
+                         .contains(Edge(node, mapKey))
+                     ) {
+                       //skip, has already
+                     } else {
+                       nodeEdgesMap =
+                         nodeEdgesMap
+                         //Same as ms + (k -> v)
+                         .updated(Edge(mapKey, node), wheight)
+                     }
+                 }
+        /*val resultMapUpdated:
+        collection.mutable.
+        Map[Int, Set[Int]] =
+          resultSetsMap
+          .updated(
+              key = mapKey,
+              //adjustedNodes
+              value =
+                mapValue
+                  )*/
+        /*side effect*/
+        resultSetsMap += (mapKey -> mapValue)
+        /*side effect*/
+        nodeEdgesMap
+        .foreach{
+                  case (edgeKey, edgeWeight) =>
+                  //edge =>
+          /*?only minimal edges should remain?*/
+                    val previousEdgeVal: Option[Int] =
+                      resultEdgesMap
+                      .get(edgeKey)
+                    /*?what about reversed edge?*/
+                    val previousEdgeReversedVal: Option[Int] =
+                      resultEdgesMap
+                      .get(Edge(edgeKey.endNode, edgeKey.startNode))
+
+          if (
+            /*resultEdgesMap
+            .contains(edgeKey)*/
+            //.contains(edge._1)
+            previousEdgeVal.nonEmpty
+          ) {
+            if (previousEdgeVal.get > edgeWeight) {
+              /*side effect*/
+              resultEdgesMap +=
+                (edgeKey -> edgeWeight)
+            } else {
+              //skip
+            }
+          } else if (
+                             previousEdgeReversedVal.nonEmpty
+          ) {
+            if (previousEdgeReversedVal.get > edgeWeight) {
+              /*side effect*/
+              resultEdgesMap +=
+                (Edge(edgeKey.endNode, edgeKey.startNode) -> edgeWeight)
+            } else {
+              //skip
+            }
+          } else {
+            /*side effect*/
+            resultEdgesMap +=
+              (edgeKey -> edgeWeight)
+              //(edge._1 -> mapValue)
+          }
+                }
+        /*recursion*/
+        makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
+                                                           fileContentIter:
+                                                             Iterator[String],
+                                                           resultSetsMap =
+                                                             resultSetsMap,
+                                                             //resultMapUpdated,
+        resultEdgesMap =
+                                                             resultEdgesMap,
+                                                           progressCounter =
+                                                             progressCounter + 1
+                                                         )
+      }
   }
+
+  /*
+  In the following algorithm,
+  the code 'u ← vertex' in 'Q' with 'min dist[u]',
+  searches for
+  the `vertex` 'u' in the `vertex` set 'Q'
+  that has the least 'dist[u]' value.
+  'length(u, v)' returns
+  the `length` of the `edge` joining (i.e. the distance between)
+  the two neighbor-nodes (adjusted) 'u' and 'v'.
+  The variable 'alt' on line 19 is
+  the `length` of the `path` from
+  the `root` `node` to the neighbor `node` 'v'
+  if it were to go through 'u'.
+  If this `path` is
+  shorter than the `current` `shortest path` recorded for 'v',
+  that `current path` is
+  replaced with this 'alt' `path`.
+  The 'prev' array is populated with
+  a pointer to the "next-hop" `node` on the source `graph` to
+  get the shortest `route` to the `source`.
+  1  function Dijkstra(Graph, source):
+  2
+  3      dist[source] ← 0                       // Distance from source to source
+  4      prev[source] ← undefined               // Previous node in optimal path initialization
+  5
+  6      create vertex set Q
+  7
+  8      for each vertex v in Graph:             // Initialization
+  9          if v ≠ source:                      // v has not yet been removed from Q (unvisited nodes)
+  10              dist[v] ← INFINITY             // Unknown distance from source to v
+  11              prev[v] ← UNDEFINED            // Previous node in optimal path from source
+  12          add v to Q                          // All nodes initially in Q (unvisited nodes)
+  13
+  14      while Q is not empty:
+  15          u ← vertex in Q with min dist[u]    // Source node in the first case
+  16          remove u from Q
+  17
+  18          for each neighbor v of u:           // where v is still in Q.
+  19              alt ← dist[u] + length(u, v)
+  20              if alt < dist[v]:               // A shorter path to v has been found
+  21                  dist[v] ← alt
+  22                  prev[v] ← u
+  23
+  24      return dist[], prev[]
+  */
+  /*
+  If we are
+  only interested in
+  a `shortest path` between `vertices` `source` and `target`,
+  we can
+  terminate the search after line 16
+  if 'u = target'.
+  Now we can
+  read the `shortest path` from `source` to `target` by
+  reverse iteration:
+  1  S ← empty sequence
+    2  u ← target
+  3  while prev[u] is defined:                   // Construct the shortest path with a stack S
+  4      insert u at the beginning of S          // Push the vertex onto the stack
+    5      u ← prev[u]                            // Traverse from target to source
+  Now sequence 'S' is
+  the list of `vertices` constituting
+  one of the `shortest paths` from `source` to `target`, or
+  the empty sequence if no path exists.
+  A more general problem would be
+  to find all the `shortest paths` between `source` and `target`
+  (there might be several different ones of the same length).
+  Then
+  instead of
+  storing only a single `node` in each entry of 'prev[]'
+  we would
+  store all `nodes` satisfying the `relaxation condition`.
+  For example,
+  if both 'r' and `source` connect to `target` and
+  both of them lie on different `shortest paths`
+  through `target`
+  (because the `edge` cost is the same in both cases),
+  then
+  we would
+  add both 'r' and `source` to 'prev[target]'.
+  When the algorithm completes,
+  'prev[]' data structure will actually describe
+  a `graph` that is
+  a subset of the original `graph` with some `edges` removed.
+  Its key property will be
+  that
+  if the algorithm was run with some `starting` `node`,
+  then
+  every `path` from that node to
+  any other `node` in the new `graph` will be
+  the `shortest path` between those `nodes` in the original `graph`, and
+  all `paths` of that `length` from the original `graph` will be
+  present in the new `graph`.
+  Then
+  to actually find all these `shortest paths`
+  between two given nodes we would use
+  a `path finding` algorithm on the new `graph`, such
+  as `depth-first search`.
+  */
+
+  /*
+  Using a priority queue
+  A `min-priority` queue is
+  an abstract data type
+  that
+  provides 3 basic operations:
+  'add_with_priority()',
+  'decrease_priority()' and
+  'extract_min()'.
+  As mentioned earlier,
+  using such a `data structure` can lead to
+  faster computing times than using a basic `queue`.
+  Notably,
+  `Fibonacci heap` (Fredman & Tarjan 1984) or
+  `Brodal queue`
+  offer optimal implementations for those 3 operations.
+  As the algorithm is slightly different,
+  we mention it here, in pseudo-code as well :
+  1  function Dijkstra(Graph, source):
+  2      dist[source] ← 0                                    // Initialization
+  3
+  4      create vertex set Q
+  5
+  6      for each vertex v in Graph:
+  7          if v ≠ source
+  8              dist[v] ← INFINITY                          // Unknown distance from source to v
+  9              prev[v] ← UNDEFINED                         // Predecessor of v
+  10
+  11         Q.add_with_priority(v, dist[v])
+  12
+  13
+  14      while Q is not empty:                              // The main loop
+  15         u ← Q.extract_min()                            // Remove and return best vertex
+  16         for each neighbor v of u:                       // only v that is still in Q
+  17             alt = dist[u] + length(u, v)
+  18             if alt < dist[v]
+  19                 dist[v] ← alt
+  20                 prev[v] ← u
+  21                 Q.decrease_priority(v, alt)
+  22
+  23     return dist[], prev[]
+  Instead of
+  filling the `priority queue` with
+  all nodes in the `initialization phase`,
+  it is also possible to
+  initialize it to contain only `source`;
+  then,
+  inside the 'if alt < dist[v]' block,
+  the `node` must be inserted
+  if not already in the `queue`
+  (instead of
+  performing a `decrease_priority` (?remove?) operation).
+  Other `data structures` can be used to
+  achieve even faster computing times in practice.
+  */
+
+  def UniformCostSearch(
+                         graph:
+                         Map[Int,
+                          Set[WeightedEdge]],
+                         /*source vertex*/
+                         start: Int = 1,
+                         goal: Int): Int = {
+    var currentNode: Int = start
+    var currentNodeVal: Set[WeightedEdge] =
+      graph.get(start).get
+    var cost: Int = 0
+    /*val heapMin = new
+        mutable.PriorityQueue()(
+                                 Ordering[Int].reverse
+                               )*/
+    //priority queue containing node only
+    var frontier =
+      new
+          mutable.PriorityQueue()(
+                                   /*Ordering[(Int, WeightedEdge)]
+                                   .on((x) => x)*/
+                                   Ordering
+                                   .by[WeightedEdge, Int](_.weight)
+                                   .reverse
+                                 )
+    var explored: Set[Int] = Set.empty[Int]
+
+    /*do
+      if (frontier.isEmpty) {
+        //return failure
+      } else {
+
+      }*/
+    while (frontier.nonEmpty) {
+      currentNode = frontier
+                    //.pop()
+                    .dequeue().startNode
+      if (
+      //node is goal
+        currentNode == goal
+      ) {
+        //return solution
+        cost
+      }
+      //.add(node)
+      explored += currentNode
+
+      /*side effect*/
+      for {
+        //each of node's neighbors n
+        node<-currentNodeVal
+      } {
+        if (
+          //n is not in explored
+          !explored
+           .contains(
+               node
+               .endNode
+                    )
+        ) {
+          if (
+            //n is not in frontier
+            /*!frontier
+             .exist(
+                 _ == node
+                      )*/
+            frontier
+             .forall(
+                 _ != node
+                   )
+          ) {
+            //.add(n)
+            frontier += node
+          }  else {
+            if (
+              //n is in frontier with higher cost
+              node.weight >
+                frontier.find(_.startNode == currentNode).get.weight
+            )
+            {
+              //replace existing node with n
+              /*? in the 'frontier'? How ?*/
+            } else {
+              //skip?
+            }
+          }
+        } else {
+          //skip
+        }
+      }
+    }
+    cost
+  }//end def
 
 }
