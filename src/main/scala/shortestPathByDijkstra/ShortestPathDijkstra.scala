@@ -1,6 +1,8 @@
 package shortestPathByDijkstra
 
-import scala.collection.mutable
+import scala.collection.mutable.Map
+import scala.collection.mutable.PriorityQueue
+import scala.collection.immutable.TreeMap
 
 /**
  * Created by gluk-alex on 8/29/15.
@@ -305,6 +307,75 @@ object ShortestPathDijkstra {
   }
 
   /*
+  algorithm:
+  Let the `node`
+  at which we are `starting`
+  be called the `initial` `node`.
+  Let the `distance` of `node` 'Y' be
+  the `distance` from
+  the `initial` `node` to 'Y'.
+  Dijkstra's algorithm will
+  assign some `initial` `distance` values and
+  will try to
+  `improve` them step by step.
+  >1>Assign to every `node`
+  a `tentative`(preliminary) `distance` value:
+  set it to `zero`
+  for our `initial` `node` and
+  to `infinity`
+  for all other nodes.
+  >2>Set the `initial` `node` as `current`.
+  Mark all other `nodes` `unvisited`.
+  Create
+  a set of
+  all the `unvisited` `nodes` called the `unvisited set`.
+  >3>For the `current` `node`,
+  consider
+  all of its `unvisited` `neighbors` and
+  calculate their `tentative` `distances`.
+  Compare
+  the newly calculated `tentative` `distance` to
+  the `current` assigned value and
+  assign the smaller one.
+  For example,
+  if the `current` `node` 'A' is
+  marked with a `distance` of '6', and
+  the `edge` connecting it with a `neighbor` 'B' has `length` '2', then
+  the `distance` to 'B' (through 'A') will be
+  '6 + 2 = 8'.
+  If 'B' was
+  previously marked with
+  a `distance` greater than '8' then
+  change it to '8'.
+  Otherwise,
+  keep the current value.
+  >4>When we are done considering
+  all of the `neighbors` of the `current` `node`,
+  mark the `current` `node` as `visited` and
+  remove it from the `unvisited set`.
+  A `visited` `node` will never be checked again.
+  >5>If
+  the `destination` `node` has been marked `visited`
+  (when planning a `route` between two specific `nodes`) or
+  if
+  the smallest `tentative` `distance` among the `nodes` in
+  the `unvisited` set is
+  `infinity` (when planning a `complete traversal`;
+  occurs when
+  there is
+  `no connection` between
+  the `initial` `node` and
+  remaining `unvisited` `nodes`), then stop.
+  The algorithm has finished.
+  >6>Otherwise,
+  select the `unvisited` `node` that is
+  marked with
+  the `smallest` `tentative` `distance`,
+  set it as
+  the new "current node", and
+  go back to step '3'.
+   */
+  /*
   In the following algorithm,
   the code 'u ← vertex' in 'Q' with 'min dist[u]',
   searches for
@@ -423,28 +494,28 @@ object ShortestPathDijkstra {
   As the algorithm is slightly different,
   we mention it here, in pseudo-code as well :
   1  function Dijkstra(Graph, source):
-  2      dist[source] ← 0                                    // Initialization
+  2      dist[source] ← 0 // Initialization
   3
   4      create vertex set Q
   5
   6      for each vertex v in Graph:
   7          if v ≠ source
-  8              dist[v] ← INFINITY                          // Unknown distance from source to v
-  9              prev[v] ← UNDEFINED                         // Predecessor of v
+  8              dist[v] ← INFINITY // Unknown distance from source to v
+  9              prev[v] ← UNDEFINED // Predecessor of v
   10
   11         Q.add_with_priority(v, dist[v])
   12
   13
-  14      while Q is not empty:                              // The main loop
-  15         u ← Q.extract_min()                            // Remove and return best vertex
-  16         for each neighbor v of u:                       // only v that is still in Q
+  14      while Q is not empty: // The main loop
+  15         u ← Q.extract_min() // Remove and return best vertex
+  16         for each neighbor v of u: // only v that is still in Q
   17             alt = dist[u] + length(u, v)
   18             if alt < dist[v]
   19                 dist[v] ← alt
   20                 prev[v] ← u
   21                 Q.decrease_priority(v, alt)
   22
-  23     return dist[], prev[]
+  23     return dist[], prev[]//?stored path?from source to sink?
   Instead of
   filling the `priority queue` with
   all nodes in the `initialization phase`,
@@ -455,10 +526,190 @@ object ShortestPathDijkstra {
   the `node` must be inserted
   if not already in the `queue`
   (instead of
-  performing a `decrease_priority` (?remove?) operation).
+  performing a `decrease_priority` (?update previous value?) operation).
   Other `data structures` can be used to
   achieve even faster computing times in practice.
   */
+
+  /*return all graph `nodes` with shortest `distances` to 'source'
+  where 'Int.MaxValue' stands for unreachable from 'source'
+  * */
+  def DijkstraWithTreeMap(
+                           //graph,
+                           /*read only*/
+                           setsMap:
+                           collection.immutable.
+                           Map[Int, Set[Int]],
+                           /*read only*/
+                           edgesMap:
+                           Map[Edge, Int],
+                           distances:
+                           collection.immutable.
+                           Map[Int, Int] =
+                           Map.empty,
+                           /*start node*/
+                           sourceNode: Int
+                           ):
+  collection.immutable.
+  Map[Int, Int] = {
+    /*initialization*/
+    val currentDistances:
+    collection.immutable.
+    Map[Int, Int] =
+    if (distances.isEmpty) {
+      setsMap
+      //.mapValues{nodeValue => Int.MaxValue} +
+      .mapValues(_ => Int.MaxValue) +
+        (sourceNode -> 0)
+      //.toMap
+    } else {
+      distances
+    }
+    val explored: Set[Int] = Set.empty
+    val unExplored: Set[Int] =
+      setsMap
+    .keySet
+    .toSet
+    /*will be reduced to empty eventually*/
+    val nodesIterator: Iterator[(Int, Set[Int])] =
+      (setsMap - sourceNode)
+      .iterator
+    /*val priorityQueueOrdering =
+      Ordering.fromLessThan[String](_ > _)*/
+    val minDistancePriorityQueue: TreeMap[Int, Int] =
+      scala.collection.immutable.TreeMap
+        .empty(Ordering[Int].reverse) +
+        /*set 'sourceNode' as start*/
+      (sourceNode -> 0)
+
+    @scala.annotation.tailrec
+    def checkAdjusted(
+                       /*read only*/
+                       sourceNodeToCheck: Int,
+                       /*?read only?*/
+                       sourceDistanceToCheck: Int,
+                       adjustedIterToCheck: Iterator[Int],
+                       distancesToCheck:
+                       collection.immutable.
+                       Map[Int, Int],
+                       priorityQueueToCheck: TreeMap[Int, Int]
+                       ):
+    (
+      collection.immutable.
+      Map[Int, Int], TreeMap[Int, Int]) = {
+      if (adjustedIterToCheck.isEmpty) {
+      /*return value*/
+        (distancesToCheck, priorityQueueToCheck)
+    } else {
+        val candidateNodeKey: Int =
+          adjustedIterToCheck
+          /*to converge to empty eventually*/
+          .next()
+        //assume(distancesToCheck.isDefinedAt(candidateNodeKey))
+        val previousNodeDistance: Int =
+          distancesToCheck(candidateNodeKey)
+        //assume that at least one is defined
+        val edgeWeight: Int =
+          /*if (edgesMap.contains(Edge(sourceNodeToCheck,candidateNodeKey))) {
+            edgesMap(Edge(sourceNodeToCheck, candidateNodeKey))
+          } else {
+            edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+          }*/
+          edgesMap
+        .getOrElse(
+              Edge(sourceNodeToCheck, candidateNodeKey),
+              edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+                  )
+        val candidateDistances: Int =
+          sourceDistanceToCheck + edgeWeight
+        val (distancesUpdated, priorityQueueUpdated) =
+        if (candidateDistances < previousNodeDistance) {
+          (
+            distancesToCheck +
+            (candidateNodeKey->candidateDistances),
+            if (priorityQueueToCheck.contains(candidateNodeKey)) {
+              priorityQueueToCheck
+            } else {
+              priorityQueueToCheck + (candidateNodeKey->candidateDistances)
+            }
+            )
+        } else {
+          (distancesToCheck, priorityQueueToCheck)
+        }
+        /*recursion*/
+        checkAdjusted(
+                       sourceNodeToCheck = sourceNodeToCheck,
+                       sourceDistanceToCheck = sourceDistanceToCheck,
+                       adjustedIterToCheck = adjustedIterToCheck,
+                       distancesToCheck = distancesUpdated,
+                       priorityQueueToCheck = priorityQueueUpdated
+                     )
+      }
+    }
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   innerDistances:
+                   collection.immutable.
+                   Map[Int, Int],
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue: TreeMap[Int, Int]
+                   ):
+    collection.immutable.
+    Map[Int, Int] = {
+      if (innerPriorityQueue.isEmpty) {
+        /*return value*/
+        innerDistances
+      } else {
+        val (currentSourceKey, currentSourceDistance): (Int, Int) =
+          innerPriorityQueue
+          .head
+          //.min
+          //.invert
+        assume(setsMap.nonEmpty,"'setsMap' must be '.nonEmpty'")
+        val adjustedIter: Iterator[Int] =
+            setsMap(currentSourceKey)
+              //.get(currentSourceKey)
+              //.get
+        .iterator
+        val (distancesUpdated, priorityQueueUpdated):
+          (collection.immutable.
+            Map[Int, Int], TreeMap[Int, Int]) =
+            checkAdjusted(
+                           sourceNodeToCheck =
+                             currentSourceKey,
+                           sourceDistanceToCheck =
+                             currentSourceDistance,
+                           adjustedIterToCheck = adjustedIter,
+                           distancesToCheck =
+                             innerDistances,
+                           priorityQueueToCheck =
+                             innerPriorityQueue
+                             .tail
+                         )
+        /*recursion*/
+        innerLoop(
+                   innerDistances =
+                     distancesUpdated,
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue =
+                     priorityQueueUpdated
+                 )
+      }
+    }
+    /*initialization*/
+    innerLoop(
+               innerDistances = currentDistances,
+               //innerExplored = explored,
+               //innerUnExplored = unExplored,
+               //currentSourceNode = sourceNode,
+               innerPriorityQueue = minDistancePriorityQueue
+             )
+  }
 
   def UniformCostSearch(
                          graph:
@@ -478,7 +729,7 @@ object ShortestPathDijkstra {
     //priority queue containing node only
     var frontier =
       new
-          mutable.PriorityQueue()(
+          collection.mutable.PriorityQueue()(
                                    /*Ordering[(Int, WeightedEdge)]
                                    .on((x) => x)*/
                                    Ordering

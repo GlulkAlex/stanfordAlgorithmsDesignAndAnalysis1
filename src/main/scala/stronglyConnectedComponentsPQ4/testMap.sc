@@ -1,3 +1,10 @@
+val setsMap: Map[Int, Set[Int]] =
+  Map(
+  1->Set(2,3),
+  2->Set(4,5)
+     )
+setsMap
+.mapValues(_ => 9) + (0 -> -1)
 val map1 = Map(1->"one")
 val map2 = map1 + (1->"1")
 val map3 = map2 + (1->"1", 2->"2", 3->"3")
