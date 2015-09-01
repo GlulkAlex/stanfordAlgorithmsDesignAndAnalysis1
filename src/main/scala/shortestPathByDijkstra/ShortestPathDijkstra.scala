@@ -8,6 +8,7 @@ import scala.collection.immutable.TreeMap
  * Created by gluk-alex on 8/29/15.
  */
 object ShortestPathDijkstra {
+
   /*
   In this programming problem
   you will code up
@@ -48,7 +49,8 @@ object ShortestPathDijkstra {
   no `path` between
   a vertex 'v' and vertex '1',
   we shall define
-  the `shortest-path` `distance` between '1' and 'v' to be '1000000' (max value).
+  the `shortest-path` `distance` between '1' and 'v' to be '1000000' (max
+  value).
 
   You should
   report
@@ -96,214 +98,669 @@ object ShortestPathDijkstra {
                    endNode: Int)
 
   case class WeightedEdge(
-                         /*interchangeable for undirected graph*/
-                   startNode: Int,
-                   endNode: Int,
-                   weight: Int
+                           /*interchangeable for undirected graph*/
+                           /*from / tail*/
+                           startNode: Int,
+                           /*to / head*/
+                           endNode: Int,
+                           /*edge cost / length*/
+                           weight: Int
                            )
+  /*a `shortest-paths tree` (SPT)*/
+  case class WeightedEdgeWithDistance(
+                                      /*
+                                      part of `path` sequence
+                                      can be back traced to `source` / `root`
+                                      null for
+                                      >self reference / loop
+                                       >> unreachable
+                                      */
+                                       weightedEdge: Option[WeightedEdge],
+                                       /*Distance from / to `source` node
+                                       from n/a (undefined) to '>=0' or
+                                       + infinity (unreachable)
+                                       * */
+                                       distance: Int
+                                       )
 
   val inputSample1: String =
-  "12	78,5753	17,4602	62,5676	16,8068	60,5933	67,371	" +
-    "71,6734	53,7001	72,3626	" +
-    "34,6690	59,761	18,1520	128,7542	38,6699	57,9416"
+    "12	78,5753	17,4602	62,5676	16,8068	60,5933	67,371	" +
+      "71,6734	53,7001	72,3626	" +
+      "34,6690	59,761	18,1520	128,7542	38,6699	57,9416"
 
   val inputSample2: String =
-  "17\t26,1275\t45,5114\t142,8016\t83,4615\t140,6440\t8,3535\t69,3610\t153," +
-    "8545\t9,7002\t12,4602\t173,7312\t114,8915\t108,1942\t54,3115\t66," +
-    "6176\t190,7000\t70,3899\t5,2514\t178,7464\t166,4762\t2,5409\t146," +
-    "5362\t117,6266\t"
+    "17\t26,1275\t45,5114\t142,8016\t83,4615\t140,6440\t8,3535\t69,3610\t153," +
+      "8545\t9,7002\t12,4602\t173,7312\t114,8915\t108,1942\t54,3115\t66," +
+      "6176\t190,7000\t70,3899\t5,2514\t178,7464\t166,4762\t2,5409\t146," +
+      "5362\t117,6266\t"
 
   val edgeSample1: String = "12	17,4602"
   val edgeSample2: String = "17\t12,4602"
 
   val edgesMapSample1:
   Map[Int, WeightedEdge] = Map(
-                                12 -> WeightedEdge(12,17,4602),
-                                17 -> WeightedEdge(17,12,4602)
+                                12 -> WeightedEdge(12, 17, 4602),
+                                17 -> WeightedEdge(17, 12, 4602)
                               )
   val edgesMapSample2:
   Map[String, Int] = Map(
-                                "12>17" -> 4602
-                              )
+                          "12>17" -> 4602
+                        )
   val edgesMapSample3:
   Map[Edge, Int] = Map(
-                        Edge(12,17) -> 4602
-                              )
+                        Edge(12, 17) -> 4602
+                      )
 
-  val allNodesSet: Set[Int]  =
+  val allNodesSet: Set[Int] =
     (1 to 200)
     .toSet
 
-  val allNodesList: List[Int]  =
+  val allNodesList: List[Int] =
     (1 to 200)
     .toList
 
-  val allNodesArray: Array[Int]  =
+  val allNodesArray: Array[Int] =
     (1 to 200)
     .toArray
+
+  val setsMapSample1:
+  Map[Int, Set[WeightedEdge]] = Map(
+                                     12 -> Set(
+                                                WeightedEdge(12, 78, 5753),
+                                                WeightedEdge(12, 17, 4602)
+                                              ),
+                                     17 -> Set(
+                                                WeightedEdge(17, 26, 1275),
+                                                WeightedEdge(17, 12, 4602)
+                                              )
+                                   )
+  /*
+  `Data structures` for
+  single-source `shortest paths`.
+  Given
+  an `edge-weighted digraph` and
+  a designated `vertex` 's',
+  a `shortest-paths tree` (SPT) is
+  a `subgraph` containing
+  's' and all the `vertices` reachable from 's' that forms
+  a `directed tree` `rooted` at 's' such that
+  every `tree` `path` is
+  a `shortest path` in the `digraph`.
+  We represent the `shortest paths` with
+  two vertex-indexed arrays:
+  >`Edges` on the `shortest-paths` `tree`:
+  'edgeTo[v]' is
+  the the last `edge` on a `shortest path` from 's' to 'v'.
+  >>`Distance` to the `source`:
+  'distTo[v]' is
+  the `length` of the `shortest path` from `s` to `v`.
+   */
+  val shortestPathMapSample1:
+  Map[Int, WeightedEdgeWithDistance] = Map(
+                                     /*for source*/
+                                     1 -> WeightedEdgeWithDistance(
+                                     None,
+                                     0
+                                                                  ),
+                                     12 -> WeightedEdgeWithDistance(
+                                                Some(
+                                                      WeightedEdge(
+                                                                    12,
+                                                                    17,
+                                                                    4602
+                                                                  )
+                                                    ),
+                                                4602
+                                              ),
+                                     17 -> WeightedEdgeWithDistance(
+                                                Some(
+                                                      WeightedEdge(
+                                                                    17,
+                                                                    12,
+                                                                    4602
+                                                                  )
+                                                    ),
+                                                4602
+                                              )
+                                   )
+
 
   /*assume that 'Iterator' contains only well formed formatted lines*/
   @scala.annotation.tailrec
   def makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
-                                        fileContentIter: Iterator[String],
-                                        resultSetsMap:
-                                        collection.mutable.Map[Int,
-                                          Set[Int]] =
-                                        collection.mutable.Map.empty,
-                                        resultEdgesMap:
-                                        collection.mutable.Map[Edge,
-                                          Int] =
-                                        collection.mutable.Map.empty,
-                                        progressCounter: Int = 0
-                                        ):
+                                                         fileContentIter:
+                                                         Iterator[String],
+                                                         resultSetsMap:
+                                                         collection.mutable
+                                                         .Map[Int,
+                                                           Set[Int]] =
+                                                         collection.mutable.Map
+                                                         .empty,
+                                                         resultEdgesMap:
+                                                         collection.mutable
+                                                         .Map[Edge,
+                                                           Int] =
+                                                         collection.mutable.Map
+                                                         .empty,
+                                                         progressCounter: Int
+                                                         = 0
+                                                         ):
   //collection.mutable.
   //Map[Int, Set[Int]] = {
   (collection.mutable.Map[Int, Set[Int]],
     collection.mutable.Map[Edge, Int]) = {
 
-      if (fileContentIter.isEmpty) {
-        /*side effect*/
-        print(" " * 200 + "\r")
-        print(s"Total: $progressCounter nodes with adjusted " +
-                s"was readied from file\n")
-        //println
-        /*return value*/
-        (resultSetsMap, resultEdgesMap)
-      } else /*if (adjacencyList.hasNext)*/ {
-        val nextStr: String =
-          fileContentIter
-          /*to converge to empty iterator eventually*/
-          .next()
-        val digitsLine:
-        List[String] =
-        //List[Int] =
-          nextStr
-          .split("\t")
-          //.split(",")
-          //.view
-          //.map(_.toInt)
-          .toList
-        /*side effect*/
-        if (progressCounter % 500000 == 0) {
-          print(s"Current progress: $progressCounter nodes are readied from " +
-                  s"file\r")
-        } else if (progressCounter == 0) {
-          print(s"Starting reading nodes from file ...\r")
-        }
+    if (fileContentIter.isEmpty) {
+      /*side effect*/
+      print(" " * 200 + "\r")
+      print(s"Total: $progressCounter nodes with adjusted " +
+              s"was readied from file\n")
+      //println
+      /*return value*/
+      (resultSetsMap, resultEdgesMap)
+    } else /*if (adjacencyList.hasNext)*/ {
+      val nextStr: String =
+        fileContentIter
+        /*to converge to empty iterator eventually*/
+        .next()
+      val separator: String =
+      //if (nextStr.contains('\t')) {
+        "\t"
+      /*} else {
+        " "
+      }*/
+      val digitsLine:
+      List[String] =
+      //List[Int] =
+        nextStr
+        .split(separator)
+        //.split("\t")
+        //.split(",")
+        //.view
+        //.map(_.toInt)
+        .toList
+      /*side effect*/
+      if (progressCounter % 500000 == 0) {
+        print(s"Current progress: $progressCounter nodes are readied from " +
+                s"file\r")
+      } else if (progressCounter == 0) {
+        print(s"Starting reading nodes from file ...\r")
+      }
 
-        //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
-        val mapKey: Int =
-          digitsLine
-          .head
-          .toInt
-        /*val mapValue: Set[Int] =
-          digitsLine
-          .tail
-          .toSet*/
-        var nodeEdgesMap: Map[Edge,Int] = Map.empty
-        var mapValue:
-        //collection.mutable.
-        Set[Int] =
-          //collection.mutable.
-          Set.empty
-        /*side effect*/
+      //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
+      val mapKey: Int =
+        digitsLine
+        .head
+        .toInt
+      /*val mapValue: Set[Int] =
         digitsLine
         .tail
-        .foreach {
-                   str =>
-                     //val nodeWithWheight:
-                     val List(node, wheight):
-                     List[Int] =
-                       str
-                       .split(",")
-                       .map(_.toInt)
-                       .toList
-                     /*side effect*/
-                     mapValue += node
-                     /*side effect*/
-                     if (
-                       nodeEdgesMap
-                       .contains(Edge(mapKey, node)) ||
-                         nodeEdgesMap
-                         .contains(Edge(node, mapKey))
-                     ) {
-                       //skip, has already
-                     } else {
-                       nodeEdgesMap =
-                         nodeEdgesMap
-                         //Same as ms + (k -> v)
-                         .updated(Edge(mapKey, node), wheight)
-                     }
-                 }
-        /*val resultMapUpdated:
-        collection.mutable.
-        Map[Int, Set[Int]] =
-          resultSetsMap
-          .updated(
-              key = mapKey,
-              //adjustedNodes
-              value =
-                mapValue
-                  )*/
-        /*side effect*/
-        resultSetsMap += (mapKey -> mapValue)
-        /*side effect*/
-        nodeEdgesMap
-        .foreach{
-                  case (edgeKey, edgeWeight) =>
-                  //edge =>
-          /*?only minimal edges should remain?*/
-                    val previousEdgeVal: Option[Int] =
-                      resultEdgesMap
-                      .get(edgeKey)
-                    /*?what about reversed edge?*/
-                    val previousEdgeReversedVal: Option[Int] =
-                      resultEdgesMap
-                      .get(Edge(edgeKey.endNode, edgeKey.startNode))
+        .toSet*/
+      var nodeEdgesMap: Map[Edge, Int] = Map.empty
+      var mapValue:
+      //collection.mutable.
+      Set[Int] =
+      //collection.mutable.
+        Set.empty
+      /*side effect*/
+      digitsLine
+      .tail
+      .foreach {
+                 str =>
+                   //val nodeWithWheight:
+                   val List(node, weight):
+                   List[Int] =
+                     str
+                     .split(",")
+                     .map(_.toInt)
+                     /*.map(w => {
+                       val weight: Double =
+                       w.toDouble
 
-          if (
-            /*resultEdgesMap
-            .contains(edgeKey)*/
-            //.contains(edge._1)
-            previousEdgeVal.nonEmpty
-          ) {
-            if (previousEdgeVal.get > edgeWeight) {
-              /*side effect*/
-              resultEdgesMap +=
-                (edgeKey -> edgeWeight)
-            } else {
-              //skip
-            }
-          } else if (
-                             previousEdgeReversedVal.nonEmpty
-          ) {
-            if (previousEdgeReversedVal.get > edgeWeight) {
-              /*side effect*/
-              resultEdgesMap +=
-                (Edge(edgeKey.endNode, edgeKey.startNode) -> edgeWeight)
-            } else {
-              //skip
-            }
-          } else {
-            /*side effect*/
-            resultEdgesMap +=
-              (edgeKey -> edgeWeight)
-              //(edge._1 -> mapValue)
-          }
-                }
-        /*recursion*/
-        makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
-                                                           fileContentIter:
-                                                             Iterator[String],
-                                                           resultSetsMap =
-                                                             resultSetsMap,
-                                                             //resultMapUpdated,
-        resultEdgesMap =
-                                                             resultEdgesMap,
-                                                           progressCounter =
-                                                             progressCounter + 1
-                                                         )
+                       if (weight < 1) {
+                         (weight * 100).toInt
+                       } else {
+                         weight.toInt
+                       }
+                     })*/
+                     .toList
+                   /*side effect*/
+                   mapValue += node
+                   /*side effect*/
+                   if (
+                     nodeEdgesMap
+                     .contains(Edge(mapKey, node)) ||
+                       nodeEdgesMap
+                       .contains(Edge(node, mapKey))
+                   ) {
+                     //skip, has already
+                   } else {
+                     nodeEdgesMap =
+                       nodeEdgesMap
+                       //Same as ms + (k -> v)
+                       .updated(Edge(mapKey, node), weight)
+                   }
+               }
+      /*val resultMapUpdated:
+      collection.mutable.
+      Map[Int, Set[Int]] =
+        resultSetsMap
+        .updated(
+            key = mapKey,
+            //adjustedNodes
+            value =
+              mapValue
+                )*/
+      /*side effect*/
+      resultSetsMap += (mapKey -> mapValue)
+      /*side effect*/
+      nodeEdgesMap
+      .foreach {
+                 case (edgeKey, edgeWeight) =>
+                   //edge =>
+                   /*?only minimal edges should remain?*/
+                   val previousEdgeVal: Option[Int] =
+                     resultEdgesMap
+                     .get(edgeKey)
+                   /*?what about reversed edge?*/
+                   val previousEdgeReversedVal: Option[Int] =
+                     resultEdgesMap
+                     .get(Edge(edgeKey.endNode, edgeKey.startNode))
+
+                   if (
+                   /*resultEdgesMap
+                   .contains(edgeKey)*/
+                   //.contains(edge._1)
+                     previousEdgeVal.nonEmpty
+                   ) {
+                     if (previousEdgeVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap +=
+                         (edgeKey -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else if (
+                            previousEdgeReversedVal.nonEmpty
+                          ) {
+                     if (previousEdgeReversedVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap +=
+                         (Edge(edgeKey.endNode, edgeKey
+                                                .startNode) -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else {
+                     /*side effect*/
+                     resultEdgesMap +=
+                       (edgeKey -> edgeWeight)
+                     //(edge._1 -> mapValue)
+                   }
+               }
+      /*recursion*/
+      makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
+                                                         fileContentIter:
+                                                           Iterator[String],
+                                                         resultSetsMap =
+                                                           resultSetsMap,
+                                                         //resultMapUpdated,
+                                                         resultEdgesMap =
+                                                           resultEdgesMap,
+                                                         progressCounter =
+                                                           progressCounter + 1
+                                                       )
+    }
+  }
+
+  /*assume that 'Iterator' contains only well formed formatted lines*/
+  @scala.annotation.tailrec
+  def edgesAndSetsMapsFromAdjustedList(
+                                        fileContentIter: Iterator[String],
+                                        resultSetsMap:
+                                        collection.immutable.
+                                        Map[Int,
+                                          Set[Int]] =
+                                        collection.immutable.
+                                        Map.empty,
+                                        resultEdgesMap:
+                                        collection.immutable.
+                                        Map[Edge,
+                                          Int] =
+                                        collection.immutable.
+                                        Map.empty,
+                                        progressCounter: Int = 0
+                                        ):
+  //collection.mutable.
+  //Map[Int, Set[Int]] = {
+  (collection.immutable.
+  Map[Int, Set[Int]],
+    collection.immutable.
+    Map[Edge, Int]) = {
+
+    if (fileContentIter.isEmpty) {
+      /*side effect*/
+      print(" " * 200 + "\r")
+      print(s"Total: $progressCounter nodes with adjusted " +
+              s"was readied from file\n")
+      //println
+      /*return value*/
+      (resultSetsMap, resultEdgesMap)
+    } else /*if (adjacencyList.hasNext)*/ {
+      val nextStr: String =
+        fileContentIter
+        /*to converge to empty iterator eventually*/
+        .next()
+      val digitsLine:
+      List[String] =
+      //List[Int] =
+        nextStr
+        .split("\t")
+        //.split(",")
+        //.view
+        //.map(_.toInt)
+        .toList
+      /*side effect*/
+      if (progressCounter % 500000 == 0) {
+        print(s"Current progress: $progressCounter nodes are readied from " +
+                s"file\r")
+      } else if (progressCounter == 0) {
+        print(s"Starting reading nodes from file ...\r")
       }
+
+      //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
+      val mapKey: Int =
+        digitsLine
+        .head
+        .toInt
+      /*val mapValue: Set[Int] =
+        digitsLine
+        .tail
+        .toSet*/
+      var nodeEdgesMap: Map[Edge, Int] = Map.empty
+      var mapValue:
+      //collection.mutable.
+      Set[Int] =
+      //collection.mutable.
+        Set.empty
+      /*side effect*/
+      digitsLine
+      .tail
+      .foreach {
+                 str =>
+                   //val nodeWithWheight:
+                   val List(node, wheight):
+                   List[Int] =
+                     str
+                     .split(",")
+                     .map(_.toInt)
+                     .toList
+                   /*side effect*/
+                   mapValue += node
+                   /*side effect*/
+                   if (
+                     nodeEdgesMap
+                     .contains(Edge(mapKey, node)) ||
+                       nodeEdgesMap
+                       .contains(Edge(node, mapKey))
+                   ) {
+                     //skip, has already
+                   } else {
+                     nodeEdgesMap =
+                       nodeEdgesMap
+                       //Same as ms + (k -> v)
+                       .updated(Edge(mapKey, node), wheight)
+                   }
+               }
+      /*val resultMapUpdated:
+      collection.mutable.
+      Map[Int, Set[Int]] =
+        resultSetsMap
+        .updated(
+            key = mapKey,
+            //adjustedNodes
+            value =
+              mapValue
+                )*/
+      /*side effect*/
+      //resultSetsMap += (mapKey -> mapValue)
+      val resultSetsMapUpdated =
+      resultSetsMap + (mapKey -> mapValue)
+      /*TODO must be separate procedure*/
+      /*side effect*/
+      nodeEdgesMap
+      .foreach {
+                 case (edgeKey, edgeWeight) =>
+                   //edge =>
+                   /*?only minimal edges should remain?*/
+                   val previousEdgeVal: Option[Int] =
+                     resultEdgesMap
+                     .get(edgeKey)
+                   /*?what about reversed edge?*/
+                   val previousEdgeReversedVal: Option[Int] =
+                     resultEdgesMap
+                     .get(Edge(edgeKey.endNode, edgeKey.startNode))
+
+                   if (
+                   /*resultEdgesMap
+                   .contains(edgeKey)*/
+                   //.contains(edge._1)
+                     previousEdgeVal.nonEmpty
+                   ) {
+                     if (previousEdgeVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap + //=
+                         (edgeKey -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else if (
+                            previousEdgeReversedVal.nonEmpty
+                          ) {
+                     if (previousEdgeReversedVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap + //=
+                         (Edge(edgeKey.endNode, edgeKey
+                                                .startNode) -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else {
+                     /*side effect*/
+                     resultEdgesMap + //=
+                       (edgeKey -> edgeWeight)
+                     //(edge._1 -> mapValue)
+                   }
+               }
+      /*recursion*/
+      edgesAndSetsMapsFromAdjustedList(
+                                        fileContentIter:
+                                          Iterator[String],
+                                        resultSetsMap =
+                                          resultSetsMap,
+                                        //resultMapUpdated,
+                                        resultEdgesMap =
+                                          resultEdgesMap,
+                                        progressCounter =
+                                          progressCounter + 1
+                                      )
+    }
+  }
+
+  val inputSample3: String = "8\n15\n4 5 0.35"
+  val valuesSeparator3: String = " "
+  /*assume that 'Iterator' contains only well formed formatted lines*/
+  @scala.annotation.tailrec
+  def edgesAndSetsMapsFromWeightedEdges(
+                                        fileContentIter: Iterator[String],
+                                        resultSetsMap:
+                                        collection.immutable.
+                                        Map[Int,
+                                          Set[Int]] =
+                                        collection.immutable.
+                                        Map.empty,
+                                        resultEdgesMap:
+                                        collection.immutable.
+                                        Map[Edge,
+                                          Int] =
+                                        collection.immutable.
+                                        Map.empty,
+                                        progressCounter: Int = 0
+                                        ):
+  //collection.mutable.
+  //Map[Int, Set[Int]] = {
+  (collection.immutable.
+  Map[Int, Set[Int]],
+    collection.immutable.
+    Map[Edge, Int]) = {
+
+    if (fileContentIter.isEmpty) {
+      /*side effect*/
+      print(" " * 200 + "\r")
+      print(s"Total: $progressCounter nodes with adjusted " +
+              s"was readied from file\n")
+      //println
+      /*return value*/
+      (resultSetsMap, resultEdgesMap)
+    } else /*if (adjacencyList.hasNext)*/ {
+      val nextStr: String =
+        fileContentIter
+        /*to converge to empty iterator eventually*/
+        .next()
+      val digitsLine:
+      List[String] =
+      //List[Int] =
+        nextStr
+        .split("\t")
+        //.split(",")
+        //.view
+        //.map(_.toInt)
+        .toList
+      /*side effect*/
+      if (progressCounter % 500000 == 0) {
+        print(s"Current progress: $progressCounter nodes are readied from " +
+                s"file\r")
+      } else if (progressCounter == 0) {
+        print(s"Starting reading nodes from file ...\r")
+      }
+
+      //assume(digitsLine.nonEmpty && digitsLine.length >= 1)
+      val mapKey: Int =
+        digitsLine
+        .head
+        .toInt
+      /*val mapValue: Set[Int] =
+        digitsLine
+        .tail
+        .toSet*/
+      var nodeEdgesMap: Map[Edge, Int] = Map.empty
+      var mapValue:
+      //collection.mutable.
+      Set[Int] =
+      //collection.mutable.
+        Set.empty
+      /*side effect*/
+      digitsLine
+      .tail
+      .foreach {
+                 str =>
+                   //val nodeWithWheight:
+                   val List(node, wheight):
+                   List[Int] =
+                     str
+                     .split(",")
+                     .map(_.toInt)
+                     .toList
+                   /*side effect*/
+                   mapValue += node
+                   /*side effect*/
+                   if (
+                     nodeEdgesMap
+                     .contains(Edge(mapKey, node)) ||
+                       nodeEdgesMap
+                       .contains(Edge(node, mapKey))
+                   ) {
+                     //skip, has already
+                   } else {
+                     nodeEdgesMap =
+                       nodeEdgesMap
+                       //Same as ms + (k -> v)
+                       .updated(Edge(mapKey, node), wheight)
+                   }
+               }
+      /*val resultMapUpdated:
+      collection.mutable.
+      Map[Int, Set[Int]] =
+        resultSetsMap
+        .updated(
+            key = mapKey,
+            //adjustedNodes
+            value =
+              mapValue
+                )*/
+      /*side effect*/
+      //resultSetsMap += (mapKey -> mapValue)
+      val resultSetsMapUpdated =
+      resultSetsMap + (mapKey -> mapValue)
+      /*TODO must be separate procedure*/
+      /*side effect*/
+      nodeEdgesMap
+      .foreach {
+                 case (edgeKey, edgeWeight) =>
+                   //edge =>
+                   /*?only minimal edges should remain?*/
+                   val previousEdgeVal: Option[Int] =
+                     resultEdgesMap
+                     .get(edgeKey)
+                   /*?what about reversed edge?*/
+                   val previousEdgeReversedVal: Option[Int] =
+                     resultEdgesMap
+                     .get(Edge(edgeKey.endNode, edgeKey.startNode))
+
+                   if (
+                   /*resultEdgesMap
+                   .contains(edgeKey)*/
+                   //.contains(edge._1)
+                     previousEdgeVal.nonEmpty
+                   ) {
+                     if (previousEdgeVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap + //=
+                         (edgeKey -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else if (
+                            previousEdgeReversedVal.nonEmpty
+                          ) {
+                     if (previousEdgeReversedVal.get > edgeWeight) {
+                       /*side effect*/
+                       resultEdgesMap + //=
+                         (Edge(edgeKey.endNode, edgeKey
+                                                .startNode) -> edgeWeight)
+                     } else {
+                       //skip
+                     }
+                   } else {
+                     /*side effect*/
+                     resultEdgesMap + //=
+                       (edgeKey -> edgeWeight)
+                     //(edge._1 -> mapValue)
+                   }
+               }
+      /*recursion*/
+      edgesAndSetsMapsFromWeightedEdges(
+                                        fileContentIter:
+                                          Iterator[String],
+                                        resultSetsMap =
+                                          resultSetsMap,
+                                        //resultMapUpdated,
+                                        resultEdgesMap =
+                                          resultEdgesMap,
+                                        progressCounter =
+                                          progressCounter + 1
+                                      )
+    }
   }
 
   /*
@@ -397,24 +854,32 @@ object ShortestPathDijkstra {
   get the shortest `route` to the `source`.
   1  function Dijkstra(Graph, source):
   2
-  3      dist[source] ← 0                       // Distance from source to source
-  4      prev[source] ← undefined               // Previous node in optimal path initialization
+  3      dist[source] ← 0                       // Distance from source to
+  source
+  4      prev[source] ← undefined               // Previous node in optimal
+  path initialization
   5
   6      create vertex set Q
   7
   8      for each vertex v in Graph:             // Initialization
-  9          if v ≠ source:                      // v has not yet been removed from Q (unvisited nodes)
-  10              dist[v] ← INFINITY             // Unknown distance from source to v
-  11              prev[v] ← UNDEFINED            // Previous node in optimal path from source
-  12          add v to Q                          // All nodes initially in Q (unvisited nodes)
+  9          if v ≠ source:                      // v has not yet been
+  removed from Q (unvisited nodes)
+  10              dist[v] ← INFINITY             // Unknown distance from
+  source to v
+  11              prev[v] ← UNDEFINED            // Previous node in optimal
+  path from source
+  12          add v to Q                          // All nodes initially in Q
+   (unvisited nodes)
   13
   14      while Q is not empty:
-  15          u ← vertex in Q with min dist[u]    // Source node in the first case
+  15          u ← vertex in Q with min dist[u]    // Source node in the first
+   case
   16          remove u from Q
   17
   18          for each neighbor v of u:           // where v is still in Q.
   19              alt ← dist[u] + length(u, v)
-  20              if alt < dist[v]:               // A shorter path to v has been found
+  20              if alt < dist[v]:               // A shorter path to v has
+  been found
   21                  dist[v] ← alt
   22                  prev[v] ← u
   23
@@ -432,9 +897,12 @@ object ShortestPathDijkstra {
   reverse iteration:
   1  S ← empty sequence
     2  u ← target
-  3  while prev[u] is defined:                   // Construct the shortest path with a stack S
-  4      insert u at the beginning of S          // Push the vertex onto the stack
-    5      u ← prev[u]                            // Traverse from target to source
+  3  while prev[u] is defined:                   // Construct the shortest
+  path with a stack S
+  4      insert u at the beginning of S          // Push the vertex onto the
+  stack
+    5      u ← prev[u]                            // Traverse from target to
+    source
   Now sequence 'S' is
   the list of `vertices` constituting
   one of the `shortest paths` from `source` to `target`, or
@@ -531,46 +999,77 @@ object ShortestPathDijkstra {
   achieve even faster computing times in practice.
   */
 
+  /*
+  Dijkstra's algorithm.
+  Dijkstra's algorithm
+  initializing
+  'dist[s]' to '0' and
+  all other 'distTo[]' entries to positive `infinity`.
+  Then,
+  it repeatedly
+  `relaxes` and
+  adds to the `tree` a `non-tree` `vertex` with
+  the lowest 'distTo[]' value,
+  continuing until (stop condition)
+  all `vertices` are
+  on the `tree` or
+  no `non-tree` vertex has
+  a `finite` 'distTo[]' value (left only initial positive `infinity`
+  as unreachable).
+   */
   /*return all graph `nodes` with shortest `distances` to 'source'
   where 'Int.MaxValue' stands for unreachable from 'source'
   * */
-  def DijkstraWithTreeMap(
-                           //graph,
-                           /*read only*/
-                           setsMap:
-                           collection.immutable.
-                           Map[Int, Set[Int]],
-                           /*read only*/
-                           edgesMap:
-                           Map[Edge, Int],
-                           distances:
-                           collection.immutable.
-                           Map[Int, Int] =
-                           collection.immutable.
-                           Map.empty,
-                           /*start node*/
-                           sourceNode: Int = 1
-                           ):
-  collection.immutable.
+  def DijkstraWithEdgesSetsTreeMapMutable(
+                                           //graph,
+                                           /*read only*/
+                                           setsMap:
+                                           collection.mutable.
+                                           Map[Int, Set[Int]],
+                                           /*read only*/
+                                           edgesMap:
+                                           Map[Edge, Int],
+                                           distances:
+                                           collection.mutable.
+                                           Map[Int, Int] =
+                                           collection.mutable.
+                                           Map.empty,
+                                           /*start node*/
+                                           sourceNode: Int = 1
+                                           ):
+  collection.mutable.
   Map[Int, Int] = {
     /*initialization*/
     val currentDistances:
-    collection.immutable.
+    collection.mutable.
     Map[Int, Int] =
-    if (distances.isEmpty) {
-      setsMap
-      //.mapValues{nodeValue => Int.MaxValue} +
-      .mapValues(_ => Int.MaxValue) +
-        (sourceNode -> 0)
-      //.toMap
-    } else {
-      distances
-    }
+      if (distances.isEmpty) {
+        /*
+        `Relaxation`.
+        Our `shortest-paths` implementations are based on
+        an operation known as `relaxation`.
+        We initialize
+        'distTo[s]' to '0' and
+        'distTo[v]' to 'infinity' for all other vertices 'v'.
+         */
+        //(
+          setsMap
+          //.toMap
+        //.mapValues{nodeValue => Int.MaxValue} +
+        //.mapValues(_ => Int.MaxValue) +
+        .map{case (k,v) => k -> Int.MaxValue} +
+          //) +
+          (sourceNode -> 0)
+          //)
+        //.toMap
+      } else {
+        distances
+      }
     val explored: Set[Int] = Set.empty
     val unExplored: Set[Int] =
       setsMap
-    .keySet
-    .toSet
+      .keySet
+      .toSet
     /*will be reduced to empty eventually*/
     val nodesIterator: Iterator[(Int, Set[Int])] =
       (setsMap - sourceNode)
@@ -579,9 +1078,206 @@ object ShortestPathDijkstra {
       Ordering.fromLessThan[String](_ > _)*/
     val minDistancePriorityQueue: TreeMap[Int, Int] =
       scala.collection.immutable.TreeMap
-        .empty(Ordering[Int].reverse) +
+      .empty(Ordering[Int].reverse) +
         /*set 'sourceNode' as start*/
-      (sourceNode -> 0)
+        (sourceNode -> 0)
+
+    @scala.annotation.tailrec
+    def checkAdjusted(
+                       /*read only*/
+                       sourceNodeToCheck: Int,
+                       /*?read only?*/
+                       sourceDistanceToCheck: Int,
+                       adjustedIterToCheck: Iterator[Int],
+                       distancesToCheck:
+                       collection.mutable.
+                       Map[Int, Int],
+                       priorityQueueToCheck: TreeMap[Int, Int]
+                       ):
+    (
+      collection.mutable.
+      Map[Int, Int], TreeMap[Int, Int]) = {
+      if (adjustedIterToCheck.isEmpty) {
+        /*return value*/
+        (distancesToCheck, priorityQueueToCheck)
+      } else {
+        val candidateNodeKey: Int =
+          adjustedIterToCheck
+          /*to converge to empty eventually*/
+          .next()
+        //assume(distancesToCheck.isDefinedAt(candidateNodeKey))
+        val previousNodeDistance: Int =
+          distancesToCheck(candidateNodeKey)
+        //assume that at least one is defined
+        val edgeWeight: Int =
+        /*if (edgesMap.contains(Edge(sourceNodeToCheck,candidateNodeKey))) {
+          edgesMap(Edge(sourceNodeToCheck, candidateNodeKey))
+        } else {
+          edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+        }*/
+          edgesMap
+          .getOrElse(
+              Edge(sourceNodeToCheck, candidateNodeKey),
+              edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+                    )
+        val candidateDistances: Int =
+          sourceDistanceToCheck + edgeWeight
+        /*
+        `Edge` `relaxation`.
+        To `relax` an `edge` 'v->w' means
+        to test whether
+        the best known way from 's' to 'w' is
+        to go from 's' to 'v',
+        then
+        take the `edge` from 'v' to 'w', and,
+        if so,
+        `update` our `data structures`.
+         */
+        /*
+        `Vertex` `relaxation`.
+        All of our implementations actually `relax`
+        all the `edges` pointing from a given `vertex`.
+         */
+        val (distancesUpdated, priorityQueueUpdated) =
+          if (candidateDistances < previousNodeDistance) {
+            (
+              distancesToCheck +
+                (candidateNodeKey -> candidateDistances),
+              if (priorityQueueToCheck.contains(candidateNodeKey)) {
+                priorityQueueToCheck
+              } else {
+                priorityQueueToCheck + (candidateNodeKey -> candidateDistances)
+              }
+              )
+          } else {
+            (distancesToCheck, priorityQueueToCheck)
+          }
+        /*recursion*/
+        checkAdjusted(
+                       sourceNodeToCheck = sourceNodeToCheck,
+                       sourceDistanceToCheck = sourceDistanceToCheck,
+                       adjustedIterToCheck = adjustedIterToCheck,
+                       distancesToCheck = distancesUpdated,
+                       priorityQueueToCheck = priorityQueueUpdated
+                     )
+      }
+    }
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   innerDistances:
+                   collection.mutable.
+                   Map[Int, Int],
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue: TreeMap[Int, Int]
+                   ):
+    collection.mutable.
+    Map[Int, Int] = {
+      if (innerPriorityQueue.isEmpty) {
+        /*return value*/
+        innerDistances
+      } else {
+        val (currentSourceKey, currentSourceDistance): (Int, Int) =
+          innerPriorityQueue
+          .head
+        //.min
+        //.invert
+        assume(setsMap.nonEmpty, "'setsMap' must be '.nonEmpty'")
+        val adjustedIter: Iterator[Int] =
+          setsMap(currentSourceKey)
+          //.get(currentSourceKey)
+          //.get
+          .iterator
+        val (distancesUpdated, priorityQueueUpdated):
+        (collection.mutable.
+        Map[Int, Int], TreeMap[Int, Int]) =
+          checkAdjusted(
+                         sourceNodeToCheck =
+                           currentSourceKey,
+                         sourceDistanceToCheck =
+                           currentSourceDistance,
+                         adjustedIterToCheck = adjustedIter,
+                         distancesToCheck =
+                           innerDistances,
+                         priorityQueueToCheck =
+                           innerPriorityQueue
+                           .tail
+                       )
+        /*recursion*/
+        innerLoop(
+                   innerDistances =
+                     distancesUpdated,
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue =
+                     priorityQueueUpdated
+                 )
+      }
+    }
+    /*initialization*/
+    innerLoop(
+               innerDistances = currentDistances,
+               //innerExplored = explored,
+               //innerUnExplored = unExplored,
+               //currentSourceNode = sourceNode,
+               innerPriorityQueue = minDistancePriorityQueue
+             )
+  }
+
+  /*return all graph `nodes` with shortest `distances` to 'source'
+  where 'Int.MaxValue' stands for unreachable from 'source'
+  * */
+  def DijkstraWithSetsEdgesMapsImMutable(
+                                          //graph,
+                                          /*read only*/
+                                          setsMap:
+                                          collection.immutable.
+                                          Map[Int, Set[Int]],
+                                          /*read only*/
+                                          edgesMap:
+                                          Map[Edge, Int],
+                                          distances:
+                                          collection.immutable.
+                                          Map[Int, Int] =
+                                          collection.immutable.
+                                          Map.empty,
+                                          /*start node*/
+                                          sourceNode: Int = 1
+                                          ):
+  collection.immutable.
+  Map[Int, Int] = {
+    /*initialization*/
+    val currentDistances:
+    collection.immutable.
+    Map[Int, Int] =
+      if (distances.isEmpty) {
+        setsMap
+        //.mapValues{nodeValue => Int.MaxValue} +
+        .mapValues(_ => Int.MaxValue) +
+          (sourceNode -> 0)
+        //.toMap
+      } else {
+        distances
+      }
+    val explored: Set[Int] = Set.empty
+    val unExplored: Set[Int] =
+      setsMap
+      .keySet
+      .toSet
+    /*will be reduced to empty eventually*/
+    val nodesIterator: Iterator[(Int, Set[Int])] =
+      (setsMap - sourceNode)
+      .iterator
+    /*val priorityQueueOrdering =
+      Ordering.fromLessThan[String](_ > _)*/
+    val minDistancePriorityQueue: TreeMap[Int, Int] =
+      scala.collection.immutable.TreeMap
+      .empty(Ordering[Int].reverse) +
+        /*set 'sourceNode' as start*/
+        (sourceNode -> 0)
 
     @scala.annotation.tailrec
     def checkAdjusted(
@@ -599,9 +1295,9 @@ object ShortestPathDijkstra {
       collection.immutable.
       Map[Int, Int], TreeMap[Int, Int]) = {
       if (adjustedIterToCheck.isEmpty) {
-      /*return value*/
+        /*return value*/
         (distancesToCheck, priorityQueueToCheck)
-    } else {
+      } else {
         val candidateNodeKey: Int =
           adjustedIterToCheck
           /*to converge to empty eventually*/
@@ -611,32 +1307,32 @@ object ShortestPathDijkstra {
           distancesToCheck(candidateNodeKey)
         //assume that at least one is defined
         val edgeWeight: Int =
-          /*if (edgesMap.contains(Edge(sourceNodeToCheck,candidateNodeKey))) {
-            edgesMap(Edge(sourceNodeToCheck, candidateNodeKey))
-          } else {
-            edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
-          }*/
+        /*if (edgesMap.contains(Edge(sourceNodeToCheck,candidateNodeKey))) {
+          edgesMap(Edge(sourceNodeToCheck, candidateNodeKey))
+        } else {
+          edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+        }*/
           edgesMap
-        .getOrElse(
+          .getOrElse(
               Edge(sourceNodeToCheck, candidateNodeKey),
               edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
-                  )
+                    )
         val candidateDistances: Int =
           sourceDistanceToCheck + edgeWeight
         val (distancesUpdated, priorityQueueUpdated) =
-        if (candidateDistances < previousNodeDistance) {
-          (
-            distancesToCheck +
-            (candidateNodeKey->candidateDistances),
-            if (priorityQueueToCheck.contains(candidateNodeKey)) {
-              priorityQueueToCheck
-            } else {
-              priorityQueueToCheck + (candidateNodeKey->candidateDistances)
-            }
-            )
-        } else {
-          (distancesToCheck, priorityQueueToCheck)
-        }
+          if (candidateDistances < previousNodeDistance) {
+            (
+              distancesToCheck +
+                (candidateNodeKey -> candidateDistances),
+              if (priorityQueueToCheck.contains(candidateNodeKey)) {
+                priorityQueueToCheck
+              } else {
+                priorityQueueToCheck + (candidateNodeKey -> candidateDistances)
+              }
+              )
+          } else {
+            (distancesToCheck, priorityQueueToCheck)
+          }
         /*recursion*/
         checkAdjusted(
                        sourceNodeToCheck = sourceNodeToCheck,
@@ -667,29 +1363,199 @@ object ShortestPathDijkstra {
         val (currentSourceKey, currentSourceDistance): (Int, Int) =
           innerPriorityQueue
           .head
-          //.min
-          //.invert
-        assume(setsMap.nonEmpty,"'setsMap' must be '.nonEmpty'")
+        //.min
+        //.invert
+        assume(setsMap.nonEmpty, "'setsMap' must be '.nonEmpty'")
         val adjustedIter: Iterator[Int] =
-            setsMap(currentSourceKey)
-              //.get(currentSourceKey)
-              //.get
-        .iterator
+          setsMap(currentSourceKey)
+          //.get(currentSourceKey)
+          //.get
+          .iterator
         val (distancesUpdated, priorityQueueUpdated):
-          (collection.immutable.
-            Map[Int, Int], TreeMap[Int, Int]) =
-            checkAdjusted(
-                           sourceNodeToCheck =
-                             currentSourceKey,
-                           sourceDistanceToCheck =
-                             currentSourceDistance,
-                           adjustedIterToCheck = adjustedIter,
-                           distancesToCheck =
-                             innerDistances,
-                           priorityQueueToCheck =
-                             innerPriorityQueue
-                             .tail
-                         )
+        (collection.immutable.
+        Map[Int, Int], TreeMap[Int, Int]) =
+          checkAdjusted(
+                         sourceNodeToCheck =
+                           currentSourceKey,
+                         sourceDistanceToCheck =
+                           currentSourceDistance,
+                         adjustedIterToCheck = adjustedIter,
+                         distancesToCheck =
+                           innerDistances,
+                         priorityQueueToCheck =
+                           innerPriorityQueue
+                           .tail
+                       )
+        /*recursion*/
+        innerLoop(
+                   innerDistances =
+                     distancesUpdated,
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue =
+                     priorityQueueUpdated
+                 )
+      }
+    }
+    /*initialization*/
+    innerLoop(
+               innerDistances = currentDistances,
+               //innerExplored = explored,
+               //innerUnExplored = unExplored,
+               //currentSourceNode = sourceNode,
+               innerPriorityQueue = minDistancePriorityQueue
+             )
+  }
+
+  /*return all graph `nodes` with shortest `distances` to 'source'
+  where 'Int.MaxValue' stands for unreachable from 'source'
+  * */
+  def DijkstraWithEdgesSetsMapImMutable(
+                                         //graph,
+                                         /*read only*/
+                                         edgesSetsMap:
+                                         collection.immutable.
+                                         Map[Int, Set[WeightedEdge]],
+                                         /*start node*/
+                                         sourceNode: Int = 1
+                                         ):
+  collection.immutable.
+  Map[Int, Int] = {
+    /*initialization*/
+    val currentDistances:
+    collection.immutable.
+    Map[Int, Int] =
+      edgesSetsMap
+      //.mapValues{nodeValue => Int.MaxValue} +
+      .mapValues(_ => Int.MaxValue) +
+        (sourceNode -> 0)
+    //.toMap
+    /*val explored: Set[Int] = Set.empty
+    val unExplored: Set[Int] =
+      edgesSetsMap
+    .keySet
+    .toSet*/
+    /*will be reduced to empty eventually*/
+    val nodesIterator: Iterator[(Int, Set[WeightedEdge])] =
+      (edgesSetsMap - sourceNode)
+      .iterator
+    /*val priorityQueueOrdering =
+      Ordering.fromLessThan[String](_ > _)*/
+    val minDistancePriorityQueue: TreeMap[Int, Int] =
+      scala.collection.immutable.TreeMap
+      .empty(Ordering[Int].reverse) +
+        /*set 'sourceNode' as start*/
+        (sourceNode -> 0)
+
+    @scala.annotation.tailrec
+    def checkAdjusted(
+                       /*read only*/
+                       sourceNodeToCheck: Int,
+                       /*?read only?*/
+                       sourceDistanceToCheck: Int,
+                       adjustedIterToCheck: Iterator[WeightedEdge],
+                       distancesToCheck:
+                       collection.immutable.
+                       Map[Int, Int],
+                       priorityQueueToCheck: TreeMap[Int, Int]
+                       ):
+    (
+      collection.immutable.
+      Map[Int, Int], TreeMap[Int, Int]) = {
+      if (adjustedIterToCheck.isEmpty) {
+        /*return value*/
+        (distancesToCheck, priorityQueueToCheck)
+      } else {
+        val candidateEdge: WeightedEdge =
+          adjustedIterToCheck
+          /*to converge to empty eventually*/
+          .next()
+        val candidateNodeKey: Int = candidateEdge.endNode
+        //assume(distancesToCheck.isDefinedAt(candidateNodeKey))
+        val previousNodeDistance: Int =
+          distancesToCheck(candidateNodeKey)
+        //assume that at least one is defined
+        val edgeWeight: Int = candidateEdge.weight
+        /*if (edgesMap.contains(Edge(sourceNodeToCheck,candidateNodeKey))) {
+          edgesMap(Edge(sourceNodeToCheck, candidateNodeKey))
+        } else {
+          edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+        }*/
+          /*edgesMap
+          .getOrElse(
+              Edge(sourceNodeToCheck, candidateNodeKey),
+              edgesMap(Edge(candidateNodeKey, sourceNodeToCheck))
+                    )*/
+        val candidateDistances: Int =
+          sourceDistanceToCheck + edgeWeight
+        val (distancesUpdated, priorityQueueUpdated) =
+          if (candidateDistances < previousNodeDistance) {
+            (
+              distancesToCheck +
+                (candidateNodeKey -> candidateDistances),
+              if (priorityQueueToCheck.contains(candidateNodeKey)) {
+                priorityQueueToCheck
+              } else {
+                priorityQueueToCheck + (candidateNodeKey -> candidateDistances)
+              }
+              )
+          } else {
+            (distancesToCheck, priorityQueueToCheck)
+          }
+        /*recursion*/
+        checkAdjusted(
+                       sourceNodeToCheck = sourceNodeToCheck,
+                       sourceDistanceToCheck = sourceDistanceToCheck,
+                       adjustedIterToCheck = adjustedIterToCheck,
+                       distancesToCheck = distancesUpdated,
+                       priorityQueueToCheck = priorityQueueUpdated
+                     )
+      }
+    }
+
+    @scala.annotation.tailrec
+    def innerLoop(
+                   innerDistances:
+                   collection.immutable.
+                   Map[Int, Int],
+                   //innerExplored: Set[Int],
+                   //innerUnExplored: Set[Int],
+                   //currentSourceNode: Int,
+                   innerPriorityQueue: TreeMap[Int, Int]
+                   ):
+    collection.immutable.
+    Map[Int, Int] = {
+      if (innerPriorityQueue.isEmpty) {
+        /*return value*/
+        innerDistances
+      } else {
+        val (currentSourceKey, currentSourceDistance): (Int, Int) =
+          innerPriorityQueue
+          .head
+        //.min
+        //.invert
+        //assume(setsMap.nonEmpty, "'setsMap' must be '.nonEmpty'")
+        val adjustedIter: Iterator[WeightedEdge] =
+          edgesSetsMap(currentSourceKey)
+          //.get(currentSourceKey)
+          //.get
+          .iterator
+        val (distancesUpdated, priorityQueueUpdated):
+        (collection.immutable.
+        Map[Int, Int], TreeMap[Int, Int]) =
+          checkAdjusted(
+                         sourceNodeToCheck =
+                           currentSourceKey,
+                         sourceDistanceToCheck =
+                           currentSourceDistance,
+                         adjustedIterToCheck = adjustedIter,
+                         distancesToCheck =
+                           innerDistances,
+                         priorityQueueToCheck =
+                           innerPriorityQueue
+                           .tail
+                       )
         /*recursion*/
         innerLoop(
                    innerDistances =
@@ -715,7 +1581,7 @@ object ShortestPathDijkstra {
   def UniformCostSearch(
                          graph:
                          Map[Int,
-                          Set[WeightedEdge]],
+                           Set[WeightedEdge]],
                          /*source vertex*/
                          start: Int = 1,
                          goal: Int): Int = {
@@ -731,12 +1597,12 @@ object ShortestPathDijkstra {
     var frontier =
       new
           collection.mutable.PriorityQueue()(
-                                   /*Ordering[(Int, WeightedEdge)]
-                                   .on((x) => x)*/
-                                   Ordering
-                                   .by[WeightedEdge, Int](_.weight)
-                                   .reverse
-                                 )
+                                              /*Ordering[(Int, WeightedEdge)]
+                                              .on((x) => x)*/
+                                              Ordering
+                                              .by[WeightedEdge, Int](_.weight)
+                                              .reverse
+                                            )
     var explored: Set[Int] = Set.empty[Int]
 
     /*do
@@ -761,11 +1627,11 @@ object ShortestPathDijkstra {
 
       /*side effect*/
       for {
-        //each of node's neighbors n
-        node<-currentNodeVal
+      //each of node's neighbors n
+        node <- currentNodeVal
       } {
         if (
-          //n is not in explored
+        //n is not in explored
           !explored
            .contains(
                node
@@ -773,25 +1639,24 @@ object ShortestPathDijkstra {
                     )
         ) {
           if (
-            //n is not in frontier
-            /*!frontier
-             .exist(
-                 _ == node
-                      )*/
+          //n is not in frontier
+          /*!frontier
+           .exist(
+               _ == node
+                    )*/
             frontier
-             .forall(
-                 _ != node
+            .forall(
+                _ != node
                    )
           ) {
             //.add(n)
             frontier += node
-          }  else {
+          } else {
             if (
-              //n is in frontier with higher cost
+            //n is in frontier with higher cost
               node.weight >
                 frontier.find(_.startNode == currentNode).get.weight
-            )
-            {
+            ) {
               //replace existing node with n
               /*? in the 'frontier'? How ?*/
             } else {
@@ -804,6 +1669,6 @@ object ShortestPathDijkstra {
       }
     }
     cost
-  }//end def
+  } //end def
 
 }

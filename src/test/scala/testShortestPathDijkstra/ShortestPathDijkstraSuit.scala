@@ -101,6 +101,93 @@ class ShortestPathDijkstraSuit
           val answerSample: String =
             "1000,1000,1000,1000,1000,2000,1000,1000,1000,1000"
 
+          val expectedShortestPathMap:
+          Map[Int, WeightedEdgeWithDistance] =
+            Map(
+                 0 -> WeightedEdgeWithDistance(
+                                                None,
+                                                0
+                                              ),
+                 2 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     0,
+                                                                     2,
+                                                                     26
+                                                                   )
+                                                     ),
+                                                 26
+                                               ),
+                 4 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     0,
+                                                                     4,
+                                                                     38
+                                                                   )
+                                                     ),
+                                                 38
+                                               ),
+                 7 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     2,
+                                                                     7,
+34
+                                                                   )
+                                                     ),
+                                                 60
+                                               ),
+                 5 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     4,
+                                                                     5,
+                                                                     35
+                                                                   )
+                                                     ),
+                                                 73
+                                               ),
+                 3 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     7,
+                                                                     3,
+                                                                     39
+                                                                   )
+                                                     ),
+                                                 99
+                                               ),
+                 1 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     5,
+                                                                     1,
+                                                                     32
+                                                                   )
+                                                     ),
+                                                 105
+                                               ),
+                 6 -> WeightedEdgeWithDistance(
+                                                 Some(
+                                                       WeightedEdge(
+                                                                     3,
+                                                                     6,
+                                                                     52
+                                                                   )
+                                                     ),
+                                                 151
+                                               )
+               )
+                val expectedDistances:
+                List[Int] =
+                  expectedShortestPathMap
+    //.mapValues{case WeightedEdgeWithDistance(_, d) => d}
+    //.toMap
+    .keys
+    .toList
+    .sorted
+    .map(k=>expectedShortestPathMap(k).distance)
           val inputTakeNumber: Int =
             3
           val inPutFilePath: String =
@@ -114,7 +201,8 @@ class ShortestPathDijkstraSuit
               //"testTwoSumAlgorithm/"
               "testShortestPathDijkstra/"
           val inPutFileName: String =
-            "dijkstraData.txt"
+            //"dijkstraData.txt"
+    "tinyEWD.txt"
           lazy val (fileContentIter, fileContentIterCopy):
           (Iterator[String], Iterator[String]) =
           //Iterator.empty
@@ -124,13 +212,17 @@ class ShortestPathDijkstraSuit
                         )
             /*reduce / control input size*/
             //.take(inputTakeNumber)
+              /*nodes & edges size*/
+            .drop(2)
             .duplicate
           val expectedInputSize: Int =
             3
           val (setsMap,
           edgesMap):
-          (collection.mutable.Map[Int, Set[Int]],
-            collection.mutable.Map[Edge, Int]) =
+          (collection.mutable.
+          Map[Int, Set[Int]],
+            collection.mutable.
+            Map[Edge, Int]) =
             makeWeightedEdgesAndSetsMapsFromNodesWithAdjusted(
                                                                fileContentIter =
                                                                  fileContentIter
@@ -160,29 +252,38 @@ class ShortestPathDijkstraSuit
           val distances:
           collection.immutable.
           Map[Int, Int] =
-            DijkstraWithTreeMap(
-                                 setsMap = setsMap.toMap,
-                                 edgesMap = edgesMap,
-                                 sourceNode = 1
-                               )
+            DijkstraWithEdgesSetsTreeMapMutable(
+                                                 setsMap =
+                                                   setsMap,
+                                                   //.toMap,
+                                                 edgesMap =
+                                                   edgesMap,
+                                                 sourceNode = 1
+                                               ).toMap
           /*!!!Warn!!!preserve order!!!must be exact as in List*/
           //'answer' is:2399,4471,3879,4930,3578,3051,2947,6584,2367,2052
           /*'answer' is:6584,4471,2947,2052,2367,2399,3879,4930,3051,3578*/
           val answer: String =
-            /*distances
-            .collect {
-                       case (k, v) if destinationsFromFirstOne.contains(k) =>
-                         v.toString
-                     }*/
-            destinationsFromFirstOne
-              .map{case node => distances(node)}
+          /*distances
+          .collect {
+                     case (k, v) if destinationsFromFirstOne.contains(k) =>
+                       v.toString
+                   }*/
+            //destinationsFromFirstOne
+                //.map { case node => distances(node) }
+                setsMap
+            .keys
+            .toList
+            .sorted
+            .map { case node => distances(node) }
             .mkString(",")
           println(
                    "'answer' is:" +
                      answer)
 
           assume(
-                  distances.nonEmpty,
+                  distances.nonEmpty &&
+                    answer == expectedDistances,
                   s"'distances' must be 'nonEmpty'"
                 )
         }
